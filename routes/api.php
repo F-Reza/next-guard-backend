@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\V1\AdminUserController;
 use App\Http\Controllers\Api\V1\AdminLicenseController;
 use App\Http\Controllers\Api\V1\AdminSubscriptionController;
 use App\Http\Controllers\Api\V1\AdminStatisticsController;
+use App\Http\Controllers\Api\V1\AdminActivityLogController;
 
 
 
@@ -305,6 +306,12 @@ Route::prefix('v1')->group(function () {
             '/statistics',
             [AdminStatisticsController::class,'index']
         );
+
+        Route::get(
+            '/activity-logs',
+            [AdminActivityLogController::class,'index']
+        );
+
 
 
         /*

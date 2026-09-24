@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
+use App\Services\AdminActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -24,19 +25,13 @@ class AdminAuthController extends Controller
         $validator = Validator::make($request->all(), [
 
             'email' => [
-
                 'required',
-
                 'email'
-
             ],
 
             'password' => [
-
                 'required',
-
                 'string'
-
             ]
 
         ]);
@@ -54,7 +49,7 @@ class AdminAuthController extends Controller
 
                 'errors' => $validator->errors()
 
-            ],422);
+            ], 422);
 
 
         }
@@ -62,13 +57,12 @@ class AdminAuthController extends Controller
 
 
 
+
         $admin = Admin::where(
-
             'email',
-
             $request->email
-
         )->first();
+
 
 
 
@@ -104,6 +98,8 @@ class AdminAuthController extends Controller
 
 
 
+
+
         if ($admin->status !== 'active') {
 
 
@@ -122,6 +118,8 @@ class AdminAuthController extends Controller
 
 
 
+
+
         /*
         |--------------------------------------------------------------------------
         | Generate Admin JWT Token
@@ -130,6 +128,9 @@ class AdminAuthController extends Controller
 
 
         $token = auth('admin')->login($admin);
+
+
+
 
 
 
@@ -154,49 +155,80 @@ class AdminAuthController extends Controller
 
 
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Activity Log
+        |--------------------------------------------------------------------------
+        */
+
+
+        AdminActivityLogger::log(
+
+            'ADMIN_LOGIN',
+
+            'Admin logged in successfully.',
+
+            $request
+
+        );
+
+
+
+
+
+
+
+
         return response()->json([
 
-            'success' => true,
 
-            'message' => 'Admin login successful.',
-
-
-            'data' => [
+            'success'=>true,
 
 
-                'admin' => [
+            'message'=>'Admin login successful.',
 
 
-                    'id' => $admin->id,
+
+            'data'=>[
 
 
-                    'name' => $admin->name,
+
+                'admin'=>[
 
 
-                    'email' => $admin->email,
+                    'id'=>$admin->id,
 
+                    'name'=>$admin->name,
 
-                    'role' => $admin->role,
+                    'email'=>$admin->email,
 
+                    'role'=>$admin->role,
 
-                    'status' => $admin->status,
+                    'status'=>$admin->status,
 
 
                 ],
 
 
 
-                'access_token' => $token,
+
+                'access_token'=>$token,
 
 
-                'token_type' => 'Bearer'
+                'token_type'=>'Bearer'
 
 
             ]
 
+
         ]);
 
     }
+
+
+
+
 
 
 
@@ -205,23 +237,45 @@ class AdminAuthController extends Controller
     /**
      * Admin Logout
      */
-    public function logout(): JsonResponse
+    public function logout(Request $request): JsonResponse
     {
+
+
+        AdminActivityLogger::log(
+
+            'ADMIN_LOGOUT',
+
+            'Admin logged out.',
+
+            $request
+
+        );
+
+
 
 
         auth('admin')->logout();
 
 
 
+
         return response()->json([
+
 
             'success'=>true,
 
+
             'message'=>'Admin logout successful.'
+
 
         ]);
 
+
     }
+
+
+
+
 
 
 
@@ -238,26 +292,40 @@ class AdminAuthController extends Controller
 
 
 
+
         return response()->json([
 
+
             'success'=>true,
+
 
             'message'=>'Authenticated admin.',
 
 
+
+
             'data'=>[
+
+
 
                 'admin'=>[
 
+
+
                     'id'=>$admin->id,
+
 
                     'name'=>$admin->name,
 
+
                     'email'=>$admin->email,
+
 
                     'role'=>$admin->role,
 
+
                     'status'=>$admin->status,
+
 
                 ]
 

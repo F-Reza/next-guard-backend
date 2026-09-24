@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 
 class Admin extends Authenticatable implements JWTSubject
@@ -67,6 +68,16 @@ class Admin extends Authenticatable implements JWTSubject
             'type'=>'admin',
 
         ];
+    }
+
+
+    public function activityLogs(): HasMany
+    {
+
+        return $this->hasMany(
+            AdminActivityLog::class
+        );
+
     }
 
 
