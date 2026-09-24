@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\Permission;
 use App\Services\AdminActivityLogger;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Http\JsonResponse;
+
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+
 
 
 class AdminManagementController extends Controller
@@ -23,9 +25,11 @@ class AdminManagementController extends Controller
     public function index(): JsonResponse
     {
 
+
         $admins = Admin::with('permissions')
             ->latest()
-            ->get();
+            ->paginate(20);
+
 
 
         return response()->json([
@@ -43,6 +47,8 @@ class AdminManagementController extends Controller
         ]);
 
     }
+
+
 
 
 
@@ -80,8 +86,7 @@ class AdminManagementController extends Controller
 
             'role'=>[
                 'required',
-                'string',
-                'max:50'
+                'in:admin,support,super_admin'
             ],
 
 
@@ -106,10 +111,15 @@ class AdminManagementController extends Controller
 
 
 
+
+        $creator = auth('admin')->user();
+
+
+
         if(
             $request->role === 'super_admin'
             &&
-            auth('admin')->user()->role !== 'super_admin'
+            $creator->role !== 'super_admin'
         ){
 
             return response()->json([
@@ -122,9 +132,6 @@ class AdminManagementController extends Controller
 
         }
 
-
-
-        $creator = auth('admin')->user();
 
 
 
@@ -143,7 +150,9 @@ class AdminManagementController extends Controller
 
             'created_by'=>$creator->id,
 
+
         ]);
+
 
 
 
@@ -161,14 +170,12 @@ class AdminManagementController extends Controller
 
 
 
-        return response()->json([
 
+        return response()->json([
 
             'success'=>true,
 
-
             'message'=>'Admin created successfully.',
-
 
             'data'=>[
 
@@ -176,11 +183,13 @@ class AdminManagementController extends Controller
 
             ]
 
-
         ],201);
 
 
     }
+
+
+
 
 
 
@@ -202,6 +211,7 @@ class AdminManagementController extends Controller
 
         if(!$admin){
 
+
             return response()->json([
 
                 'success'=>false,
@@ -210,7 +220,33 @@ class AdminManagementController extends Controller
 
             ],404);
 
+
         }
+
+
+
+
+
+        if(
+            $request->role === 'super_admin'
+            &&
+            auth('admin')->user()->role !== 'super_admin'
+        ){
+
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Only super admin can assign super admin role.'
+
+            ],403);
+
+
+        }
+
+
+
 
 
 
@@ -233,18 +269,18 @@ class AdminManagementController extends Controller
 
             'role'=>[
                 'sometimes',
-                'string',
-                'max:50'
+                'in:admin,support,super_admin'
             ],
 
 
             'status'=>[
                 'sometimes',
                 'in:active,inactive'
-            ]
+            ],
 
 
         ]);
+
 
 
 
@@ -268,6 +304,7 @@ class AdminManagementController extends Controller
 
 
 
+
         $admin->update(
 
             $request->only([
@@ -280,6 +317,7 @@ class AdminManagementController extends Controller
             ])
 
         );
+
 
 
 
@@ -303,7 +341,6 @@ class AdminManagementController extends Controller
 
             'success'=>true,
 
-
             'message'=>'Admin updated successfully.',
 
 
@@ -316,7 +353,10 @@ class AdminManagementController extends Controller
 
         ]);
 
+
     }
+
+
 
 
 
@@ -350,14 +390,13 @@ class AdminManagementController extends Controller
 
 
 
-        return response()->json([
 
+
+        return response()->json([
 
             'success'=>true,
 
-
             'message'=>'Admin retrieved.',
-
 
             'data'=>[
 
@@ -365,18 +404,14 @@ class AdminManagementController extends Controller
 
             ]
 
-
         ]);
+
 
     }
 
 
-
-
-
-
-    /**
-     * Reset password
+        /**
+     * Reset admin password
      */
     public function resetPassword(
         Request $request,
@@ -405,20 +440,13 @@ class AdminManagementController extends Controller
 
         $validator = Validator::make($request->all(),[
 
-
             'password'=>[
-
                 'required',
-
                 'string',
-
                 'min:6'
-
             ]
 
-
         ]);
-
 
 
 
@@ -435,7 +463,6 @@ class AdminManagementController extends Controller
 
             ],422);
 
-
         }
 
 
@@ -443,13 +470,12 @@ class AdminManagementController extends Controller
 
         $admin->update([
 
-
             'password'=>$request->password,
 
             'force_password_change'=>true
 
-
         ]);
+
 
 
 
@@ -467,6 +493,7 @@ class AdminManagementController extends Controller
 
 
 
+
         return response()->json([
 
             'success'=>true,
@@ -475,8 +502,9 @@ class AdminManagementController extends Controller
 
         ]);
 
-
     }
+
+
 
 
 
@@ -511,26 +539,23 @@ class AdminManagementController extends Controller
 
 
 
+
         $validator = Validator::make($request->all(),[
 
 
             'permission_ids'=>[
-
                 'required',
-
                 'array'
-
             ],
 
 
             'permission_ids.*'=>[
-
                 'exists:permissions,id'
-
             ]
 
 
         ]);
+
 
 
 
@@ -556,8 +581,8 @@ class AdminManagementController extends Controller
 
 
         $admin->permissions()
-
             ->sync($request->permission_ids);
+
 
 
 
@@ -572,6 +597,7 @@ class AdminManagementController extends Controller
             $request
 
         );
+
 
 
 
@@ -597,6 +623,8 @@ class AdminManagementController extends Controller
 
 
     }
+
+
 
 
 
@@ -632,6 +660,7 @@ class AdminManagementController extends Controller
 
 
 
+
         $permissionModel = Permission::find($permission);
 
 
@@ -651,8 +680,8 @@ class AdminManagementController extends Controller
 
 
 
-        $admin->permissions()
 
+        $admin->permissions()
             ->detach($permission);
 
 
@@ -686,13 +715,26 @@ class AdminManagementController extends Controller
     }
 
 
+
+
+
+
+
+
+
+    /**
+     * Deleted admins list
+     */
     public function deleted(): JsonResponse
     {
+
 
         $admins = Admin::onlyTrashed()
             ->with('permissions')
             ->latest('deleted_at')
             ->get();
+
+
 
 
         return response()->json([
@@ -709,13 +751,26 @@ class AdminManagementController extends Controller
 
         ]);
 
+
     }
 
+
+
+
+
+
+
+
+    /**
+     * Restore deleted admin
+     */
     public function restore(int $id): JsonResponse
     {
 
+
         $admin = Admin::onlyTrashed()
             ->find($id);
+
 
 
         if(!$admin){
@@ -732,7 +787,11 @@ class AdminManagementController extends Controller
 
 
 
+
+
         $admin->restore();
+
+
 
 
 
@@ -748,6 +807,8 @@ class AdminManagementController extends Controller
 
 
 
+
+
         return response()->json([
 
             'success'=>true,
@@ -758,9 +819,16 @@ class AdminManagementController extends Controller
 
     }
 
-    
+
+
+
+
+
+
+
+
     /**
-     * Delete admin
+     * Soft delete admin
      */
     public function destroy(int $id): JsonResponse
     {
@@ -785,6 +853,7 @@ class AdminManagementController extends Controller
 
 
 
+
         if($admin->role === 'super_admin'){
 
 
@@ -796,13 +865,13 @@ class AdminManagementController extends Controller
 
             ],403);
 
-
         }
 
 
 
 
-        if(auth('admin')->id() === $admin->id){
+
+        if(auth('admin')->id() == $admin->id){
 
 
             return response()->json([
@@ -813,8 +882,8 @@ class AdminManagementController extends Controller
 
             ],403);
 
-
         }
+
 
 
 
@@ -824,10 +893,14 @@ class AdminManagementController extends Controller
 
 
 
-        $admin->permissions()->detach();
+        $admin->permissions()
+            ->detach();
+
+
 
 
         $admin->delete();
+
 
 
 
@@ -847,6 +920,7 @@ class AdminManagementController extends Controller
 
 
 
+
         return response()->json([
 
             'success'=>true,
@@ -855,12 +929,18 @@ class AdminManagementController extends Controller
 
         ]);
 
-
     }
 
 
+
+
+
+
+
+
+
     /**
-     * Permanently delete admin
+     * Permanent delete
      */
     public function forceDelete(int $id): JsonResponse
     {
@@ -868,6 +948,7 @@ class AdminManagementController extends Controller
 
         $admin = Admin::withTrashed()
             ->find($id);
+
 
 
 
@@ -885,11 +966,8 @@ class AdminManagementController extends Controller
 
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Prevent deleting super admin
-        |--------------------------------------------------------------------------
-        */
+
+
 
         if($admin->role === 'super_admin'){
 
@@ -902,7 +980,16 @@ class AdminManagementController extends Controller
 
             ],403);
 
+
         }
+
+
+
+
+
+
+        $email = $admin->email;
+
 
 
 
@@ -911,32 +998,30 @@ class AdminManagementController extends Controller
 
 
 
-            /*
-            | Remove permissions
-            */
+            // remove permission pivot
 
             $admin->permissions()
                 ->detach();
 
 
 
-            /*
-            | Remove activity logs
-            */
+
+            // remove logs linked with admin
 
             $admin->activityLogs()
                 ->delete();
 
 
 
-            /*
-            | Permanent delete
-            */
+
+            // permanent delete
 
             $admin->forceDelete();
 
 
+
         });
+
 
 
 
@@ -946,11 +1031,13 @@ class AdminManagementController extends Controller
 
             'ADMIN_FORCE_DELETED',
 
-            'Permanently deleted admin ID: '.$id,
+            'Permanently deleted admin: '.$email,
 
             request()
 
         );
+
+
 
 
 
@@ -962,6 +1049,7 @@ class AdminManagementController extends Controller
             'message'=>'Admin permanently deleted successfully.'
 
         ]);
+
 
     }
 

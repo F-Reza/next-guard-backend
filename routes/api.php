@@ -31,20 +31,18 @@ use App\Http\Controllers\Api\V1\AdminManagementController;
 
 
 
-
-Route::prefix('v1')->group(function () {
+Route::prefix('v1')->group(function(){
 
 
 
 /*
 |--------------------------------------------------------------------------
-| Health
+| HEALTH
 |--------------------------------------------------------------------------
 */
 
 
-Route::get('/health', function(){
-
+Route::get('/health',function(){
 
     return response()->json([
 
@@ -56,8 +54,8 @@ Route::get('/health', function(){
 
     ]);
 
-
 });
+
 
 
 
@@ -65,7 +63,7 @@ Route::get('/health', function(){
 
 /*
 |--------------------------------------------------------------------------
-| User Public Auth
+| USER AUTH
 |--------------------------------------------------------------------------
 */
 
@@ -91,9 +89,11 @@ Route::post(
 
 
 
+
+
 /*
 |--------------------------------------------------------------------------
-| Admin Login
+| ADMIN LOGIN
 |--------------------------------------------------------------------------
 */
 
@@ -136,10 +136,10 @@ Route::middleware('auth:api')
 
 
 
+
+
     /*
-    |--------------------------------------------------------------------------
     | Devices
-    |--------------------------------------------------------------------------
     */
 
 
@@ -170,10 +170,10 @@ Route::middleware('auth:api')
 
 
 
+
+
     /*
-    |--------------------------------------------------------------------------
     | Protection
-    |--------------------------------------------------------------------------
     */
 
 
@@ -206,10 +206,9 @@ Route::middleware('auth:api')
 
 
 
+
     /*
-    |--------------------------------------------------------------------------
     | Trial
-    |--------------------------------------------------------------------------
     */
 
 
@@ -237,9 +236,7 @@ Route::middleware('auth:api')
 
 
     /*
-    |--------------------------------------------------------------------------
     | Subscription
-    |--------------------------------------------------------------------------
     */
 
 
@@ -270,10 +267,10 @@ Route::middleware('auth:api')
 
 
 
+
+
     /*
-    |--------------------------------------------------------------------------
-    | License Redeem
-    |--------------------------------------------------------------------------
+    | License redeem
     */
 
 
@@ -284,9 +281,6 @@ Route::middleware('auth:api')
 
 
 });
-
-
-
 
 
 
@@ -306,314 +300,345 @@ Route::middleware('auth:admin')
 
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard
+    |--------------------------------------------------------------------------
+    */
 
 
-
-/*
-|--------------------------------------------------------------------------
-| Dashboard
-|--------------------------------------------------------------------------
-*/
+    Route::middleware('permission:view_dashboard')
+    ->group(function(){
 
 
-Route::middleware('permission:view_dashboard')
-->get(
-    '/dashboard',
-    [AdminDashboardController::class,'index']
-);
+        Route::get(
+            '/dashboard',
+            [AdminDashboardController::class,'index']
+        );
 
 
-
-Route::middleware('permission:view_dashboard')
-->get(
-    '/statistics',
-    [AdminStatisticsController::class,'index']
-);
+        Route::get(
+            '/statistics',
+            [AdminStatisticsController::class,'index']
+        );
 
 
+    });
 
 
-Route::middleware('permission:view_logs')
-->get(
-    '/activity-logs',
-    [AdminActivityLogController::class,'index']
-);
-
-
-
-
-
-
-
-
-
-/*
-|--------------------------------------------------------------------------
-| Users
-|--------------------------------------------------------------------------
-*/
-
-
-Route::middleware('permission:manage_users')
-->group(function(){
-
-
-    Route::get(
-        '/users',
-        [AdminUserController::class,'index']
-    );
-
-
-    Route::get(
-        '/users/{id}',
-        [AdminUserController::class,'show']
-    );
-
-
-});
-
-
-
-
-
-
-
-
-
-/*
-|--------------------------------------------------------------------------
-| Admin Management
-|--------------------------------------------------------------------------
-*/
-
-
-Route::middleware('permission:manage_admins')
-->group(function(){
 
 
 
     /*
-    IMPORTANT:
-    deleted must be before {id}
+    |--------------------------------------------------------------------------
+    | Logs
+    |--------------------------------------------------------------------------
     */
 
 
-    Route::get(
-        '/admins/deleted',
-        [AdminManagementController::class,'deleted']
+    Route::middleware('permission:view_logs')
+    ->get(
+        '/activity-logs',
+        [AdminActivityLogController::class,'index']
     );
 
 
 
-    Route::get(
-        '/admins',
-        [AdminManagementController::class,'index']
-    );
-
-
-
-    Route::post(
-        '/admins',
-        [AdminManagementController::class,'store']
-    );
-
-
-
-    Route::get(
-        '/admins/{id}',
-        [AdminManagementController::class,'show']
-    );
-
-
-
-    Route::put(
-        '/admins/{id}',
-        [AdminManagementController::class,'update']
-    );
-
-
-
-    Route::post(
-        '/admins/{id}/permissions',
-        [AdminManagementController::class,'permissions']
-    );
-
-
-
-    Route::delete(
-        '/admins/{id}/permissions/{permission}',
-        [AdminManagementController::class,'removePermission']
-    );
-
-
-
-    Route::post(
-        '/admins/{id}/reset-password',
-        [AdminManagementController::class,'resetPassword']
-    );
 
 
 
     /*
-    Soft delete
+    |--------------------------------------------------------------------------
+    | Users
+    |--------------------------------------------------------------------------
     */
 
 
-    Route::delete(
-        '/admins/{id}',
-        [AdminManagementController::class,'destroy']
-    );
+    Route::middleware('permission:manage_users')
+    ->group(function(){
+
+
+        Route::get(
+            '/users',
+            [AdminUserController::class,'index']
+        );
+
+
+        Route::get(
+            '/users/{id}',
+            [AdminUserController::class,'show']
+        );
+
+
+    });
+
 
 
 
     /*
-    Restore
+    |--------------------------------------------------------------------------
+    | Admin Management
+    |--------------------------------------------------------------------------
     */
 
 
-    Route::post(
-        '/admins/{id}/restore',
-        [AdminManagementController::class,'restore']
-    );
+    Route::middleware('permission:manage_admins')
+    ->group(function(){
+
+
+        /*
+        | IMPORTANT:
+        | Static route must be before {id}
+        */
+
+
+        Route::get(
+            '/admins/deleted',
+            [AdminManagementController::class,'deleted']
+        );
+
+
+
+        Route::get(
+            '/admins',
+            [AdminManagementController::class,'index']
+        );
+
+
+
+        Route::post(
+            '/admins',
+            [AdminManagementController::class,'store']
+        );
+
+
+
+        Route::get(
+            '/admins/{id}',
+            [AdminManagementController::class,'show']
+        );
+
+
+
+        Route::put(
+            '/admins/{id}',
+            [AdminManagementController::class,'update']
+        );
+
+
+
+        /*
+        | Permission assign
+        */
+
+
+        Route::post(
+            '/admins/{id}/permissions',
+            [AdminManagementController::class,'permissions']
+        );
+
+
+
+        Route::delete(
+            '/admins/{id}/permissions/{permission}',
+            [AdminManagementController::class,'removePermission']
+        );
+
+
+
+        /*
+        | Password reset
+        */
+
+
+        Route::post(
+            '/admins/{id}/reset-password',
+            [AdminManagementController::class,'resetPassword']
+        );
+
+
+
+        /*
+        | Soft delete
+        */
+
+
+        Route::delete(
+            '/admins/{id}',
+            [AdminManagementController::class,'destroy']
+        );
+
+
+
+        /*
+        | Restore
+        */
+
+
+        Route::post(
+            '/admins/{id}/restore',
+            [AdminManagementController::class,'restore']
+        );
+
+
+
+        /*
+        | Permanent delete
+        */
+
+
+        Route::delete(
+            '/admins/{id}/force-delete',
+            [AdminManagementController::class,'forceDelete']
+        );
+
+
+
+    });
+
+
+
+
+
+
 
 
 
     /*
-    Permanent delete
+    |--------------------------------------------------------------------------
+    | Subscription Plans
+    |--------------------------------------------------------------------------
     */
 
 
-    Route::delete(
-        '/admins/{id}/force-delete',
-        [AdminManagementController::class,'forceDelete']
-    );
+    Route::middleware('permission:manage_plans')
+    ->group(function(){
 
 
 
-});
+        Route::get(
+            '/plans',
+            [SubscriptionPlanController::class,'index']
+        );
 
 
 
+        Route::post(
+            '/plans',
+            [SubscriptionPlanController::class,'store']
+        );
 
 
 
+    });
 
 
 
 
-/*
-|--------------------------------------------------------------------------
-| Plans
-|--------------------------------------------------------------------------
-*/
 
 
-Route::get(
-    '/plans',
-    [SubscriptionPlanController::class,'index']
-);
 
 
 
-Route::middleware('permission:manage_plans')
-->post(
-    '/plans',
-    [SubscriptionPlanController::class,'store']
-);
+    /*
+    |--------------------------------------------------------------------------
+    | License Management
+    |--------------------------------------------------------------------------
+    */
 
 
+    Route::middleware('permission:manage_licenses')
+    ->group(function(){
 
 
 
+        Route::post(
+            '/licenses/generate',
+            [AdminLicenseController::class,'generate']
+        );
 
 
 
+        Route::get(
+            '/licenses',
+            [AdminLicenseController::class,'index']
+        );
 
-/*
-|--------------------------------------------------------------------------
-| Licenses
-|--------------------------------------------------------------------------
-*/
 
 
-Route::middleware('permission:manage_licenses')
-->group(function(){
+    });
 
 
-    Route::post(
-        '/licenses/generate',
-        [AdminLicenseController::class,'generate']
-    );
 
 
-    Route::get(
-        '/licenses',
-        [AdminLicenseController::class,'index']
-    );
 
 
-});
 
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Subscription Management
+    |--------------------------------------------------------------------------
+    */
 
 
+    Route::middleware('permission:manage_subscriptions')
+    ->group(function(){
 
 
 
+        Route::get(
+            '/subscriptions',
+            [AdminSubscriptionController::class,'index']
+        );
 
-/*
-|--------------------------------------------------------------------------
-| Subscriptions
-|--------------------------------------------------------------------------
-*/
 
 
-Route::middleware('permission:manage_subscriptions')
-->group(function(){
+        Route::post(
+            '/subscriptions/{id}/cancel',
+            [AdminSubscriptionController::class,'cancel']
+        );
 
 
-    Route::get(
-        '/subscriptions',
-        [AdminSubscriptionController::class,'index']
-    );
 
+    });
 
-    Route::post(
-        '/subscriptions/{id}/cancel',
-        [AdminSubscriptionController::class,'cancel']
-    );
 
 
-});
 
 
 
 
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Protection Rules
+    |--------------------------------------------------------------------------
+    */
 
 
+    Route::middleware('permission:manage_rules')
+    ->group(function(){
 
-/*
-|--------------------------------------------------------------------------
-| Protection Rules
-|--------------------------------------------------------------------------
-*/
 
 
-Route::get(
-    '/protection-rules',
-    [ProtectionRuleController::class,'index']
-);
+        Route::get(
+            '/protection-rules',
+            [ProtectionRuleController::class,'index']
+        );
 
 
 
-Route::middleware('permission:manage_rules')
-->post(
-    '/protection-rules',
-    [ProtectionRuleController::class,'store']
-);
+        Route::post(
+            '/protection-rules',
+            [ProtectionRuleController::class,'store']
+        );
+
+
+
+    });
 
 
 

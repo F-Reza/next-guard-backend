@@ -25,6 +25,7 @@ class CheckPermission
 
         if(!$admin){
 
+
             return response()->json([
 
                 'success'=>false,
@@ -33,52 +34,83 @@ class CheckPermission
 
             ],401);
 
+
         }
+
+
 
 
 
 
         /*
         |--------------------------------------------------------------------------
-        | Super Admin Bypass
+        | Super Admin Full Access
         |--------------------------------------------------------------------------
         */
 
+
         if($admin->role === 'super_admin'){
 
+
             return $next($request);
+
 
         }
 
 
 
 
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Permission Check
+        |--------------------------------------------------------------------------
+        */
+
+
         $hasPermission = $admin
             ->permissions()
-            ->where(
-                'name',
-                $permission
-            )
+            ->where('name',$permission)
             ->exists();
+
+
+
 
 
 
 
         if(!$hasPermission){
 
+
+
             return response()->json([
+
 
                 'success'=>false,
 
-                'message'=>'Permission denied.'
+
+                'message'=>'Permission denied.',
+
+
+                'required_permission'=>$permission
+
 
             ],403);
+
+
 
         }
 
 
 
+
+
+
+
         return $next($request);
+
 
     }
 
