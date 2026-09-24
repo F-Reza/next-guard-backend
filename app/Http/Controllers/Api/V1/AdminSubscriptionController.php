@@ -5,12 +5,17 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Subscription;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use App\Services\AdminActivityLogger;
 
 
 class AdminSubscriptionController extends Controller
 {
 
 
+    /**
+     * List subscriptions
+     */
     public function index(): JsonResponse
     {
 
@@ -44,8 +49,17 @@ class AdminSubscriptionController extends Controller
 
 
 
-    public function cancel(int $id): JsonResponse
+
+
+    /**
+     * Cancel subscription
+     */
+    public function cancel(
+        Request $request,
+        int $id
+    ): JsonResponse
     {
+
 
         $subscription = Subscription::find($id);
 
@@ -65,11 +79,41 @@ class AdminSubscriptionController extends Controller
 
 
 
+
+
+
         $subscription->update([
 
             'status'=>'cancelled'
 
         ]);
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Activity Log
+        |--------------------------------------------------------------------------
+        */
+
+
+        AdminActivityLogger::log(
+
+            'SUBSCRIPTION_CANCELLED',
+
+            'Cancelled subscription ID: '.$subscription->id,
+
+            $request
+
+        );
+
+
+
+
 
 
 
