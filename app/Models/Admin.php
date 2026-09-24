@@ -6,6 +6,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 
 class Admin extends Authenticatable implements JWTSubject
@@ -78,6 +79,14 @@ class Admin extends Authenticatable implements JWTSubject
             AdminActivityLog::class
         );
 
+    }
+
+    public function permissions(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Permission::class,
+            'admin_permissions'
+        );
     }
 
 

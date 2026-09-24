@@ -28,7 +28,6 @@ use App\Http\Controllers\Api\V1\AdminActivityLogController;
 
 
 
-
 Route::prefix('v1')->group(function () {
 
 
@@ -60,7 +59,7 @@ Route::prefix('v1')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | User Public Auth
+    | USER PUBLIC AUTH
     |--------------------------------------------------------------------------
     */
 
@@ -88,7 +87,7 @@ Route::prefix('v1')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Admin Public Auth
+    | ADMIN PUBLIC AUTH
     |--------------------------------------------------------------------------
     */
 
@@ -104,9 +103,10 @@ Route::prefix('v1')->group(function () {
 
 
 
+
     /*
     |--------------------------------------------------------------------------
-    | USER PROTECTED API
+    | USER PROTECTED
     |--------------------------------------------------------------------------
     */
 
@@ -115,10 +115,6 @@ Route::prefix('v1')->group(function () {
     ->group(function(){
 
 
-
-        /*
-        | User Auth
-        */
 
         Route::get(
             '/auth/me',
@@ -130,7 +126,6 @@ Route::prefix('v1')->group(function () {
             '/auth/logout',
             [AuthController::class,'logout']
         );
-
 
 
 
@@ -162,7 +157,6 @@ Route::prefix('v1')->group(function () {
             '/devices/{id}/heartbeat',
             [DeviceController::class,'heartbeat']
         );
-
 
 
 
@@ -257,9 +251,8 @@ Route::prefix('v1')->group(function () {
 
 
 
-
         /*
-        | License
+        | License Redeem
         */
 
 
@@ -267,7 +260,6 @@ Route::prefix('v1')->group(function () {
             '/license-codes/redeem',
             [LicenseCodeController::class,'redeem']
         );
-
 
 
     });
@@ -278,9 +270,11 @@ Route::prefix('v1')->group(function () {
 
 
 
+
+
     /*
     |--------------------------------------------------------------------------
-    | ADMIN PROTECTED API
+    | ADMIN PROTECTED
     |--------------------------------------------------------------------------
     */
 
@@ -291,51 +285,77 @@ Route::prefix('v1')->group(function () {
 
 
 
+
+
         /*
+        |--------------------------------------------------------------------------
         | Dashboard
+        |--------------------------------------------------------------------------
         */
 
 
-        Route::get(
+        Route::middleware('permission:view_dashboard')
+        ->get(
             '/dashboard',
             [AdminDashboardController::class,'index']
         );
 
 
-        Route::get(
+
+        Route::middleware('permission:view_dashboard')
+        ->get(
             '/statistics',
             [AdminStatisticsController::class,'index']
         );
 
-        Route::get(
+
+
+
+        Route::middleware('permission:view_logs')
+        ->get(
             '/activity-logs',
             [AdminActivityLogController::class,'index']
         );
 
 
 
+
+
+
         /*
-        | Users Management
+        |--------------------------------------------------------------------------
+        | Users
+        |--------------------------------------------------------------------------
         */
 
 
-        Route::get(
-            '/users',
-            [AdminUserController::class,'index']
-        );
+        Route::middleware('permission:manage_users')
+        ->group(function(){
 
 
-        Route::get(
-            '/users/{id}',
-            [AdminUserController::class,'show']
-        );
+            Route::get(
+                '/users',
+                [AdminUserController::class,'index']
+            );
+
+
+            Route::get(
+                '/users/{id}',
+                [AdminUserController::class,'show']
+            );
+
+
+        });
+
 
 
 
 
 
         /*
-        | Subscription Plans
+        |--------------------------------------------------------------------------
+        | Plans
+        |--------------------------------------------------------------------------
         */
 
 
@@ -345,7 +365,9 @@ Route::prefix('v1')->group(function () {
         );
 
 
-        Route::post(
+
+        Route::middleware('permission:manage_plans')
+        ->post(
             '/plans',
             [SubscriptionPlanController::class,'store']
         );
@@ -354,48 +376,74 @@ Route::prefix('v1')->group(function () {
 
 
 
+
+
         /*
-        | License Management
+        |--------------------------------------------------------------------------
+        | Licenses
+        |--------------------------------------------------------------------------
         */
 
 
-        Route::post(
-            '/licenses/generate',
-            [AdminLicenseController::class,'generate']
-        );
+        Route::middleware('permission:manage_licenses')
+        ->group(function(){
 
 
-        Route::get(
-            '/licenses',
-            [AdminLicenseController::class,'index']
-        );
+            Route::post(
+                '/licenses/generate',
+                [AdminLicenseController::class,'generate']
+            );
+
+
+            Route::get(
+                '/licenses',
+                [AdminLicenseController::class,'index']
+            );
+
+
+        });
+
+
 
 
 
 
 
         /*
-        | Subscription Management
+        |--------------------------------------------------------------------------
+        | Subscriptions
+        |--------------------------------------------------------------------------
         */
 
 
-        Route::get(
-            '/subscriptions',
-            [AdminSubscriptionController::class,'index']
-        );
+        Route::middleware('permission:manage_subscriptions')
+        ->group(function(){
 
 
-        Route::post(
-            '/subscriptions/{id}/cancel',
-            [AdminSubscriptionController::class,'cancel']
-        );
+            Route::get(
+                '/subscriptions',
+                [AdminSubscriptionController::class,'index']
+            );
+
+
+            Route::post(
+                '/subscriptions/{id}/cancel',
+                [AdminSubscriptionController::class,'cancel']
+            );
+
+
+        });
+
+
 
 
 
 
 
         /*
+        |--------------------------------------------------------------------------
         | Protection Rules
+        |--------------------------------------------------------------------------
         */
 
 
@@ -405,12 +453,12 @@ Route::prefix('v1')->group(function () {
         );
 
 
-        Route::post(
+
+        Route::middleware('permission:manage_rules')
+        ->post(
             '/protection-rules',
             [ProtectionRuleController::class,'store']
         );
-
-        
 
 
 
