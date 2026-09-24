@@ -2,6 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 
+
+/*
+|--------------------------------------------------------------------------
+| Controllers
+|--------------------------------------------------------------------------
+*/
+
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\TrialController;
@@ -11,26 +18,34 @@ use App\Http\Controllers\Api\V1\SubscriptionPlanController;
 use App\Http\Controllers\Api\V1\SubscriptionController;
 use App\Http\Controllers\Api\V1\LicenseCodeController;
 
+use App\Http\Controllers\Api\V1\AdminAuthController;
+use App\Http\Controllers\Api\V1\AdminDashboardController;
+use App\Http\Controllers\Api\V1\AdminUserController;
+use App\Http\Controllers\Api\V1\AdminLicenseController;
+use App\Http\Controllers\Api\V1\AdminSubscriptionController;
+
 
 
 Route::prefix('v1')->group(function () {
 
 
+
     /*
     |--------------------------------------------------------------------------
-    | Health Check
+    | Health
     |--------------------------------------------------------------------------
     */
+
 
     Route::get('/health', function () {
 
         return response()->json([
 
-            'success' => true,
+            'success'=>true,
 
-            'message' => 'Next Guard API is running.',
+            'message'=>'Next Guard API running.',
 
-            'version' => 'v1',
+            'version'=>'v1'
 
         ]);
 
@@ -38,9 +53,11 @@ Route::prefix('v1')->group(function () {
 
 
 
+
+
     /*
     |--------------------------------------------------------------------------
-    | Public Authentication
+    | User Public Auth
     |--------------------------------------------------------------------------
     */
 
@@ -68,19 +85,36 @@ Route::prefix('v1')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Protected API
+    | Admin Public Auth
     |--------------------------------------------------------------------------
     */
 
 
-    Route::middleware('auth:api')->group(function () {
+    Route::post(
+        '/admin/login',
+        [AdminAuthController::class,'login']
+    );
+
+
+
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | USER PROTECTED API
+    |--------------------------------------------------------------------------
+    */
+
+
+    Route::middleware('auth:api')
+    ->group(function(){
 
 
 
         /*
-        |--------------------------------------------------------------------------
-        | Authentication
-        |--------------------------------------------------------------------------
+        | User Auth
         */
 
         Route::get(
@@ -99,9 +133,7 @@ Route::prefix('v1')->group(function () {
 
 
         /*
-        |--------------------------------------------------------------------------
         | Devices
-        |--------------------------------------------------------------------------
         */
 
 
@@ -133,16 +165,12 @@ Route::prefix('v1')->group(function () {
 
 
         /*
-        |--------------------------------------------------------------------------
-        | Device Protection
-        |--------------------------------------------------------------------------
-        |
-        | Active subscription required
-        |
+        | Protection
         */
 
 
-        Route::middleware('subscription')->group(function () {
+        Route::middleware('subscription')
+        ->group(function(){
 
 
             Route::get(
@@ -170,9 +198,7 @@ Route::prefix('v1')->group(function () {
 
 
         /*
-        |--------------------------------------------------------------------------
-        | Trial System
-        |--------------------------------------------------------------------------
+        | Trial
         */
 
 
@@ -198,37 +224,7 @@ Route::prefix('v1')->group(function () {
 
 
         /*
-        |--------------------------------------------------------------------------
-        | Protection Rules
-        |--------------------------------------------------------------------------
-        */
-
-
-        Route::get(
-            '/protection-rules',
-            [ProtectionRuleController::class,'index']
-        );
-
-
-        Route::post(
-            '/protection-rules',
-            [ProtectionRuleController::class,'store']
-        );
-
-
-        Route::get(
-            '/devices/{id}/protection/rules',
-            [ProtectionRuleController::class,'deviceRules']
-        );
-
-
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Subscription Plans
-        |--------------------------------------------------------------------------
+        | Subscription
         */
 
 
@@ -236,22 +232,6 @@ Route::prefix('v1')->group(function () {
             '/subscription-plans',
             [SubscriptionPlanController::class,'index']
         );
-
-
-        Route::post(
-            '/subscription-plans',
-            [SubscriptionPlanController::class,'store']
-        );
-
-
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Subscription
-        |--------------------------------------------------------------------------
-        */
 
 
         Route::post(
@@ -272,19 +252,150 @@ Route::prefix('v1')->group(function () {
         );
 
 
+
+
+
         /*
-        |--------------------------------------------------------------------------
-        | License Codes
-        |--------------------------------------------------------------------------
+        | License
         */
-        Route::post(
-            '/license-codes/generate',
-            [LicenseCodeController::class,'generate']
-        );
+
 
         Route::post(
             '/license-codes/redeem',
             [LicenseCodeController::class,'redeem']
+        );
+
+
+
+    });
+
+
+
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN PROTECTED API
+    |--------------------------------------------------------------------------
+    */
+
+
+    Route::middleware('auth:admin')
+    ->prefix('admin')
+    ->group(function(){
+
+
+
+        /*
+        | Dashboard
+        */
+
+
+        Route::get(
+            '/dashboard',
+            [AdminDashboardController::class,'index']
+        );
+
+
+
+
+
+        /*
+        | Users Management
+        */
+
+
+        Route::get(
+            '/users',
+            [AdminUserController::class,'index']
+        );
+
+
+        Route::get(
+            '/users/{id}',
+            [AdminUserController::class,'show']
+        );
+
+
+
+
+
+        /*
+        | Subscription Plans
+        */
+
+
+        Route::get(
+            '/plans',
+            [SubscriptionPlanController::class,'index']
+        );
+
+
+        Route::post(
+            '/plans',
+            [SubscriptionPlanController::class,'store']
+        );
+
+
+
+
+
+        /*
+        | License Management
+        */
+
+
+        Route::post(
+            '/licenses/generate',
+            [AdminLicenseController::class,'generate']
+        );
+
+
+        Route::get(
+            '/licenses',
+            [AdminLicenseController::class,'index']
+        );
+
+
+
+
+
+        /*
+        | Subscription Management
+        */
+
+
+        Route::get(
+            '/subscriptions',
+            [AdminSubscriptionController::class,'index']
+        );
+
+
+        Route::post(
+            '/subscriptions/{id}/cancel',
+            [AdminSubscriptionController::class,'cancel']
+        );
+
+
+
+
+
+        /*
+        | Protection Rules
+        */
+
+
+        Route::get(
+            '/protection-rules',
+            [ProtectionRuleController::class,'index']
+        );
+
+
+        Route::post(
+            '/protection-rules',
+            [ProtectionRuleController::class,'store']
         );
 
 
