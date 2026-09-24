@@ -298,7 +298,96 @@ class AdminManagementController extends Controller
     }
 
 
+    public function resetPassword(
+        Request $request,
+        int $id
+    ): JsonResponse
+    {
 
+
+        $admin = Admin::find($id);
+
+
+
+        if(!$admin){
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Admin not found.'
+
+            ],404);
+
+        }
+
+
+
+        $validator = Validator::make($request->all(),[
+
+            'password'=>[
+                'required',
+                'string',
+                'min:6'
+            ]
+
+        ]);
+
+
+
+        if($validator->fails()){
+
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Validation failed.',
+
+                'errors'=>$validator->errors()
+
+            ],422);
+
+        }
+
+
+
+
+        $admin->update([
+
+            'password'=>$request->password,
+
+            'force_password_change'=>true
+
+        ]);
+
+
+
+
+
+        AdminActivityLogger::log(
+
+            'ADMIN_PASSWORD_RESET',
+
+            'Reset password for admin ID: '.$admin->id,
+
+            $request
+
+        );
+
+
+
+
+
+        return response()->json([
+
+            'success'=>true,
+
+            'message'=>'Admin password reset successfully.'
+
+        ]);
+
+    }
 
 
     /**

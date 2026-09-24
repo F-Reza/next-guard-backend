@@ -369,7 +369,7 @@ Route::prefix('v1')->group(function () {
             '/admins/{id}',
             [AdminManagementController::class,'update']
         );
-        
+
         Route::get(
             '/admins/{id}',
             [AdminManagementController::class,'show']
@@ -381,8 +381,24 @@ Route::prefix('v1')->group(function () {
             [AdminManagementController::class,'permissions']
         );
 
+        Route::post(
+            '/admins/{id}/reset-password',
+            [AdminManagementController::class,'resetPassword']
+        );
+
+        
+        Route::delete(
+            '/admins/{id}',
+            [AdminManagementController::class,'destroy']
+        );
 
 
+        Route::delete(
+            '/admins/{id}/permissions/{permission}',
+            [AdminManagementController::class,'removePermission']
+        );
+
+        
 
         /*
         |--------------------------------------------------------------------------

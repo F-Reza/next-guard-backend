@@ -23,6 +23,7 @@ class Admin extends Authenticatable implements JWTSubject
         'password',
         'role',
         'status',
+        'force_password_change',
         'last_login_at',
         'created_by',
 
@@ -45,6 +46,8 @@ class Admin extends Authenticatable implements JWTSubject
             'password'=>'hashed',
 
             'last_login_at'=>'datetime',
+
+            'force_password_change'=>'boolean',
 
         ];
     }
