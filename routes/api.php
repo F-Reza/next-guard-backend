@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\V1\AdminLicenseController;
 use App\Http\Controllers\Api\V1\AdminSubscriptionController;
 use App\Http\Controllers\Api\V1\AdminStatisticsController;
 use App\Http\Controllers\Api\V1\AdminActivityLogController;
+use App\Http\Controllers\Api\V1\AdminManagementController;
 
 
 
@@ -348,6 +349,33 @@ Route::prefix('v1')->group(function () {
         });
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | Admins
+        |--------------------------------------------------------------------------
+        */
+        Route::get(
+            '/admins',
+            [AdminManagementController::class,'index']
+        );
+
+
+        Route::post(
+            '/admins',
+            [AdminManagementController::class,'store']
+        );
+
+
+        Route::get(
+            '/admins/{id}',
+            [AdminManagementController::class,'show']
+        );
+
+
+        Route::post(
+            '/admins/{id}/permissions',
+            [AdminManagementController::class,'permissions']
+        );
 
 
 

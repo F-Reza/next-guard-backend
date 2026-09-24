@@ -7,6 +7,7 @@ use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 
 class Admin extends Authenticatable implements JWTSubject
@@ -23,6 +24,7 @@ class Admin extends Authenticatable implements JWTSubject
         'role',
         'status',
         'last_login_at',
+        'created_by',
 
     ];
 
@@ -49,9 +51,7 @@ class Admin extends Authenticatable implements JWTSubject
 
 
 
-    /**
-     * JWT identifier
-     */
+
     public function getJWTIdentifier()
     {
         return $this->getKey();
@@ -59,9 +59,7 @@ class Admin extends Authenticatable implements JWTSubject
 
 
 
-    /**
-     * JWT claims
-     */
+
     public function getJWTCustomClaims(): array
     {
         return [
@@ -70,6 +68,8 @@ class Admin extends Authenticatable implements JWTSubject
 
         ];
     }
+
+
 
 
     public function activityLogs(): HasMany
@@ -81,12 +81,43 @@ class Admin extends Authenticatable implements JWTSubject
 
     }
 
+
+
+
     public function permissions(): BelongsToMany
     {
+
         return $this->belongsToMany(
             Permission::class,
             'admin_permissions'
         );
+
+    }
+
+
+
+
+    public function creator(): BelongsTo
+    {
+
+        return $this->belongsTo(
+            Admin::class,
+            'created_by'
+        );
+
+    }
+
+
+
+
+    public function createdAdmins(): HasMany
+    {
+
+        return $this->hasMany(
+            Admin::class,
+            'created_by'
+        );
+
     }
 
 

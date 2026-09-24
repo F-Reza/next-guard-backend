@@ -58,6 +58,11 @@ class PermissionSeeder extends Seeder
                 'description'=>'View admin activity logs'
             ],
 
+            [
+                'name'=>'manage_admins',
+                'description'=>'Create and manage admin accounts'
+            ],
+
 
         ];
 
