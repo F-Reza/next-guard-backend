@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\TrialController;
 use App\Http\Controllers\Api\V1\DeviceProtectionController;
+use App\Http\Controllers\Api\V1\ProtectionRuleController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -62,12 +63,19 @@ Route::prefix('v1')->group(function () {
         Route::get('/devices/{id}/protection', [DeviceProtectionController::class, 'show']);
         Route::post('/devices/{id}/protection/update', [DeviceProtectionController::class, 'update']);
         Route::post('/devices/{id}/protection/sync', [DeviceProtectionController::class, 'sync']);
-        
+
 
         // Trial Entitlements
         Route::get('/trial/eligibility', [TrialController::class, 'eligibility']);
         Route::post('/trial/start', [TrialController::class, 'start']);
         Route::get('/trial', [TrialController::class, 'show']);
+
+
+        // Protection Rules
+        Route::get('/protection-rules', [ProtectionRuleController::class,'index']);
+        Route::post('/protection-rules', [ProtectionRuleController::class,'store']);
+        Route::get('/devices/{id}/protection/rules', [ProtectionRuleController::class,'deviceRules']);
+
 
     });
 
