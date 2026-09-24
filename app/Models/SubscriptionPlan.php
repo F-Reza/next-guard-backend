@@ -45,4 +45,12 @@ class SubscriptionPlan extends Model
         );
     }
 
+    public function licenseCodes(): HasMany
+    {
+        return $this->hasMany(
+            LicenseCode::class
+        );
+    }
+
+    
 }

@@ -62,13 +62,22 @@ class Device extends Model
         return $this->hasMany(TrialEvent::class);
     }
 
-    
+
     public function subscriptions(): HasMany
     {
         return $this->hasMany(
             Subscription::class
         );
     }
+
+    public function licenseCodes()
+    {
+        return $this->hasMany(
+            LicenseCode::class,
+            'used_device_id'
+        );
+    }
+
     
 
 }

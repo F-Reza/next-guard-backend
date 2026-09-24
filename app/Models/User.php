@@ -96,4 +96,12 @@ class User extends Authenticatable implements JWTSubject
         );
     }
 
+    public function licenseCodes()
+    {
+        return $this->hasMany(
+            LicenseCode::class,
+            'used_by'
+        );
+    }
+
 }

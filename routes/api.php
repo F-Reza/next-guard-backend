@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\DeviceProtectionController;
 use App\Http\Controllers\Api\V1\ProtectionRuleController;
 use App\Http\Controllers\Api\V1\SubscriptionPlanController;
 use App\Http\Controllers\Api\V1\SubscriptionController;
+use App\Http\Controllers\Api\V1\LicenseCodeController;
 
 
 
@@ -268,6 +269,22 @@ Route::prefix('v1')->group(function () {
         Route::get(
             '/subscriptions/current',
             [SubscriptionController::class,'current']
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | License Codes
+        |--------------------------------------------------------------------------
+        */
+        Route::post(
+            '/license-codes/generate',
+            [LicenseCodeController::class,'generate']
+        );
+
+        Route::post(
+            '/license-codes/redeem',
+            [LicenseCodeController::class,'redeem']
         );
 
 
