@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\V1\AdminDashboardController;
 use App\Http\Controllers\Api\V1\AdminUserController;
 use App\Http\Controllers\Api\V1\AdminLicenseController;
 use App\Http\Controllers\Api\V1\AdminSubscriptionController;
+use App\Http\Controllers\Api\V1\AdminStatisticsController;
 
 
 
@@ -300,7 +301,10 @@ Route::prefix('v1')->group(function () {
         );
 
 
-
+        Route::get(
+            '/statistics',
+            [AdminStatisticsController::class,'index']
+        );
 
 
         /*
@@ -398,6 +402,8 @@ Route::prefix('v1')->group(function () {
             '/protection-rules',
             [ProtectionRuleController::class,'store']
         );
+
+        
 
 
 
