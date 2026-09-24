@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\DeviceController;
+use App\Http\Controllers\Api\V1\TrialController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -51,6 +52,12 @@ Route::prefix('v1')->group(function () {
         Route::get('/devices', [DeviceController::class, 'index']);
         Route::get('/devices/{id}', [DeviceController::class, 'show']);
         Route::post('/devices/{id}/heartbeat', [DeviceController::class, 'heartbeat']);
+        
+        // Trial Entitlements
+        Route::get('/trial/eligibility', [TrialController::class, 'eligibility']);
+        Route::post('/trial/start', [TrialController::class, 'start']);
+        Route::get('/trial', [TrialController::class, 'show']);
+
     });
     
 });

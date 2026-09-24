@@ -37,4 +37,13 @@ class Device extends Model
     {
         return $this->hasMany(DeviceSession::class);
     }
+
+    /**
+     * Get the trial events associated with the device.
+     */
+    public function trialEvents()
+    {
+        return $this->hasMany(TrialEvent::class);
+    }
+
 }

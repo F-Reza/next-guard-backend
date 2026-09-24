@@ -67,4 +67,21 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(DeviceSession::class);
     }
+
+    /**
+     * Trial entitlements.
+     */
+    public function trialEntitlements()
+    {
+        return $this->hasMany(TrialEntitlement::class);
+    }
+
+    /**
+     * Trial events.
+     */
+    public function trialEvents()
+    {
+        return $this->hasMany(TrialEvent::class);
+    }
+
 }
