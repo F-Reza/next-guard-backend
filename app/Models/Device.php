@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Device extends Model
 {
@@ -33,17 +34,33 @@ class Device extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function sessions(): HasMany
+    public function deviceSessions(): HasMany
     {
         return $this->hasMany(DeviceSession::class);
+    }
+
+
+    public function trialEntitlements(): HasMany
+    {
+        return $this->hasMany(
+            TrialEntitlement::class
+        );
+    }
+
+    public function protectionSetting(): HasOne
+    {
+        return $this->hasOne(
+            DeviceProtectionSetting::class
+        );
     }
 
     /**
      * Get the trial events associated with the device.
      */
-    public function trialEvents()
+    public function trialEvents(): HasMany
     {
         return $this->hasMany(TrialEvent::class);
     }
+    
 
 }
