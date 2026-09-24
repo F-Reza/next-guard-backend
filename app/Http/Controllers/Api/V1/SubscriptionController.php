@@ -5,14 +5,12 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
-use App\Models\Device;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class SubscriptionController extends Controller
 {
-
 
     /**
      * Activate subscription.
@@ -35,27 +33,35 @@ class SubscriptionController extends Controller
             'source' => [
                 'nullable',
                 'in:payment,license,admin'
+            ],
+
+            'payment_reference' => [
+                'nullable',
+                'string',
+                'max:255'
             ]
 
         ]);
 
 
-        if($validator->fails()){
+        if ($validator->fails()) {
 
             return response()->json([
 
-                'success'=>false,
+                'success' => false,
 
-                'message'=>'Validation failed.',
+                'message' => 'Validation failed.',
 
-                'errors'=>$validator->errors()
+                'errors' => $validator->errors()
 
-            ],422);
+            ], 422);
 
         }
 
 
+
         $user = auth('api')->user();
+
 
 
         $plan = SubscriptionPlan::find(
@@ -63,10 +69,13 @@ class SubscriptionController extends Controller
         );
 
 
+
         $device = null;
 
 
-        if($request->device_id){
+
+        if ($request->device_id) {
+
 
             $device = $user->devices()
                 ->where(
@@ -76,15 +85,16 @@ class SubscriptionController extends Controller
                 ->first();
 
 
-            if(!$device){
+
+            if (!$device) {
 
                 return response()->json([
 
-                    'success'=>false,
+                    'success' => false,
 
-                    'message'=>'Device not found.'
+                    'message' => 'Device not found.'
 
-                ],404);
+                ], 404);
 
             }
 
@@ -103,19 +113,22 @@ class SubscriptionController extends Controller
 
         $subscription = Subscription::create([
 
-            'user_id'=>$user->id,
+            'user_id' => $user->id,
 
-            'subscription_plan_id'=>$plan->id,
+            'subscription_plan_id' => $plan->id,
 
-            'device_id'=>$device?->id,
+            'device_id' => $device?->id,
 
-            'starts_at'=>$startsAt,
+            'starts_at' => $startsAt,
 
-            'expires_at'=>$expiresAt,
+            'expires_at' => $expiresAt,
 
-            'status'=>'active',
+            'status' => 'active',
 
-            'source'=>$request->source ?? 'payment',
+            'source' => $request->source ?? 'payment',
+
+            'payment_reference' =>
+                $request->payment_reference,
 
         ]);
 
@@ -123,15 +136,18 @@ class SubscriptionController extends Controller
 
         return response()->json([
 
-            'success'=>true,
+            'success' => true,
 
-            'message'=>'Subscription activated successfully.',
+            'message' => 'Subscription activated successfully.',
 
-            'data'=>[
-                'subscription'=>$subscription
+            'data' => [
+
+                'subscription' => $subscription
+                    ->load('plan')
+
             ]
 
-        ],201);
+        ], 201);
 
     }
 
@@ -139,12 +155,13 @@ class SubscriptionController extends Controller
 
 
     /**
-     * Current user subscriptions.
+     * Get all user subscriptions.
      */
     public function index(): JsonResponse
     {
 
         $user = auth('api')->user();
+
 
 
         $subscriptions = $user->subscriptions()
@@ -154,14 +171,139 @@ class SubscriptionController extends Controller
 
 
 
+        foreach ($subscriptions as $subscription) {
+
+
+            if (
+
+                $subscription->status === 'active'
+
+                &&
+
+                $subscription->expires_at
+
+                &&
+
+                $subscription->expires_at->isPast()
+
+            ) {
+
+
+                $subscription->update([
+
+                    'status' => 'expired'
+
+                ]);
+
+            }
+
+        }
+
+
+
         return response()->json([
 
-            'success'=>true,
+            'success' => true,
 
-            'message'=>'Subscriptions retrieved.',
+            'message' => 'Subscriptions retrieved.',
 
-            'data'=>[
-                'subscriptions'=>$subscriptions
+            'data' => [
+
+                'subscriptions' => $subscriptions
+
+            ]
+
+        ]);
+
+    }
+
+
+
+
+    /**
+     * Get current active subscription.
+     */
+    public function current(): JsonResponse
+    {
+
+        $user = auth('api')->user();
+
+
+
+        $subscription = $user->subscriptions()
+
+            ->where(
+                'status',
+                'active'
+            )
+
+            ->with('plan')
+
+            ->latest()
+
+            ->first();
+
+
+
+        if (!$subscription) {
+
+
+            return response()->json([
+
+                'success' => false,
+
+                'message' =>
+                    'No active subscription found.'
+
+            ], 404);
+
+        }
+
+
+
+        if (
+
+            $subscription->expires_at
+
+            &&
+
+            $subscription->expires_at->isPast()
+
+        ) {
+
+
+            $subscription->update([
+
+                'status' => 'expired'
+
+            ]);
+
+
+
+            return response()->json([
+
+                'success' => false,
+
+                'message' =>
+                    'Subscription expired.'
+
+            ], 403);
+
+        }
+
+
+
+        return response()->json([
+
+            'success' => true,
+
+            'message' =>
+                'Active subscription retrieved.',
+
+            'data' => [
+
+                'subscription' => $subscription
+
             ]
 
         ]);
