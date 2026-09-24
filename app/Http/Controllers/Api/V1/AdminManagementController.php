@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\Permission;
 use App\Services\AdminActivityLogger;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -684,11 +686,79 @@ class AdminManagementController extends Controller
     }
 
 
+    public function deleted(): JsonResponse
+    {
+
+        $admins = Admin::onlyTrashed()
+            ->with('permissions')
+            ->latest('deleted_at')
+            ->get();
+
+
+        return response()->json([
+
+            'success'=>true,
+
+            'message'=>'Deleted admins retrieved.',
+
+            'data'=>[
+
+                'admins'=>$admins
+
+            ]
+
+        ]);
+
+    }
+
+    public function restore(int $id): JsonResponse
+    {
+
+        $admin = Admin::onlyTrashed()
+            ->find($id);
+
+
+        if(!$admin){
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Deleted admin not found.'
+
+            ],404);
+
+        }
 
 
 
+        $admin->restore();
 
 
+
+        AdminActivityLogger::log(
+
+            'ADMIN_RESTORED',
+
+            'Restored admin: '.$admin->email,
+
+            request()
+
+        );
+
+
+
+        return response()->json([
+
+            'success'=>true,
+
+            'message'=>'Admin restored successfully.'
+
+        ]);
+
+    }
+
+    
     /**
      * Delete admin
      */
@@ -788,6 +858,112 @@ class AdminManagementController extends Controller
 
     }
 
+
+    /**
+     * Permanently delete admin
+     */
+    public function forceDelete(int $id): JsonResponse
+    {
+
+
+        $admin = Admin::withTrashed()
+            ->find($id);
+
+
+
+        if(!$admin){
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Admin not found.'
+
+            ],404);
+
+        }
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent deleting super admin
+        |--------------------------------------------------------------------------
+        */
+
+        if($admin->role === 'super_admin'){
+
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Super admin cannot be permanently deleted.'
+
+            ],403);
+
+        }
+
+
+
+
+        DB::transaction(function() use ($admin){
+
+
+
+            /*
+            | Remove permissions
+            */
+
+            $admin->permissions()
+                ->detach();
+
+
+
+            /*
+            | Remove activity logs
+            */
+
+            $admin->activityLogs()
+                ->delete();
+
+
+
+            /*
+            | Permanent delete
+            */
+
+            $admin->forceDelete();
+
+
+        });
+
+
+
+
+
+        AdminActivityLogger::log(
+
+            'ADMIN_FORCE_DELETED',
+
+            'Permanently deleted admin ID: '.$id,
+
+            request()
+
+        );
+
+
+
+
+        return response()->json([
+
+            'success'=>true,
+
+            'message'=>'Admin permanently deleted successfully.'
+
+        ]);
+
+    }
 
 
 }

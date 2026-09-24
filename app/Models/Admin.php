@@ -8,12 +8,14 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 
 
 class Admin extends Authenticatable implements JWTSubject
 {
 
-    use Notifiable;
+    use Notifiable, SoftDeletes;
 
 
     protected $fillable = [
@@ -47,11 +49,12 @@ class Admin extends Authenticatable implements JWTSubject
 
             'last_login_at'=>'datetime',
 
+            'deleted_at'=>'datetime',
+
             'force_password_change'=>'boolean',
 
         ];
     }
-
 
 
 
@@ -102,12 +105,10 @@ class Admin extends Authenticatable implements JWTSubject
 
     public function creator(): BelongsTo
     {
-
         return $this->belongsTo(
             Admin::class,
             'created_by'
-        );
-
+        )->withTrashed();
     }
 
 
@@ -115,12 +116,10 @@ class Admin extends Authenticatable implements JWTSubject
 
     public function createdAdmins(): HasMany
     {
-
         return $this->hasMany(
             Admin::class,
             'created_by'
-        );
-
+        )->withTrashed();
     }
 
 
