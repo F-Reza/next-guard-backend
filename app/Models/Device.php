@@ -61,6 +61,14 @@ class Device extends Model
     {
         return $this->hasMany(TrialEvent::class);
     }
+
+    
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(
+            Subscription::class
+        );
+    }
     
 
 }

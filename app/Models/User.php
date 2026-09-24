@@ -85,4 +85,15 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(TrialEvent::class);
     }
 
+
+    /**
+     * Subscriptions.
+     */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(
+            Subscription::class
+        );
+    }
+
 }

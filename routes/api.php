@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\TrialController;
 use App\Http\Controllers\Api\V1\DeviceProtectionController;
 use App\Http\Controllers\Api\V1\ProtectionRuleController;
 use App\Http\Controllers\Api\V1\SubscriptionPlanController;
+use App\Http\Controllers\Api\V1\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -81,6 +82,11 @@ Route::prefix('v1')->group(function () {
         // Subscription Plans
         Route::get('/subscription-plans', [SubscriptionPlanController::class,'index']);
         Route::post('/subscription-plans', [SubscriptionPlanController::class,'store']);
+
+
+        // Subscriptions
+        Route::post('/subscriptions/activate', [SubscriptionController::class,'activate']);
+        Route::get('/subscriptions', [SubscriptionController::class,'index']);
 
 
     });
