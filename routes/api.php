@@ -299,6 +299,22 @@ Route::middleware('auth:admin')
 ->group(function(){
 
 
+    Route::get(
+        '/profile',
+        [AdminAuthController::class,'profile']
+    );
+
+
+    Route::post(
+        '/change-password',
+        [AdminAuthController::class,'changePassword']
+    );
+
+
+    Route::post(
+        '/logout',
+        [AdminAuthController::class,'logout']
+    );  
 
     /*
     |--------------------------------------------------------------------------

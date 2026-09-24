@@ -2,13 +2,20 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+
 use App\Http\Controllers\Controller;
+
 use App\Models\Admin;
+
 use App\Services\AdminActivityLogger;
+use App\Services\AdminLoginSecurity;
+
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+
 
 
 class AdminAuthController extends Controller
@@ -22,74 +29,38 @@ class AdminAuthController extends Controller
     {
 
 
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(),[
 
-            'email' => [
+
+            'email'=>[
                 'required',
                 'email'
             ],
 
-            'password' => [
+
+            'password'=>[
                 'required',
                 'string'
             ]
+
 
         ]);
 
 
 
-        if ($validator->fails()) {
+
+        if($validator->fails()){
 
 
             return response()->json([
 
-                'success' => false,
+                'success'=>false,
 
-                'message' => 'Validation failed.',
+                'message'=>'Validation failed.',
 
-                'errors' => $validator->errors()
+                'errors'=>$validator->errors()
 
-            ], 422);
-
-
-        }
-
-
-
-
-
-        $admin = Admin::where(
-            'email',
-            $request->email
-        )->first();
-
-
-
-
-
-
-        if (
-
-            !$admin ||
-
-            !Hash::check(
-
-                $request->password,
-
-                $admin->password
-
-            )
-
-        ) {
-
-
-            return response()->json([
-
-                'success' => false,
-
-                'message' => 'Invalid admin credentials.'
-
-            ],401);
+            ],422);
 
 
         }
@@ -100,14 +71,37 @@ class AdminAuthController extends Controller
 
 
 
-        if ($admin->status !== 'active') {
+        $admin = Admin::where('email',$request->email)
+            ->whereNull('deleted_at')
+            ->first();
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Account Lock Check
+        |--------------------------------------------------------------------------
+        */
+
+
+        if(
+            $admin &&
+            AdminLoginSecurity::isLocked($admin)
+        ){
 
 
             return response()->json([
 
-                'success' => false,
 
-                'message' => 'Admin account inactive.'
+                'success'=>false,
+
+
+                'message'=>'Account temporarily locked. Try again later.'
+
 
             ],403);
 
@@ -120,14 +114,70 @@ class AdminAuthController extends Controller
 
 
 
+
+
         /*
         |--------------------------------------------------------------------------
-        | Generate Admin JWT Token
+        | Credential Check
         |--------------------------------------------------------------------------
         */
 
 
-        $token = auth('admin')->login($admin);
+        if(
+
+            !$admin ||
+
+            !Hash::check(
+
+                $request->password,
+
+                $admin->password
+
+            )
+
+        ){
+
+
+
+            if($admin){
+
+
+                AdminLoginSecurity::failed($admin);
+
+
+            }
+
+
+
+
+            AdminActivityLogger::log(
+
+                'ADMIN_LOGIN_FAILED',
+
+                'Failed admin login attempt: '.$request->email,
+
+                $request
+
+            );
+
+
+
+
+            return response()->json([
+
+
+                'success'=>false,
+
+
+                'message'=>'Invalid admin credentials.'
+
+
+            ],401);
+
+
+
+        }
+
 
 
 
@@ -138,14 +188,82 @@ class AdminAuthController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Update Last Login
+        | Status Check
+        |--------------------------------------------------------------------------
+        */
+
+
+        if($admin->status !== 'active'){
+
+
+
+            return response()->json([
+
+
+                'success'=>false,
+
+
+                'message'=>'Admin account inactive.'
+
+
+            ],403);
+
+
+        }
+
+
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Reset Security Counter
+        |--------------------------------------------------------------------------
+        */
+
+
+        AdminLoginSecurity::success($admin);
+
+
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | JWT Token
+        |--------------------------------------------------------------------------
+        */
+
+
+        $token = auth('admin')
+            ->login($admin);
+
+
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update Login Time
         |--------------------------------------------------------------------------
         */
 
 
         $admin->update([
 
-            'last_login_at' => now()
+            'last_login_at'=>now()
 
         ]);
 
@@ -155,12 +273,6 @@ class AdminAuthController extends Controller
 
 
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Activity Log
-        |--------------------------------------------------------------------------
-        */
 
 
         AdminActivityLogger::log(
@@ -172,6 +284,7 @@ class AdminAuthController extends Controller
             $request
 
         );
+
 
 
 
@@ -197,18 +310,36 @@ class AdminAuthController extends Controller
                 'admin'=>[
 
 
+
                     'id'=>$admin->id,
+
 
                     'name'=>$admin->name,
 
+
                     'email'=>$admin->email,
 
+
                     'role'=>$admin->role,
+
 
                     'status'=>$admin->status,
 
 
+                    'force_password_change'=>
+                        $admin->force_password_change,
+
+
+
+                    'permissions'=>
+                        $admin
+                        ->permissions()
+                        ->pluck('name')
+
+
+
                 ],
+
 
 
 
@@ -224,6 +355,8 @@ class AdminAuthController extends Controller
 
         ]);
 
+
+
     }
 
 
@@ -234,8 +367,12 @@ class AdminAuthController extends Controller
 
 
 
+
+
+
+
     /**
-     * Admin Logout
+     * Logout
      */
     public function logout(Request $request): JsonResponse
     {
@@ -281,6 +418,9 @@ class AdminAuthController extends Controller
 
 
 
+
+
+
     /**
      * Current Admin
      */
@@ -289,6 +429,28 @@ class AdminAuthController extends Controller
 
 
         $admin = auth('admin')->user();
+
+
+
+
+        if(!$admin){
+
+
+            return response()->json([
+
+
+                'success'=>false,
+
+
+                'message'=>'Unauthenticated admin.'
+
+
+            ],401);
+
+
+        }
+
+
 
 
 
@@ -303,9 +465,7 @@ class AdminAuthController extends Controller
 
 
 
-
             'data'=>[
-
 
 
                 'admin'=>[
@@ -327,11 +487,286 @@ class AdminAuthController extends Controller
                     'status'=>$admin->status,
 
 
+                    'force_password_change'=>
+                        $admin->force_password_change,
+
+
+
+                    'permissions'=>
+                        $admin
+                        ->permissions()
+                        ->pluck('name')
+
+
+
                 ]
+
 
             ]
 
+
         ]);
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
+     * Profile
+     */
+    public function profile(): JsonResponse
+    {
+
+
+        $admin = auth('admin')->user();
+
+
+
+        if(!$admin){
+
+
+            return response()->json([
+
+
+                'success'=>false,
+
+
+                'message'=>'Unauthenticated admin.'
+
+
+            ],401);
+
+
+        }
+
+
+
+
+
+
+        return response()->json([
+
+
+            'success'=>true,
+
+
+            'message'=>'Admin profile retrieved.',
+
+
+
+            'data'=>[
+
+
+                'admin'=>
+                    $admin->load('permissions')
+
+
+            ]
+
+
+        ]);
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
+     * Change Password
+     */
+    public function changePassword(
+        Request $request
+    ): JsonResponse
+    {
+
+
+        $admin = auth('admin')->user();
+
+
+
+
+        if(!$admin){
+
+
+            return response()->json([
+
+
+                'success'=>false,
+
+
+                'message'=>'Unauthenticated admin.'
+
+
+            ],401);
+
+
+        }
+
+
+
+
+
+
+
+        $validator = Validator::make($request->all(),[
+
+
+            'old_password'=>[
+
+                'required',
+                'string'
+
+            ],
+
+
+
+            'new_password'=>[
+
+                'required',
+                'string',
+                'min:6',
+                'confirmed'
+
+            ]
+
+
+
+        ]);
+
+
+
+
+
+
+        if($validator->fails()){
+
+
+            return response()->json([
+
+
+                'success'=>false,
+
+
+                'message'=>'Validation failed.',
+
+
+                'errors'=>$validator->errors()
+
+
+            ],422);
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+        if(!Hash::check(
+
+            $request->old_password,
+
+            $admin->password
+
+        )){
+
+
+            return response()->json([
+
+
+                'success'=>false,
+
+
+                'message'=>'Old password incorrect.'
+
+
+            ],422);
+
+
+        }
+
+
+
+
+
+
+
+
+
+        $admin->update([
+
+
+            'password'=>$request->new_password,
+
+
+            'force_password_change'=>false
+
+
+        ]);
+
+
+
+
+
+
+
+
+
+        AdminActivityLogger::log(
+
+            'ADMIN_PASSWORD_CHANGED',
+
+            'Admin changed own password.',
+
+            $request
+
+        );
+
+
+
+
+
+
+
+
+        return response()->json([
+
+
+            'success'=>true,
+
+
+            'message'=>'Password changed successfully.'
+
+
+        ]);
+
+
 
     }
 
