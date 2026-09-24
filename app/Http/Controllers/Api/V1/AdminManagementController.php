@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\Permission;
+use App\Services\AdminActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -152,7 +153,105 @@ class AdminManagementController extends Controller
     }
 
 
+    public function update(Request $request,int $id): JsonResponse
+    {
 
+        $admin = Admin::find($id);
+
+
+        if(!$admin){
+
+            return response()->json([
+                'success'=>false,
+                'message'=>'Admin not found.'
+            ],404);
+
+        }
+
+
+        $validator = Validator::make($request->all(),[
+
+            'name'=>'sometimes|string|max:100',
+
+            'email'=>'sometimes|email|unique:admins,email,'.$id,
+
+            'role'=>'sometimes|in:admin,support',
+
+            'status'=>'sometimes|in:active,inactive'
+
+        ]);
+
+
+        if($validator->fails()){
+
+            return response()->json([
+                'success'=>false,
+                'message'=>'Validation failed.',
+                'errors'=>$validator->errors()
+            ],422);
+
+        }
+
+
+
+        $admin->update(
+            $request->only([
+                'name',
+                'email',
+                'role',
+                'status'
+            ])
+        );
+
+
+
+        if($request->has('status')){
+
+
+            AdminActivityLogger::log(
+
+                'ADMIN_STATUS_CHANGED',
+
+                'Changed admin ID: '.$admin->id.
+                ' status to '.$admin->status,
+
+                $request
+
+            );
+
+
+        }
+        else{
+
+
+            AdminActivityLogger::log(
+
+                'ADMIN_UPDATED',
+
+                'Updated admin ID: '.$admin->id,
+
+                $request
+
+            );
+
+
+        }
+
+
+
+        return response()->json([
+
+            'success'=>true,
+
+            'message'=>'Admin updated successfully.',
+
+            'data'=>[
+                'admin'=>$admin
+            ]
+
+        ]);
+
+    }
 
 
     /**

@@ -365,7 +365,11 @@ Route::prefix('v1')->group(function () {
             [AdminManagementController::class,'store']
         );
 
-
+        Route::put(
+            '/admins/{id}',
+            [AdminManagementController::class,'update']
+        );
+        
         Route::get(
             '/admins/{id}',
             [AdminManagementController::class,'show']
