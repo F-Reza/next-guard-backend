@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
-    use Notifiable;
+    use HasFactory, Notifiable;
 
     protected $fillable = [
         'name',
@@ -19,6 +21,7 @@ class User extends Authenticatable
 
     protected $hidden = [
         'password',
+        'remember_token',
     ];
 
     protected function casts(): array
@@ -31,11 +34,35 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * JWT identifier.
+     */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * JWT custom claims.
+     */
+    public function getJWTCustomClaims(): array
+    {
+        return [
+            'type' => 'access',
+        ];
+    }
+
+    /**
+     * User devices.
+     */
     public function devices()
     {
         return $this->hasMany(Device::class);
     }
 
+    /**
+     * Device sessions.
+     */
     public function deviceSessions()
     {
         return $this->hasMany(DeviceSession::class);
