@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\V1\LicenseCodeController;
 use App\Http\Controllers\Api\V1\ProtectionRuleController;
 use App\Http\Controllers\Api\V1\AdminSecurityController;
 use App\Http\Controllers\Api\V1\AdminSessionController;
+use App\Http\Controllers\Api\V1\AdminSecurityDashboardController;
 
 
 /*
@@ -519,6 +520,18 @@ Route::middleware('permission:view_logs')
 
 });
 
+
+Route::middleware('permission:view_logs')
+->get(
+
+    '/security/dashboard',
+
+    [
+        AdminSecurityDashboardController::class,
+        'index'
+    ]
+
+);
 
 
 
