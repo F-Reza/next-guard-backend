@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\V1\SubscriptionPlanController;
 use App\Http\Controllers\Api\V1\LicenseCodeController;
 
 use App\Http\Controllers\Api\V1\ProtectionRuleController;
+use App\Http\Controllers\Api\V1\AdminSecurityController;
 
 
 
@@ -452,7 +453,11 @@ Route::middleware('permission:manage_admins')
 
 
 
-
+Route::middleware('permission:manage_admins')
+->get(
+    '/security',
+    [AdminSecurityController::class,'index']
+);
 
 
 
@@ -583,7 +588,7 @@ Route::middleware('permission:manage_admins')
         [AdminManagementController::class,'restore']
     );
 
-    
+
     Route::middleware('permission:manage_admins')
     ->post(
         '/admins/{id}/unlock',
