@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-
 use App\Models\Admin;
 
 
@@ -10,8 +9,12 @@ class AdminLoginSecurity
 {
 
 
+    /**
+     * Check account locked
+     */
     public static function isLocked(Admin $admin): bool
     {
+
 
         if(!$admin->locked_until){
 
@@ -20,9 +23,21 @@ class AdminLoginSecurity
         }
 
 
-        return now()->lessThan(
-            $admin->locked_until
-        );
+
+        if(now()->greaterThanOrEqualTo($admin->locked_until)){
+
+
+            self::unlock($admin);
+
+
+            return false;
+
+        }
+
+
+
+        return true;
+
 
     }
 
@@ -30,6 +45,10 @@ class AdminLoginSecurity
 
 
 
+
+    /**
+     * Failed login attempt
+     */
     public static function failed(Admin $admin): void
     {
 
@@ -40,9 +59,12 @@ class AdminLoginSecurity
 
         $data=[
 
+
             'failed_login_attempts'=>$attempts,
 
+
             'last_failed_login_at'=>now(),
+
 
         ];
 
@@ -52,11 +74,15 @@ class AdminLoginSecurity
         if($attempts >= 5){
 
 
+
             $data['locked_until'] =
                 now()->addMinutes(15);
 
 
+
         }
+
+
 
 
 
@@ -69,20 +95,61 @@ class AdminLoginSecurity
 
 
 
+
+
+
+    /**
+     * Successful login
+     */
     public static function success(Admin $admin): void
     {
 
 
         $admin->update([
 
+
             'failed_login_attempts'=>0,
 
+
             'locked_until'=>null,
+
+
+            'last_failed_login_at'=>null,
+
 
         ]);
 
 
     }
+
+
+
+
+
+
+
+
+    /**
+     * Unlock account
+     */
+    public static function unlock(Admin $admin): void
+    {
+
+
+        $admin->update([
+
+
+            'failed_login_attempts'=>0,
+
+
+            'locked_until'=>null,
+
+
+        ]);
+
+
+    }
+
 
 
 }

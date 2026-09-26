@@ -21,12 +21,25 @@ class Admin extends Authenticatable implements JWTSubject
     protected $fillable = [
 
         'name',
+
         'email',
+
         'password',
+
         'role',
+
         'status',
+
         'force_password_change',
+
+        'failed_login_attempts',
+
+        'locked_until',
+
+        'last_failed_login_at',
+
         'last_login_at',
+
         'created_by',
 
     ];
@@ -49,9 +62,11 @@ class Admin extends Authenticatable implements JWTSubject
 
             'last_login_at'=>'datetime',
 
-            'deleted_at'=>'datetime',
-
             'force_password_change'=>'boolean',
+
+            'locked_until'=>'datetime',
+
+            'last_failed_login_at'=>'datetime',
 
         ];
     }

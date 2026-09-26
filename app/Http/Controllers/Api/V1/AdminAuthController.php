@@ -48,7 +48,6 @@ class AdminAuthController extends Controller
 
 
 
-
         if($validator->fails()){
 
 
@@ -69,6 +68,11 @@ class AdminAuthController extends Controller
 
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | Find Admin
+        |--------------------------------------------------------------------------
+        */
 
 
         $admin = Admin::where('email',$request->email)
@@ -80,74 +84,14 @@ class AdminAuthController extends Controller
 
 
 
-
         /*
         |--------------------------------------------------------------------------
-        | Account Lock Check
+        | Invalid Email
         |--------------------------------------------------------------------------
         */
 
 
-        if(
-            $admin &&
-            AdminLoginSecurity::isLocked($admin)
-        ){
-
-
-            return response()->json([
-
-
-                'success'=>false,
-
-
-                'message'=>'Account temporarily locked. Try again later.'
-
-
-            ],403);
-
-
-        }
-
-
-
-
-
-
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Credential Check
-        |--------------------------------------------------------------------------
-        */
-
-
-        if(
-
-            !$admin ||
-
-            !Hash::check(
-
-                $request->password,
-
-                $admin->password
-
-            )
-
-        ){
-
-
-
-            if($admin){
-
-
-                AdminLoginSecurity::failed($admin);
-
-
-            }
-
-
+        if(!$admin){
 
 
             AdminActivityLogger::log(
@@ -159,6 +103,126 @@ class AdminAuthController extends Controller
                 $request
 
             );
+
+
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Invalid admin credentials.'
+
+            ],401);
+
+
+        }
+
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Account Locked Check
+        |--------------------------------------------------------------------------
+        */
+
+
+        if(AdminLoginSecurity::isLocked($admin)){
+
+
+
+            AdminActivityLogger::log(
+
+                'ADMIN_LOGIN_BLOCKED',
+
+                'Blocked login attempt for locked account: '.$admin->email,
+
+                $request
+
+            );
+
+
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Account temporarily locked. Try again later.'
+
+            ],423);
+
+
+
+        }
+
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Password Check
+        |--------------------------------------------------------------------------
+        */
+
+
+        if(!Hash::check(
+
+            $request->password,
+
+            $admin->password
+
+        )){
+
+
+
+            AdminLoginSecurity::failed($admin);
+
+
+
+
+
+            if(AdminLoginSecurity::isLocked($admin)){
+
+
+
+                AdminActivityLogger::log(
+
+                    'ADMIN_ACCOUNT_LOCKED',
+
+                    'Admin account locked after failed attempts: '.$admin->email,
+
+                    $request
+
+                );
+
+
+            }
+
+
+
+
+
+
+
+            AdminActivityLogger::log(
+
+                'ADMIN_LOGIN_FAILED',
+
+                'Invalid password attempt for: '.$admin->email,
+
+                $request
+
+            );
+
+
 
 
 
@@ -209,6 +273,7 @@ class AdminAuthController extends Controller
             ],403);
 
 
+
         }
 
 
@@ -221,13 +286,12 @@ class AdminAuthController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Reset Security Counter
+        | Reset Security
         |--------------------------------------------------------------------------
         */
 
 
         AdminLoginSecurity::success($admin);
-
 
 
 
@@ -256,7 +320,7 @@ class AdminAuthController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Update Login Time
+        | Update Last Login
         |--------------------------------------------------------------------------
         */
 
@@ -296,6 +360,7 @@ class AdminAuthController extends Controller
         return response()->json([
 
 
+
             'success'=>true,
 
 
@@ -304,6 +369,7 @@ class AdminAuthController extends Controller
 
 
             'data'=>[
+
 
 
 
@@ -332,10 +398,10 @@ class AdminAuthController extends Controller
 
 
                     'permissions'=>
+
                         $admin
                         ->permissions()
                         ->pluck('name')
-
 
 
                 ],
@@ -353,15 +419,12 @@ class AdminAuthController extends Controller
             ]
 
 
+
         ]);
 
 
 
     }
-
-
-
-
 
 
 
@@ -396,6 +459,7 @@ class AdminAuthController extends Controller
 
 
 
+
         return response()->json([
 
 
@@ -408,10 +472,8 @@ class AdminAuthController extends Controller
         ]);
 
 
+
     }
-
-
-
 
 
 
@@ -436,6 +498,7 @@ class AdminAuthController extends Controller
         if(!$admin){
 
 
+
             return response()->json([
 
 
@@ -448,7 +511,9 @@ class AdminAuthController extends Controller
             ],401);
 
 
+
         }
+
 
 
 
@@ -458,6 +523,7 @@ class AdminAuthController extends Controller
         return response()->json([
 
 
+
             'success'=>true,
 
 
@@ -465,10 +531,13 @@ class AdminAuthController extends Controller
 
 
 
+
             'data'=>[
 
 
+
                 'admin'=>[
+
 
 
 
@@ -493,16 +562,18 @@ class AdminAuthController extends Controller
 
 
                     'permissions'=>
+
                         $admin
                         ->permissions()
                         ->pluck('name')
 
 
-
                 ]
 
 
+
             ]
+
 
 
         ]);
@@ -510,9 +581,6 @@ class AdminAuthController extends Controller
 
 
     }
-
-
-
 
 
 
@@ -533,6 +601,7 @@ class AdminAuthController extends Controller
 
 
 
+
         if(!$admin){
 
 
@@ -548,7 +617,9 @@ class AdminAuthController extends Controller
             ],401);
 
 
+
         }
+
 
 
 
@@ -565,14 +636,16 @@ class AdminAuthController extends Controller
 
 
 
+
             'data'=>[
 
 
-                'admin'=>
-                    $admin->load('permissions')
+                'admin'=>$admin
+                    ->load('permissions')
 
 
             ]
+
 
 
         ]);
@@ -580,9 +653,6 @@ class AdminAuthController extends Controller
 
 
     }
-
-
-
 
 
 
@@ -601,7 +671,9 @@ class AdminAuthController extends Controller
     {
 
 
+
         $admin = auth('admin')->user();
+
 
 
 
@@ -621,6 +693,7 @@ class AdminAuthController extends Controller
             ],401);
 
 
+
         }
 
 
@@ -632,20 +705,26 @@ class AdminAuthController extends Controller
         $validator = Validator::make($request->all(),[
 
 
+
             'old_password'=>[
 
                 'required',
+
                 'string'
 
             ],
 
 
 
+
             'new_password'=>[
 
                 'required',
+
                 'string',
+
                 'min:6',
+
                 'confirmed'
 
             ]
@@ -659,10 +738,13 @@ class AdminAuthController extends Controller
 
 
 
+
         if($validator->fails()){
 
 
+
             return response()->json([
+
 
 
                 'success'=>false,
@@ -672,6 +754,7 @@ class AdminAuthController extends Controller
 
 
                 'errors'=>$validator->errors()
+
 
 
             ],422);
@@ -697,7 +780,9 @@ class AdminAuthController extends Controller
         )){
 
 
+
             return response()->json([
+
 
 
                 'success'=>false,
@@ -706,7 +791,9 @@ class AdminAuthController extends Controller
                 'message'=>'Old password incorrect.'
 
 
+
             ],422);
+
 
 
         }
@@ -722,10 +809,12 @@ class AdminAuthController extends Controller
         $admin->update([
 
 
+
             'password'=>$request->new_password,
 
 
             'force_password_change'=>false
+
 
 
         ]);
@@ -737,16 +826,20 @@ class AdminAuthController extends Controller
 
 
 
-
         AdminActivityLogger::log(
+
 
             'ADMIN_PASSWORD_CHANGED',
 
+
             'Admin changed own password.',
+
 
             $request
 
+
         );
+
 
 
 
@@ -758,10 +851,12 @@ class AdminAuthController extends Controller
         return response()->json([
 
 
+
             'success'=>true,
 
 
             'message'=>'Password changed successfully.'
+
 
 
         ]);
@@ -769,6 +864,7 @@ class AdminAuthController extends Controller
 
 
     }
+
 
 
 
