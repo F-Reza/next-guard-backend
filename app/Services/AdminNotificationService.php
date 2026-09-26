@@ -7,6 +7,7 @@ use App\Models\Admin;
 use App\Models\AdminNotification;
 
 
+
 class AdminNotificationService
 {
 
@@ -21,7 +22,7 @@ class AdminNotificationService
 
         string $message,
 
-        array $metadata=[]
+        array $metadata = []
 
     ): AdminNotification
     {
@@ -52,7 +53,6 @@ class AdminNotificationService
 
 
 
-
     public static function markRead(
         AdminNotification $notification
     ): bool
@@ -65,8 +65,6 @@ class AdminNotificationService
         ]);
 
     }
-
-
 
 
 

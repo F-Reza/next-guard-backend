@@ -7,16 +7,23 @@ use App\Http\Controllers\Controller;
 
 use App\Models\Admin;
 
+use App\Models\AdminSession;
+
 use App\Services\AdminActivityLogger;
+
 use App\Services\AdminLoginSecurity;
+
 use App\Services\AdminNotificationService;
 
 use Illuminate\Http\JsonResponse;
+
 use Illuminate\Http\Request;
 
-use App\Models\AdminSession;
 use Illuminate\Support\Facades\Hash;
+
 use Illuminate\Support\Facades\Validator;
+
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 
 
@@ -27,26 +34,29 @@ class AdminAuthController extends Controller
     /**
      * Admin Login
      */
-    public function login(Request $request): JsonResponse
+    public function login(
+        Request $request
+    ): JsonResponse
     {
 
 
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make(
+            $request->all(),
+            [
+
+                'email'=>[
+                    'required',
+                    'email'
+                ],
 
 
-            'email'=>[
-                'required',
-                'email'
-            ],
+                'password'=>[
+                    'required',
+                    'string'
+                ]
 
-
-            'password'=>[
-                'required',
-                'string'
             ]
-
-
-        ]);
+        );
 
 
 
@@ -69,7 +79,6 @@ class AdminAuthController extends Controller
 
 
 
-
         /*
         |--------------------------------------------------------------------------
         | Find Admin
@@ -77,20 +86,15 @@ class AdminAuthController extends Controller
         */
 
 
-        $admin = Admin::where('email',$request->email)
+        $admin = Admin::where(
+                'email',
+                $request->email
+            )
             ->whereNull('deleted_at')
             ->first();
 
 
 
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Invalid Email
-        |--------------------------------------------------------------------------
-        */
 
 
         if(!$admin){
@@ -106,7 +110,7 @@ class AdminAuthController extends Controller
 
                 null,
 
-                'warning',
+                AdminActivityLogger::WARNING,
 
                 [
 
@@ -135,12 +139,9 @@ class AdminAuthController extends Controller
 
 
 
-
-
-
         /*
         |--------------------------------------------------------------------------
-        | Account Locked Check
+        | Lock Check
         |--------------------------------------------------------------------------
         */
 
@@ -152,24 +153,6 @@ class AdminAuthController extends Controller
         ){
 
 
-            AdminNotificationService::send(
-
-                $admin,
-
-                'ACCOUNT_LOCKED',
-
-                'Account Locked',
-
-                'Your account has been locked because of failed login attempts.',
-
-                [
-
-                    'locked_until'=>$admin->locked_until
-
-                ]
-
-            );
-
             AdminActivityLogger::log(
 
                 'ADMIN_LOGIN_BLOCKED',
@@ -180,7 +163,7 @@ class AdminAuthController extends Controller
 
                 $admin,
 
-                'critical',
+                AdminActivityLogger::CRITICAL,
 
                 [
 
@@ -201,17 +184,9 @@ class AdminAuthController extends Controller
             ],423);
 
 
-
         }
 
-
-
-
-
-
-
-
-        /*
+                /*
         |--------------------------------------------------------------------------
         | Password Check
         |--------------------------------------------------------------------------
@@ -227,9 +202,15 @@ class AdminAuthController extends Controller
         )){
 
 
-
             AdminLoginSecurity::failed($admin);
 
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Account Locked After Failed Attempts
+            |--------------------------------------------------------------------------
+            */
 
 
             if(
@@ -249,15 +230,20 @@ class AdminAuthController extends Controller
 
                     $admin,
 
-                    'critical',
+                    AdminActivityLogger::CRITICAL,
 
                     [
 
-                        'attempts'=>$admin->failed_login_attempts
+                        'attempts'=>$admin->failed_login_attempts,
+
+                        'locked_until'=>$admin->locked_until
 
                     ]
 
                 );
+
+
+
 
                 AdminNotificationService::send(
 
@@ -267,7 +253,7 @@ class AdminAuthController extends Controller
 
                     'Account Locked',
 
-                    'Your account has been temporarily locked after multiple failed login attempts.',
+                    'Your admin account has been locked after multiple failed login attempts.',
 
                     [
 
@@ -283,23 +269,7 @@ class AdminAuthController extends Controller
             }
 
 
-            AdminNotificationService::send(
 
-                $admin,
-
-                'LOGIN_FAILED',
-
-                'Failed Login Attempt',
-
-                'A failed login attempt was detected.',
-
-                [
-
-                    'ip'=>$request->ip()
-
-                ]
-
-            );
 
 
             AdminActivityLogger::log(
@@ -312,7 +282,7 @@ class AdminAuthController extends Controller
 
                 $admin,
 
-                'warning',
+                AdminActivityLogger::WARNING,
 
                 [
 
@@ -322,6 +292,29 @@ class AdminAuthController extends Controller
 
             );
 
+
+
+
+
+            AdminNotificationService::send(
+
+                $admin,
+
+                'LOGIN_FAILED',
+
+                'Failed Login Attempt',
+
+                'A failed login attempt was detected.',
+
+                [
+
+                    'ip'=>$request->ip(),
+
+                    'time'=>now()
+
+                ]
+
+            );
 
 
 
@@ -346,10 +339,6 @@ class AdminAuthController extends Controller
 
 
 
-
-
-
-
         /*
         |--------------------------------------------------------------------------
         | Status Check
@@ -358,7 +347,6 @@ class AdminAuthController extends Controller
 
 
         if($admin->status !== 'active'){
-
 
 
             return response()->json([
@@ -373,12 +361,7 @@ class AdminAuthController extends Controller
             ],403);
 
 
-
         }
-
-
-
-
 
 
 
@@ -386,15 +369,12 @@ class AdminAuthController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Reset Security
+        | Reset Login Security
         |--------------------------------------------------------------------------
         */
 
 
         AdminLoginSecurity::success($admin);
-
-
-
 
 
 
@@ -407,8 +387,7 @@ class AdminAuthController extends Controller
         */
 
 
-        $token = auth('admin')
-            ->login($admin);
+        $token = JWTAuth::fromUser($admin);
 
 
 
@@ -448,9 +427,6 @@ class AdminAuthController extends Controller
 
 
 
-
-
-
         /*
         |--------------------------------------------------------------------------
         | Update Last Login
@@ -464,12 +440,11 @@ class AdminAuthController extends Controller
 
         ]);
 
-
-
-
-
-
-
+                /*
+        |--------------------------------------------------------------------------
+        | Activity Log
+        |--------------------------------------------------------------------------
+        */
 
 
         AdminActivityLogger::log(
@@ -482,7 +457,7 @@ class AdminAuthController extends Controller
 
             $admin,
 
-            'info',
+            AdminActivityLogger::INFO,
 
             [
 
@@ -491,6 +466,16 @@ class AdminAuthController extends Controller
             ]
 
         );
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Login Notification
+        |--------------------------------------------------------------------------
+        */
 
 
         AdminNotificationService::send(
@@ -519,9 +504,14 @@ class AdminAuthController extends Controller
 
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | Response
+        |--------------------------------------------------------------------------
+        */
+
 
         return response()->json([
-
 
 
             'success'=>true,
@@ -531,13 +521,12 @@ class AdminAuthController extends Controller
 
 
 
+
             'data'=>[
 
 
 
-
                 'admin'=>[
-
 
 
                     'id'=>$admin->id,
@@ -555,16 +544,18 @@ class AdminAuthController extends Controller
                     'status'=>$admin->status,
 
 
-                    'force_password_change'=>
-                        $admin->force_password_change,
+                    'force_password_change'=>$admin->force_password_change,
 
 
 
                     'permissions'=>
 
                         $admin
+
                         ->permissions()
+
                         ->pluck('name')
+
 
 
                 ],
@@ -579,6 +570,7 @@ class AdminAuthController extends Controller
                 'token_type'=>'Bearer'
 
 
+
             ]
 
 
@@ -589,22 +581,22 @@ class AdminAuthController extends Controller
 
     }
 
-
-
-
-
-
-
-
-
+    
     /**
      * Logout
      */
-    public function logout(Request $request): JsonResponse
+    public function logout(
+        Request $request
+    ): JsonResponse
     {
 
+        $authAdmin = auth('admin')->user();
 
-        $currentAdmin = auth('admin')->user();
+
+        $admin = $authAdmin instanceof Admin
+            ? $authAdmin
+            : null;
+
 
 
         AdminActivityLogger::log(
@@ -615,20 +607,29 @@ class AdminAuthController extends Controller
 
             $request,
 
-            $currentAdmin instanceof Admin
-                ? $currentAdmin
-                : null,
+            $admin,
 
-            'info'
+            AdminActivityLogger::INFO
 
         );
 
 
 
+        try {
 
-        auth('admin')->logout();
+
+            JWTAuth::invalidate(
+                JWTAuth::getToken()
+            );
 
 
+        } catch(\Throwable $e){
+
+
+            report($e);
+
+
+        }
 
 
 
@@ -644,11 +645,7 @@ class AdminAuthController extends Controller
         ]);
 
 
-
     }
-
-
-
 
 
 
@@ -662,13 +659,12 @@ class AdminAuthController extends Controller
     {
 
 
-        $admin = auth('admin')->user();
+        $authAdmin = auth('admin')->user();
 
 
 
 
-        if(!$admin){
-
+        if(!$authAdmin instanceof Admin){
 
 
             return response()->json([
@@ -683,17 +679,18 @@ class AdminAuthController extends Controller
             ],401);
 
 
-
         }
 
 
+
+
+        $admin = $authAdmin;
 
 
 
 
 
         return response()->json([
-
 
 
             'success'=>true,
@@ -703,13 +700,11 @@ class AdminAuthController extends Controller
 
 
 
-
             'data'=>[
 
 
 
                 'admin'=>[
-
 
 
 
@@ -728,16 +723,18 @@ class AdminAuthController extends Controller
                     'status'=>$admin->status,
 
 
-                    'force_password_change'=>
-                        $admin->force_password_change,
+                    'force_password_change'=>$admin->force_password_change,
 
 
 
                     'permissions'=>
 
                         $admin
+
                         ->permissions()
+
                         ->pluck('name')
+
 
 
                 ]
@@ -769,12 +766,12 @@ class AdminAuthController extends Controller
     {
 
 
-        $admin = auth('admin')->user();
+        $authAdmin = auth('admin')->user();
 
 
 
 
-        if(!$admin){
+        if(!$authAdmin instanceof Admin){
 
 
             return response()->json([
@@ -789,10 +786,12 @@ class AdminAuthController extends Controller
             ],401);
 
 
-
         }
 
 
+
+
+        $admin = $authAdmin;
 
 
 
@@ -812,7 +811,10 @@ class AdminAuthController extends Controller
             'data'=>[
 
 
-                'admin'=>$admin
+                'admin'=>
+
+                    $admin
+
                     ->load('permissions')
 
 
@@ -826,14 +828,6 @@ class AdminAuthController extends Controller
 
     }
 
-
-
-
-
-
-
-
-
     /**
      * Change Password
      */
@@ -843,14 +837,11 @@ class AdminAuthController extends Controller
     {
 
 
-
-        $admin = auth('admin')->user();
-
+        $authAdmin = auth('admin')->user();
 
 
 
-
-        if(!$admin){
+        if(!$authAdmin instanceof Admin){
 
 
             return response()->json([
@@ -865,47 +856,49 @@ class AdminAuthController extends Controller
             ],401);
 
 
-
         }
 
 
 
+        $admin = $authAdmin;
 
 
 
 
-        $validator = Validator::make($request->all(),[
+
+        $validator = Validator::make(
+
+            $request->all(),
+
+            [
+
+
+                'old_password'=>[
+
+                    'required',
+
+                    'string'
+
+                ],
 
 
 
-            'old_password'=>[
+                'new_password'=>[
 
-                'required',
+                    'required',
 
-                'string'
+                    'string',
 
-            ],
+                    'min:6',
 
+                    'confirmed'
 
+                ]
 
-
-            'new_password'=>[
-
-                'required',
-
-                'string',
-
-                'min:6',
-
-                'confirmed'
 
             ]
 
-
-
-        ]);
-
-
+        );
 
 
 
@@ -914,9 +907,7 @@ class AdminAuthController extends Controller
         if($validator->fails()){
 
 
-
             return response()->json([
-
 
 
                 'success'=>false,
@@ -926,7 +917,6 @@ class AdminAuthController extends Controller
 
 
                 'errors'=>$validator->errors()
-
 
 
             ],422);
@@ -941,20 +931,19 @@ class AdminAuthController extends Controller
 
 
 
-
-
         if(!Hash::check(
+
 
             $request->old_password,
 
+
             $admin->password
+
 
         )){
 
 
-
             return response()->json([
-
 
 
                 'success'=>false,
@@ -976,10 +965,7 @@ class AdminAuthController extends Controller
 
 
 
-
-
         $admin->update([
-
 
 
             'password'=>$request->new_password,
@@ -997,39 +983,75 @@ class AdminAuthController extends Controller
 
 
 
-
         AdminActivityLogger::log(
+
+
 
             'ADMIN_PASSWORD_CHANGED',
 
+
+
             'Admin changed own password.',
+
+
 
             $request,
 
+
+
             $admin,
 
-            'info'
+
+
+            AdminActivityLogger::INFO
+
+
 
         );
+
+
+
+
+
 
 
         AdminNotificationService::send(
 
+
+
             $admin,
+
+
 
             'SECURITY',
 
+
+
             'Password Changed',
+
+
 
             'Your admin password was changed successfully.',
 
+
+
             [
 
-                'ip'=>$request->ip()
+
+                'ip'=>$request->ip(),
+
+
+                'time'=>now()
+
+
 
             ]
 
+
+
         );
+
+
 
 
 
@@ -1043,6 +1065,7 @@ class AdminAuthController extends Controller
             'success'=>true,
 
 
+
             'message'=>'Password changed successfully.'
 
 
@@ -1052,8 +1075,6 @@ class AdminAuthController extends Controller
 
 
     }
-
-
 
 
 }
