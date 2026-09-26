@@ -18,9 +18,28 @@ class AdminActivityLog extends Model
 
         'description',
 
+        'severity',
+
         'ip_address',
 
         'user_agent',
+
+        'device',
+
+        'browser',
+
+        'os',
+
+        'session_id',
+
+        'metadata',
+
+    ];
+
+
+    protected $casts = [
+
+        'metadata'=>'array',
 
     ];
 

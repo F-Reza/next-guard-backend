@@ -99,9 +99,21 @@ class AdminAuthController extends Controller
 
                 'ADMIN_LOGIN_FAILED',
 
-                'Failed admin login attempt: '.$request->email,
+                'Login attempt with unknown email.',
 
-                $request
+                $request,
+
+                null,
+
+                'warning',
+
+                [
+
+                    'reason'=>'email_not_found',
+
+                    'email'=>$request->email
+
+                ]
 
             );
 
@@ -144,9 +156,19 @@ class AdminAuthController extends Controller
 
                 'ADMIN_LOGIN_BLOCKED',
 
-                'Blocked login attempt for locked account: '.$admin->email,
+                'Login blocked because account is locked.',
 
-                $request
+                $request,
+
+                $admin,
+
+                'critical',
+
+                [
+
+                    'locked_until'=>$admin->locked_until
+
+                ]
 
             );
 
@@ -192,19 +214,30 @@ class AdminAuthController extends Controller
 
 
 
-
-
-            if(AdminLoginSecurity::isLocked($admin)){
-
+            if(
+                $admin->role !== 'super_admin'
+                &&
+                AdminLoginSecurity::isLocked($admin)
+            ){
 
 
                 AdminActivityLogger::log(
 
                     'ADMIN_ACCOUNT_LOCKED',
 
-                    'Admin account locked after failed attempts: '.$admin->email,
+                    'Admin account locked after failed attempts.',
 
-                    $request
+                    $request,
+
+                    $admin,
+
+                    'critical',
+
+                    [
+
+                        'attempts'=>$admin->failed_login_attempts
+
+                    ]
 
                 );
 
@@ -214,16 +247,23 @@ class AdminAuthController extends Controller
 
 
 
-
-
-
             AdminActivityLogger::log(
 
                 'ADMIN_LOGIN_FAILED',
 
-                'Invalid password attempt for: '.$admin->email,
+                'Invalid password attempt.',
 
-                $request
+                $request,
+
+                $admin,
+
+                'warning',
+
+                [
+
+                    'reason'=>'wrong_password'
+
+                ]
 
             );
 
@@ -383,7 +423,17 @@ class AdminAuthController extends Controller
 
             'Admin logged in successfully.',
 
-            $request
+            $request,
+
+            $admin,
+
+            'info',
+
+            [
+
+                'session_created'=>true
+
+            ]
 
         );
 
@@ -485,7 +535,11 @@ class AdminAuthController extends Controller
 
             'Admin logged out.',
 
-            $request
+            $request,
+
+            auth('admin')->user(),
+
+            'info'
 
         );
 
@@ -866,15 +920,15 @@ class AdminAuthController extends Controller
 
         AdminActivityLogger::log(
 
-
             'ADMIN_PASSWORD_CHANGED',
-
 
             'Admin changed own password.',
 
+            $request,
 
-            $request
+            $admin,
 
+            'info'
 
         );
 

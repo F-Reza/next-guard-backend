@@ -501,7 +501,10 @@ Route::middleware('permission:view_logs')
 );
 
 
-
+Route::get(
+    'admin/activity-logs/security',
+    [AdminActivityLogController::class,'security']
+);
 
 
 

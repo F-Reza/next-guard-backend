@@ -2,10 +2,14 @@
 
 namespace App\Services;
 
+
 use App\Models\Admin;
 use App\Models\AdminActivityLog;
+
 use Illuminate\Http\Request;
+
 use Throwable;
+
 
 
 class AdminActivityLogger
@@ -16,10 +20,19 @@ class AdminActivityLogger
      * Create admin activity log
      */
     public static function log(
+
         string $action,
+
         string $description,
+
         ?Request $request = null,
-        ?Admin $admin = null
+
+        ?Admin $admin = null,
+
+        string $severity = 'info',
+
+        array $metadata = []
+
     ): ?AdminActivityLog
     {
 
@@ -27,15 +40,18 @@ class AdminActivityLogger
         try {
 
 
+
             /*
             |--------------------------------------------------------------------------
-            | Get authenticated admin
+            | Get Admin
             |--------------------------------------------------------------------------
             */
 
 
-            $admin = $admin 
+            $admin = $admin
                 ?? auth('admin')->user();
+
+
 
 
 
@@ -44,13 +60,17 @@ class AdminActivityLogger
             return AdminActivityLog::create([
 
 
+
                 /*
                 |--------------------------------------------------------------------------
-                | Nullable admin_id
+                | Admin
                 |--------------------------------------------------------------------------
                 */
 
-                'admin_id' => $admin?->id,
+
+                'admin_id'=>$admin?->id,
+
+
 
 
 
@@ -60,10 +80,16 @@ class AdminActivityLogger
                 |--------------------------------------------------------------------------
                 */
 
-                'action' => $action,
+
+                'action'=>$action,
 
 
-                'description' => $description,
+                'description'=>$description,
+
+
+                'severity'=>$severity,
+
+
 
 
 
@@ -73,14 +99,61 @@ class AdminActivityLogger
                 |--------------------------------------------------------------------------
                 */
 
-                'ip_address' => $request?->ip(),
+
+                'ip_address'=>$request?->ip(),
 
 
-                'user_agent' => $request?->userAgent(),
+                'user_agent'=>$request?->userAgent(),
+
+
+
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Device Information
+                |--------------------------------------------------------------------------
+                */
+
+
+                'device'=>self::device($request),
+
+
+                'browser'=>self::browser($request),
+
+
+                'os'=>self::os($request),
+
+
+
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Session
+                |--------------------------------------------------------------------------
+                */
+
+
+                'session_id'=>session()->getId(),
+
+
+
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Extra Data
+                |--------------------------------------------------------------------------
+                */
+
+
+                'metadata'=>$metadata,
 
 
 
             ]);
+
 
 
 
@@ -90,9 +163,10 @@ class AdminActivityLogger
 
             /*
             |--------------------------------------------------------------------------
-            | Never break main request because of logging failure
+            | Logging must never break application
             |--------------------------------------------------------------------------
             */
+
 
             report($e);
 
@@ -103,13 +177,220 @@ class AdminActivityLogger
         }
 
 
+
     }
 
 
 
 
+
+
+
+
     /**
-     * Get current admin id
+     * Detect Device
+     */
+    private static function device(
+        ?Request $request
+    ): ?string
+    {
+
+
+        if(!$request){
+
+            return null;
+
+        }
+
+
+
+        $agent = strtolower(
+            $request->userAgent()
+        );
+
+
+
+
+        if(
+            str_contains(
+                $agent,
+                'mobile'
+            )
+        ){
+
+            return 'Mobile';
+
+        }
+
+
+
+
+        return 'Desktop';
+
+
+
+    }
+
+
+
+
+
+
+
+
+    /**
+     * Detect Browser
+     */
+    private static function browser(
+        ?Request $request
+    ): ?string
+    {
+
+
+        if(!$request){
+
+            return null;
+
+        }
+
+
+
+        $agent = strtolower(
+            $request->userAgent()
+        );
+
+
+
+
+        if(str_contains($agent,'edge')){
+
+            return 'Edge';
+
+        }
+
+
+
+        if(str_contains($agent,'chrome')){
+
+            return 'Chrome';
+
+        }
+
+
+
+        if(str_contains($agent,'firefox')){
+
+            return 'Firefox';
+
+        }
+
+
+
+        if(str_contains($agent,'safari')){
+
+            return 'Safari';
+
+        }
+
+
+
+        return 'Unknown';
+
+
+
+    }
+
+
+
+
+
+
+
+
+    /**
+     * Detect Operating System
+     */
+    private static function os(
+        ?Request $request
+    ): ?string
+    {
+
+
+        if(!$request){
+
+            return null;
+
+        }
+
+
+
+        $agent = strtolower(
+            $request->userAgent()
+        );
+
+
+
+
+        if(str_contains($agent,'windows')){
+
+            return 'Windows';
+
+        }
+
+
+
+
+        if(str_contains($agent,'android')){
+
+            return 'Android';
+
+        }
+
+
+
+
+        if(str_contains($agent,'iphone')){
+
+            return 'iOS';
+
+        }
+
+
+
+
+        if(str_contains($agent,'mac')){
+
+            return 'MacOS';
+
+        }
+
+
+
+
+        if(str_contains($agent,'linux')){
+
+            return 'Linux';
+
+        }
+
+
+
+
+        return 'Unknown';
+
+
+
+    }
+
+
+
+
+
+
+
+
+    /**
+     * Current Admin ID
      */
     private static function adminId(): ?int
     {
