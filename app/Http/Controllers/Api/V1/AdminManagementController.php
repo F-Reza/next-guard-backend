@@ -146,6 +146,32 @@ class AdminManagementController extends Controller
         ]);
 
 
+        $creator = auth('admin')->user();
+
+
+        if($creator instanceof Admin){
+
+            AdminNotificationService::send(
+
+                $creator,
+
+                'ADMIN_CREATED',
+
+                'New Admin Created',
+
+                'Admin account created: '.$admin->email,
+
+                [
+
+                    'created_admin_id'=>$admin->id,
+
+                    'role'=>$admin->role
+
+                ]
+
+            );
+
+        }
 
 
         AdminActivityLogger::log(
@@ -609,7 +635,23 @@ class AdminManagementController extends Controller
         ]);
 
 
+        AdminNotificationService::send(
 
+            $admin,
+
+            'PASSWORD_RESET',
+
+            'Password Reset',
+
+            'Your admin password has been reset.',
+
+            [
+
+                'admin_id'=>$admin->id
+
+            ]
+
+        );
 
 
         /** @var Admin|null $currentAdmin */
@@ -844,7 +886,23 @@ class AdminManagementController extends Controller
 
         );
 
+        AdminNotificationService::send(
 
+            $admin,
+
+            'PERMISSION_UPDATED',
+
+            'Permissions Updated',
+
+            'Your admin permissions have been updated.',
+
+            [
+
+                'permissions'=>$permissionNames
+
+            ]
+
+        );
 
 
 
@@ -1106,7 +1164,23 @@ class AdminManagementController extends Controller
 
 
 
+        AdminNotificationService::send(
 
+            $admin,
+
+            'ACCOUNT_UNLOCKED',
+
+            'Account Unlocked',
+
+            'Your admin account has been unlocked.',
+
+            [
+
+                'admin_id'=>$admin->id
+
+            ]
+
+        );
 
 
 

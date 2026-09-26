@@ -38,7 +38,7 @@ return new class extends Migration
 
 
 
-            $table->json('data')
+            $table->json('metadata')
                 ->nullable();
 
 

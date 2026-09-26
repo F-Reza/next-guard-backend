@@ -61,13 +61,15 @@ class Admin extends Authenticatable implements JWTSubject
 
             'password'=>'hashed',
 
-            'last_login_at'=>'datetime',
-
             'force_password_change'=>'boolean',
+
+            'failed_login_attempts'=>'integer',
 
             'locked_until'=>'datetime',
 
             'last_failed_login_at'=>'datetime',
+
+            'last_login_at'=>'datetime',
 
         ];
     }
@@ -137,7 +139,7 @@ class Admin extends Authenticatable implements JWTSubject
 
 
 
-    public function notifications()
+    public function notifications(): HasMany
     {
         return $this->hasMany(
             AdminNotification::class

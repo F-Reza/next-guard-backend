@@ -3,9 +3,8 @@
 namespace App\Services;
 
 
-use App\Models\AdminNotification;
 use App\Models\Admin;
-
+use App\Models\AdminNotification;
 
 
 class AdminNotificationService
@@ -22,7 +21,7 @@ class AdminNotificationService
 
         string $message,
 
-        array $data=[]
+        array $metadata=[]
 
     ): AdminNotification
     {
@@ -43,13 +42,43 @@ class AdminNotificationService
             'message'=>$message,
 
 
-            'data'=>$data,
+            'metadata'=>$metadata,
 
 
         ]);
 
 
     }
+
+
+
+
+    public static function markRead(
+        AdminNotification $notification
+    ): bool
+    {
+
+        return $notification->update([
+
+            'is_read'=>true
+
+        ]);
+
+    }
+
+
+
+
+
+    public static function delete(
+        AdminNotification $notification
+    ): bool
+    {
+
+        return $notification->delete();
+
+    }
+
 
 
 }

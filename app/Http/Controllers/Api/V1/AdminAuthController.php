@@ -152,6 +152,23 @@ class AdminAuthController extends Controller
         ){
 
 
+            AdminNotificationService::send(
+
+                $admin,
+
+                'ACCOUNT_LOCKED',
+
+                'Account Locked',
+
+                'Your account has been locked because of failed login attempts.',
+
+                [
+
+                    'locked_until'=>$admin->locked_until
+
+                ]
+
+            );
 
             AdminActivityLogger::log(
 
@@ -266,6 +283,23 @@ class AdminAuthController extends Controller
             }
 
 
+            AdminNotificationService::send(
+
+                $admin,
+
+                'LOGIN_FAILED',
+
+                'Failed Login Attempt',
+
+                'A failed login attempt was detected.',
+
+                [
+
+                    'ip'=>$request->ip()
+
+                ]
+
+            );
 
 
             AdminActivityLogger::log(
@@ -570,6 +604,9 @@ class AdminAuthController extends Controller
     {
 
 
+        $currentAdmin = auth('admin')->user();
+
+
         AdminActivityLogger::log(
 
             'ADMIN_LOGOUT',
@@ -578,7 +615,9 @@ class AdminAuthController extends Controller
 
             $request,
 
-            auth('admin')->user(),
+            $currentAdmin instanceof Admin
+                ? $currentAdmin
+                : null,
 
             'info'
 

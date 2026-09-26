@@ -7,37 +7,29 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 
-
 class AdminNotification extends Model
 {
 
 
-    protected $fillable = [
+        protected $fillable = [
 
-        'admin_id',
+            'admin_id',
+            'type',
+            'title',
+            'message',
+            'is_read',
+            'metadata',
 
-        'type',
-
-        'title',
-
-        'message',
-
-        'is_read',
-
-        'data',
-
-    ];
+        ];
 
 
+        protected $casts = [
 
-    protected $casts = [
+            'is_read'=>'boolean',
 
-        'is_read'=>'boolean',
+            'metadata'=>'array',
 
-        'data'=>'array',
-
-    ];
-
+        ];
 
 
 

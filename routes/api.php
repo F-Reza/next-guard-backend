@@ -21,7 +21,7 @@ use App\Http\Controllers\Api\V1\SubscriptionController;
 use App\Http\Controllers\Api\V1\SubscriptionPlanController;
 
 use App\Http\Controllers\Api\V1\LicenseCodeController;
-
+use App\Http\Controllers\Api\V1\AdminNotificationController;
 use App\Http\Controllers\Api\V1\ProtectionRuleController;
 use App\Http\Controllers\Api\V1\AdminSecurityController;
 use App\Http\Controllers\Api\V1\AdminSessionController;
@@ -387,6 +387,51 @@ Route::middleware('auth:admin')
 
 
 
+    
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Notifications
+    |--------------------------------------------------------------------------
+    */
+
+
+    Route::prefix('notifications')
+    ->group(function(){
+
+
+        // All notifications
+        Route::get(
+            '/',
+            [AdminNotificationController::class,'index']
+        );
+
+
+        // Unread notifications
+        Route::get(
+            '/unread',
+            [AdminNotificationController::class,'unread']
+        );
+
+
+        // Mark read
+        Route::put(
+            '/{id}/read',
+            [AdminNotificationController::class,'read']
+        )
+        ->whereNumber('id');
+
+
+
+        // Delete notification
+        Route::delete(
+            '/{id}',
+            [AdminNotificationController::class,'destroy']
+        )
+        ->whereNumber('id');
+
+
+    });
 
 
 
