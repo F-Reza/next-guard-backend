@@ -24,7 +24,7 @@ use App\Http\Controllers\Api\V1\LicenseCodeController;
 
 use App\Http\Controllers\Api\V1\ProtectionRuleController;
 use App\Http\Controllers\Api\V1\AdminSecurityController;
-
+use App\Http\Controllers\Api\V1\AdminSessionController;
 
 
 /*
@@ -360,6 +360,29 @@ Route::middleware('auth:admin')
 ->prefix('admin')
 ->group(function(){
 
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Sessions
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/sessions',
+        [AdminSessionController::class,'index']
+    );
+
+    Route::delete(
+        '/sessions/logout-all',
+        [AdminSessionController::class,'logoutAll']
+    );
+
+
+    Route::delete(
+        '/sessions/{id}',
+        [AdminSessionController::class,'destroy']
+    )->whereNumber('id');
 
 
 

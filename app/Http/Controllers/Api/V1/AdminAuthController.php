@@ -13,6 +13,7 @@ use App\Services\AdminLoginSecurity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+use App\Models\AdminSession;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -314,6 +315,39 @@ class AdminAuthController extends Controller
         $token = auth('admin')
             ->login($admin);
 
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create Admin Session
+        |--------------------------------------------------------------------------
+        */
+
+
+        AdminSession::create([
+
+
+            'admin_id'=>$admin->id,
+
+
+            'token_hash'=>Hash::make($token),
+
+
+            'ip_address'=>$request->ip(),
+
+
+            'user_agent'=>$request->userAgent(),
+
+
+            'last_activity'=>now(),
+
+
+            'expires_at'=>now()->addMinutes(60)
+
+
+        ]);
 
 
 

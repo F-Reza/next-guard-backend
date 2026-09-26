@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 
 
+
 class Admin extends Authenticatable implements JWTSubject
 {
 
@@ -103,6 +104,14 @@ class Admin extends Authenticatable implements JWTSubject
     }
 
 
+    public function sessions(): HasMany
+    {
+
+        return $this->hasMany(
+            AdminSession::class
+        );
+
+    }
 
 
     public function permissions(): BelongsToMany
