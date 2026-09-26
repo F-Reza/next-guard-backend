@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Admin;
 use App\Models\Permission;
 use App\Services\AdminActivityLogger;
-
+use App\Services\AdminNotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -183,13 +183,43 @@ class AdminManagementController extends Controller
 
             'Created admin account: '.$admin->email,
 
-            $request
+            $request,
+
+            $creator,
+
+            'info',
+
+            [
+
+                'created_admin_id'=>$admin->id,
+
+                'role'=>$admin->role
+
+            ]
 
         );
 
 
 
+        AdminNotificationService::send(
 
+            $admin,
+
+            'ACCOUNT',
+
+            'Admin Account Created',
+
+            'Your admin account has been created.',
+
+            [
+
+                'created_by'=>$creator->name,
+
+                'role'=>$admin->role
+
+            ]
+
+        );
 
 
 
@@ -416,12 +446,46 @@ class AdminManagementController extends Controller
 
             $description,
 
-            $request
+            $request,
+
+            $currentAdmin,
+
+            'warning',
+
+            [
+
+                'old_role'=>$oldRole,
+
+                'new_role'=>$admin->role,
+
+                'old_status'=>$oldStatus,
+
+                'new_status'=>$admin->status
+
+            ]
 
         );
 
 
+        AdminNotificationService::send(
 
+            $admin,
+
+            'ACCOUNT',
+
+            'Admin Account Updated',
+
+            'Your admin account information has been updated.',
+
+            [
+
+                'updated_by'=>$currentAdmin->name,
+
+                'action'=>$action
+
+            ]
+
+        );
 
 
 
@@ -609,12 +673,38 @@ class AdminManagementController extends Controller
 
             'Reset password for admin ID: '.$admin->id,
 
-            $request
+            $request,
+
+            auth('admin')->user(),
+
+            'critical',
+
+            [
+
+                'target_admin'=>$admin->email
+
+            ]
 
         );
 
 
+        AdminNotificationService::send(
 
+            $admin,
+
+            'SECURITY',
+
+            'Password Reset',
+
+            'Your admin password was reset by another administrator.',
+
+            [
+
+                'reset_by'=>auth('admin')->user()->name
+
+            ]
+
+        );
 
 
 
@@ -806,15 +896,42 @@ class AdminManagementController extends Controller
 
             'ADMIN_PERMISSION_UPDATED',
 
-            'Updated permissions for admin ID: '.$admin->id.
-            ' Permissions: '.implode(', ', $permissionNames),
+            'Updated permissions for admin ID: '.$admin->id,
 
-            $request
+            $request,
+
+            $currentAdmin,
+
+            'critical',
+
+            [
+
+                'permissions'=>$permissionNames
+
+            ]
 
         );
 
 
+        AdminNotificationService::send(
 
+            $admin,
+
+            'PERMISSION',
+
+            'Permissions Changed',
+
+            'Your admin permissions have been updated.',
+
+            [
+
+                'permissions'=>$permissionNames,
+
+                'updated_by'=>$currentAdmin->name
+
+            ]
+
+        );
 
 
 
@@ -933,12 +1050,38 @@ class AdminManagementController extends Controller
 
             'Unlocked admin account: '.$admin->email,
 
-            request()
+            request(),
+
+            auth('admin')->user(),
+
+            'warning',
+
+            [
+
+                'admin_id'=>$admin->id
+
+            ]
 
         );
 
 
+        AdminNotificationService::send(
 
+            $admin,
+
+            'SECURITY',
+
+            'Account Unlocked',
+
+            'Your admin account has been unlocked.',
+
+            [
+
+                'unlocked_by'=>auth('admin')->user()->name
+
+            ]
+
+        );
 
 
 
@@ -1018,33 +1161,6 @@ class AdminManagementController extends Controller
 
 
         }
-
-
-
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Only Super Admin
-        |--------------------------------------------------------------------------
-        */
-
-
-        if($currentAdmin->role !== 'super_admin'){
-
-
-            return response()->json([
-
-                'success'=>false,
-
-                'message'=>'Only super admin can manage permissions.'
-
-            ],403);
-
-
-        }
-
 
 
 
@@ -1158,10 +1274,21 @@ class AdminManagementController extends Controller
 
             'ADMIN_PERMISSION_REMOVED',
 
-            'Removed permission '.$permissionModel->name.
-            ' from admin ID: '.$admin->id,
+            'Removed permission '.$permissionModel->name,
 
-            request()
+            request(),
+
+            $currentAdmin,
+
+            'critical',
+
+            [
+
+                'target_admin'=>$admin->email,
+
+                'permission'=>$permissionModel->name
+
+            ]
 
         );
 

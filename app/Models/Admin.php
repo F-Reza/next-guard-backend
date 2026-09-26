@@ -137,6 +137,13 @@ class Admin extends Authenticatable implements JWTSubject
 
 
 
+    public function notifications()
+    {
+        return $this->hasMany(
+            AdminNotification::class
+        );
+    }
+
 
     public function createdAdmins(): HasMany
     {

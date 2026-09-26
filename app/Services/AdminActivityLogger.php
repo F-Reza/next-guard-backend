@@ -40,18 +40,39 @@ class AdminActivityLogger
         try {
 
 
-
             /*
             |--------------------------------------------------------------------------
-            | Get Admin
+            | Resolve Admin
             |--------------------------------------------------------------------------
             */
 
 
-            $admin = $admin
-                ?? auth('admin')->user();
+            if(!$admin){
+
+                $admin = auth('admin')->user();
+
+            }
 
 
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Validate Admin Model
+            |--------------------------------------------------------------------------
+            */
+
+
+            if(
+                $admin !== null &&
+                !($admin instanceof Admin)
+            ){
+
+                throw new \Exception(
+                    'Invalid admin model passed to AdminActivityLogger'
+                );
+
+            }
 
 
 
@@ -135,7 +156,7 @@ class AdminActivityLogger
                 */
 
 
-                'session_id'=>session()->getId(),
+                'session_id'=>self::sessionId(),
 
 
 
@@ -143,7 +164,7 @@ class AdminActivityLogger
 
                 /*
                 |--------------------------------------------------------------------------
-                | Extra Data
+                | Metadata
                 |--------------------------------------------------------------------------
                 */
 
@@ -157,13 +178,13 @@ class AdminActivityLogger
 
 
 
-        } catch(Throwable $e) {
+        }catch(Throwable $e){
 
 
 
             /*
             |--------------------------------------------------------------------------
-            | Logging must never break application
+            | Logging failure should not break application
             |--------------------------------------------------------------------------
             */
 
@@ -174,11 +195,53 @@ class AdminActivityLogger
             return null;
 
 
+
         }
 
 
 
     }
+
+
+
+
+
+
+
+
+    /**
+     * Get Session ID safely
+     */
+    private static function sessionId(): ?string
+    {
+
+
+        try {
+
+
+            if(app()->bound('session')){
+
+
+                return session()->getId();
+
+
+            }
+
+
+
+        }catch(Throwable $e){
+
+
+
+        }
+
+
+
+        return null;
+
+
+    }
+
 
 
 
@@ -205,7 +268,7 @@ class AdminActivityLogger
 
 
         $agent = strtolower(
-            $request->userAgent()
+            $request->userAgent() ?? ''
         );
 
 
@@ -228,8 +291,8 @@ class AdminActivityLogger
         return 'Desktop';
 
 
-
     }
+
 
 
 
@@ -256,13 +319,18 @@ class AdminActivityLogger
 
 
         $agent = strtolower(
-            $request->userAgent()
+            $request->userAgent() ?? ''
         );
 
 
 
 
-        if(str_contains($agent,'edge')){
+        if(
+            str_contains(
+                $agent,
+                'edge'
+            )
+        ){
 
             return 'Edge';
 
@@ -270,7 +338,13 @@ class AdminActivityLogger
 
 
 
-        if(str_contains($agent,'chrome')){
+
+        if(
+            str_contains(
+                $agent,
+                'chrome'
+            )
+        ){
 
             return 'Chrome';
 
@@ -278,7 +352,13 @@ class AdminActivityLogger
 
 
 
-        if(str_contains($agent,'firefox')){
+
+        if(
+            str_contains(
+                $agent,
+                'firefox'
+            )
+        ){
 
             return 'Firefox';
 
@@ -286,7 +366,13 @@ class AdminActivityLogger
 
 
 
-        if(str_contains($agent,'safari')){
+
+        if(
+            str_contains(
+                $agent,
+                'safari'
+            )
+        ){
 
             return 'Safari';
 
@@ -294,11 +380,12 @@ class AdminActivityLogger
 
 
 
+
         return 'Unknown';
 
 
-
     }
+
 
 
 
@@ -325,13 +412,18 @@ class AdminActivityLogger
 
 
         $agent = strtolower(
-            $request->userAgent()
+            $request->userAgent() ?? ''
         );
 
 
 
 
-        if(str_contains($agent,'windows')){
+        if(
+            str_contains(
+                $agent,
+                'windows'
+            )
+        ){
 
             return 'Windows';
 
@@ -340,7 +432,12 @@ class AdminActivityLogger
 
 
 
-        if(str_contains($agent,'android')){
+        if(
+            str_contains(
+                $agent,
+                'android'
+            )
+        ){
 
             return 'Android';
 
@@ -349,7 +446,12 @@ class AdminActivityLogger
 
 
 
-        if(str_contains($agent,'iphone')){
+        if(
+            str_contains(
+                $agent,
+                'iphone'
+            )
+        ){
 
             return 'iOS';
 
@@ -358,7 +460,12 @@ class AdminActivityLogger
 
 
 
-        if(str_contains($agent,'mac')){
+        if(
+            str_contains(
+                $agent,
+                'mac'
+            )
+        ){
 
             return 'MacOS';
 
@@ -367,7 +474,12 @@ class AdminActivityLogger
 
 
 
-        if(str_contains($agent,'linux')){
+        if(
+            str_contains(
+                $agent,
+                'linux'
+            )
+        ){
 
             return 'Linux';
 
@@ -379,25 +491,10 @@ class AdminActivityLogger
         return 'Unknown';
 
 
-
     }
 
 
 
-
-
-
-
-
-    /**
-     * Current Admin ID
-     */
-    private static function adminId(): ?int
-    {
-
-        return auth('admin')->id();
-
-    }
 
 
 

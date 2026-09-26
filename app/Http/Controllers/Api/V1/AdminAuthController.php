@@ -9,6 +9,7 @@ use App\Models\Admin;
 
 use App\Services\AdminActivityLogger;
 use App\Services\AdminLoginSecurity;
+use App\Services\AdminNotificationService;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -241,6 +242,26 @@ class AdminAuthController extends Controller
 
                 );
 
+                AdminNotificationService::send(
+
+                    $admin,
+
+                    'SECURITY',
+
+                    'Account Locked',
+
+                    'Your account has been temporarily locked after multiple failed login attempts.',
+
+                    [
+
+                        'attempts'=>$admin->failed_login_attempts,
+
+                        'locked_until'=>$admin->locked_until
+
+                    ]
+
+                );
+
 
             }
 
@@ -438,7 +459,27 @@ class AdminAuthController extends Controller
         );
 
 
+        AdminNotificationService::send(
 
+            $admin,
+
+            'LOGIN',
+
+            'New Admin Login',
+
+            'Your admin account was logged in successfully.',
+
+            [
+
+                'ip'=>$request->ip(),
+
+                'user_agent'=>$request->userAgent(),
+
+                'time'=>now()
+
+            ]
+
+        );
 
 
 
@@ -933,7 +974,23 @@ class AdminAuthController extends Controller
         );
 
 
+        AdminNotificationService::send(
 
+            $admin,
+
+            'SECURITY',
+
+            'Password Changed',
+
+            'Your admin password was changed successfully.',
+
+            [
+
+                'ip'=>$request->ip()
+
+            ]
+
+        );
 
 
 
