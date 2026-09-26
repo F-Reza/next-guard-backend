@@ -3,12 +3,16 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+
 use App\Models\Admin;
 use App\Models\Permission;
+
 use App\Services\AdminActivityLogger;
 use App\Services\AdminNotificationService;
+
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
@@ -28,7 +32,6 @@ class AdminManagementController extends Controller
             ->paginate(20);
 
 
-
         return response()->json([
 
             'success'=>true,
@@ -36,18 +39,12 @@ class AdminManagementController extends Controller
             'message'=>'Admins retrieved.',
 
             'data'=>[
-
                 'admins'=>$admins
-
             ]
 
         ]);
 
     }
-
-
-
-
 
 
 
@@ -85,11 +82,9 @@ class AdminManagementController extends Controller
             'role'=>[
                 'required',
                 'in:admin,support,super_admin'
-            ],
-
+            ]
 
         ]);
-
 
 
 
@@ -111,26 +106,16 @@ class AdminManagementController extends Controller
 
 
 
-
+        /** @var Admin|null $creator */
         $creator = auth('admin')->user();
 
-
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Only Super Admin can create Super Admin
-        |--------------------------------------------------------------------------
-        */
 
 
         if(
             $request->role === 'super_admin'
             &&
-            $creator->role !== 'super_admin'
+            (!$creator || $creator->role !== 'super_admin')
         ){
-
 
             return response()->json([
 
@@ -140,39 +125,25 @@ class AdminManagementController extends Controller
 
             ],403);
 
-
         }
-
-
-
 
 
 
         $admin = Admin::create([
 
-
             'name'=>$request->name,
-
 
             'email'=>$request->email,
 
-
             'password'=>$request->password,
-
 
             'role'=>$request->role,
 
-
             'status'=>'active',
 
-
-            'created_by'=>$creator->id,
-
+            'created_by'=>$creator?->id
 
         ]);
-
-
-
 
 
 
@@ -187,7 +158,7 @@ class AdminManagementController extends Controller
 
             $creator,
 
-            'info',
+            AdminActivityLogger::INFO,
 
             [
 
@@ -198,6 +169,7 @@ class AdminManagementController extends Controller
             ]
 
         );
+
 
 
 
@@ -213,7 +185,7 @@ class AdminManagementController extends Controller
 
             [
 
-                'created_by'=>$creator->name,
+                'created_by'=>$creator?->name,
 
                 'role'=>$admin->role
 
@@ -226,12 +198,9 @@ class AdminManagementController extends Controller
 
         return response()->json([
 
-
             'success'=>true,
 
-
             'message'=>'Admin created successfully.',
-
 
             'data'=>[
 
@@ -239,16 +208,12 @@ class AdminManagementController extends Controller
 
             ]
 
-
         ],201);
-
 
 
     }
 
-
-
-    /**
+        /**
      * Update admin
      */
     public function update(
@@ -259,7 +224,6 @@ class AdminManagementController extends Controller
 
 
         $admin = Admin::find($id);
-
 
 
         if(!$admin){
@@ -276,21 +240,15 @@ class AdminManagementController extends Controller
 
 
 
-
+        /** @var Admin|null $currentAdmin */
         $currentAdmin = auth('admin')->user();
 
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Protect super admin role
-        |--------------------------------------------------------------------------
-        */
-
         if(
             $request->role === 'super_admin'
             &&
-            $currentAdmin->role !== 'super_admin'
+            (!$currentAdmin || $currentAdmin->role !== 'super_admin')
         ){
 
             return response()->json([
@@ -302,8 +260,6 @@ class AdminManagementController extends Controller
             ],403);
 
         }
-
-
 
 
 
@@ -336,9 +292,7 @@ class AdminManagementController extends Controller
                 'in:active,inactive'
             ]
 
-
         ]);
-
 
 
 
@@ -362,12 +316,8 @@ class AdminManagementController extends Controller
 
 
 
-
-
-
-        $oldRole = $admin->role;
+        $oldRole   = $admin->role;
         $oldStatus = $admin->status;
-
 
 
 
@@ -387,14 +337,10 @@ class AdminManagementController extends Controller
 
 
 
-
-
-
         $action = 'ADMIN_UPDATED';
 
-        $description = 'Updated admin ID: '.$admin->id;
-
-
+        $description =
+            'Updated admin ID: '.$admin->id;
 
 
 
@@ -405,16 +351,16 @@ class AdminManagementController extends Controller
             $oldRole !== $admin->role
         ){
 
-            $action = 'ADMIN_ROLE_CHANGED';
+            $action='ADMIN_ROLE_CHANGED';
+
 
             $description =
-                'Changed admin ID: '.$admin->id.
-                ' role from '.$oldRole.
-                ' to '.$admin->role;
+                'Changed admin role from '
+                .$oldRole
+                .' to '
+                .$admin->role;
 
         }
-
-
 
 
 
@@ -425,16 +371,16 @@ class AdminManagementController extends Controller
             $oldStatus !== $admin->status
         ){
 
-            $action = 'ADMIN_STATUS_CHANGED';
+            $action='ADMIN_STATUS_CHANGED';
+
 
             $description =
-                'Changed admin ID: '.$admin->id.
-                ' status from '.$oldStatus.
-                ' to '.$admin->status;
+                'Changed admin status from '
+                .$oldStatus
+                .' to '
+                .$admin->status;
 
         }
-
-
 
 
 
@@ -454,6 +400,8 @@ class AdminManagementController extends Controller
 
             [
 
+                'target_admin'=>$admin->email,
+
                 'old_role'=>$oldRole,
 
                 'new_role'=>$admin->role,
@@ -465,6 +413,9 @@ class AdminManagementController extends Controller
             ]
 
         );
+
+
+
 
 
         AdminNotificationService::send(
@@ -479,7 +430,7 @@ class AdminManagementController extends Controller
 
             [
 
-                'updated_by'=>$currentAdmin->name,
+                'updated_by'=>$currentAdmin?->name,
 
                 'action'=>$action
 
@@ -493,15 +444,19 @@ class AdminManagementController extends Controller
 
         return response()->json([
 
+
             'success'=>true,
 
+
             'message'=>'Admin updated successfully.',
+
 
             'data'=>[
 
                 'admin'=>$admin
 
             ]
+
 
         ]);
 
@@ -528,7 +483,6 @@ class AdminManagementController extends Controller
 
 
 
-
         if(!$admin){
 
 
@@ -546,17 +500,11 @@ class AdminManagementController extends Controller
 
 
 
-
-
-
         return response()->json([
-
 
             'success'=>true,
 
-
             'message'=>'Admin retrieved.',
-
 
             'data'=>[
 
@@ -564,10 +512,10 @@ class AdminManagementController extends Controller
 
             ]
 
-
         ]);
 
     }
+
 
 
 
@@ -589,7 +537,6 @@ class AdminManagementController extends Controller
 
 
 
-
         if(!$admin){
 
 
@@ -603,7 +550,6 @@ class AdminManagementController extends Controller
 
 
         }
-
 
 
 
@@ -622,7 +568,6 @@ class AdminManagementController extends Controller
 
             ]
 
-
         ]);
 
 
@@ -649,19 +594,26 @@ class AdminManagementController extends Controller
 
 
 
-
-
-
         $admin->update([
 
             'password'=>$request->password,
 
-            'force_password_change'=>true
+            'force_password_change'=>true,
+
+            'failed_login_attempts'=>0,
+
+            'locked_until'=>null,
+
+            'last_failed_login_at'=>null
 
         ]);
 
 
 
+
+
+        /** @var Admin|null $currentAdmin */
+        $currentAdmin = auth('admin')->user();
 
 
 
@@ -671,11 +623,11 @@ class AdminManagementController extends Controller
 
             'ADMIN_PASSWORD_RESET',
 
-            'Reset password for admin ID: '.$admin->id,
+            'Reset password for admin: '.$admin->email,
 
             $request,
 
-            auth('admin')->user(),
+            $currentAdmin,
 
             'critical',
 
@@ -688,6 +640,9 @@ class AdminManagementController extends Controller
         );
 
 
+
+
+
         AdminNotificationService::send(
 
             $admin,
@@ -696,11 +651,11 @@ class AdminManagementController extends Controller
 
             'Password Reset',
 
-            'Your admin password was reset by another administrator.',
+            'Your admin password was reset.',
 
             [
 
-                'reset_by'=>auth('admin')->user()->name
+                'reset_by'=>$currentAdmin?->name
 
             ]
 
@@ -709,14 +664,12 @@ class AdminManagementController extends Controller
 
 
 
-        return response()->json([
 
+        return response()->json([
 
             'success'=>true,
 
-
             'message'=>'Admin password reset successfully.'
-
 
         ]);
 
@@ -724,7 +677,7 @@ class AdminManagementController extends Controller
     }
 
         /**
-     * Assign permissions
+     * Update Admin Permissions
      */
     public function permissions(
         Request $request,
@@ -733,65 +686,7 @@ class AdminManagementController extends Controller
     {
 
 
-        $currentAdmin = auth('admin')->user();
-
-
-        if(!$currentAdmin || $currentAdmin->role !== 'super_admin'){
-
-
-            return response()->json([
-
-                'success'=>false,
-
-                'message'=>'Only super admin can manage permissions.'
-
-            ],403);
-
-
-        }
-
-        if(!$currentAdmin){
-
-            return response()->json([
-
-                'success'=>false,
-
-                'message'=>'Unauthenticated admin.'
-
-            ],401);
-
-        }
-
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Only Super Admin can manage permissions
-        |--------------------------------------------------------------------------
-        */
-
-        if($currentAdmin->role !== 'super_admin'){
-
-
-            return response()->json([
-
-                'success'=>false,
-
-                'message'=>'Only super admin can manage permissions.'
-
-            ],403);
-
-
-        }
-
-
-
-
-
-
         $admin = Admin::find($id);
-
 
 
 
@@ -813,11 +708,44 @@ class AdminManagementController extends Controller
 
 
 
+        /** @var Admin|null $currentAdmin */
+        $currentAdmin = auth('admin')->user();
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Only Super Admin
+        |--------------------------------------------------------------------------
+        */
+
+
+        if(
+            !$currentAdmin
+            ||
+            $currentAdmin->role !== 'super_admin'
+        ){
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Only super admin can manage permissions.'
+
+            ],403);
+
+        }
+
+
+
+
 
         $validator = Validator::make($request->all(),[
 
 
-            'permission_ids'=>[
+            'permissions'=>[
 
                 'required',
 
@@ -826,13 +754,11 @@ class AdminManagementController extends Controller
             ],
 
 
-
-            'permission_ids.*'=>[
+            'permissions.*'=>[
 
                 'exists:permissions,id'
 
             ]
-
 
         ]);
 
@@ -861,31 +787,35 @@ class AdminManagementController extends Controller
 
 
 
+        $permissionIds = $request->permissions;
 
 
 
-        $permissionNames = Permission::whereIn(
 
+
+        $permissions = Permission::whereIn(
             'id',
-
-            $request->permission_ids
-
+            $permissionIds
         )
-        ->pluck('name')
-        ->toArray();
+        ->get();
 
 
 
 
 
 
+        $admin->permissions()->sync(
+            $permissionIds
+        );
 
 
-        $admin->permissions()
-
-            ->sync($request->permission_ids);
 
 
+
+        $permissionNames =
+            $permissions
+            ->pluck('name')
+            ->toArray();
 
 
 
@@ -896,7 +826,7 @@ class AdminManagementController extends Controller
 
             'ADMIN_PERMISSION_UPDATED',
 
-            'Updated permissions for admin ID: '.$admin->id,
+            'Updated permissions for admin: '.$admin->email,
 
             $request,
 
@@ -906,6 +836,8 @@ class AdminManagementController extends Controller
 
             [
 
+                'target_admin'=>$admin->email,
+
                 'permissions'=>$permissionNames
 
             ]
@@ -913,25 +845,32 @@ class AdminManagementController extends Controller
         );
 
 
+
+
+
+
+
         AdminNotificationService::send(
 
             $admin,
 
-            'PERMISSION',
+            'SECURITY',
 
-            'Permissions Changed',
+            'Permissions Updated',
 
-            'Your admin permissions have been updated.',
+            'Your admin permissions have been changed.',
 
             [
 
-                'permissions'=>$permissionNames,
+                'updated_by'=>$currentAdmin->name,
 
-                'updated_by'=>$currentAdmin->name
+                'permissions'=>$permissionNames
 
             ]
 
         );
+
+
 
 
 
@@ -948,30 +887,206 @@ class AdminManagementController extends Controller
 
             'data'=>[
 
-
-                'permissions'=>$admin
-                    ->permissions
+                'permissions'=>
+                    $admin
+                    ->permissions()
+                    ->get()
 
             ]
 
 
         ]);
 
+    }
 
+
+
+
+
+
+
+
+
+    /**
+     * Remove Admin Permission
+     */
+    public function removePermission(
+        int $id,
+        int $permission
+    ): JsonResponse
+    {
+
+
+        $admin = Admin::find($id);
+
+
+
+        if(!$admin){
+
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Admin not found.'
+
+            ],404);
+
+        }
+
+
+
+
+
+        /** @var Admin|null $currentAdmin */
+        $currentAdmin = auth('admin')->user();
+
+
+
+
+
+        if(
+            !$currentAdmin
+            ||
+            $currentAdmin->role !== 'super_admin'
+        ){
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Only super admin can manage permissions.'
+
+            ],403);
+
+        }
+
+
+
+
+
+
+        $permissionModel = Permission::find($permission);
+
+
+
+        if(!$permissionModel){
+
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Permission not found.'
+
+            ],404);
+
+
+        }
+
+
+
+
+
+
+
+        $admin
+            ->permissions()
+            ->detach($permission);
+
+
+
+
+
+
+
+        AdminActivityLogger::log(
+
+            'ADMIN_PERMISSION_REMOVED',
+
+            'Removed permission from admin: '.$admin->email,
+
+            request(),
+
+            $currentAdmin,
+
+            'critical',
+
+            [
+
+                'removed_permission'=>
+                    $permissionModel->name
+
+            ]
+
+        );
+
+
+
+
+
+
+
+        AdminNotificationService::send(
+
+            $admin,
+
+            'SECURITY',
+
+            'Permission Removed',
+
+            'A permission was removed from your account.',
+
+            [
+
+                'permission'=>
+                    $permissionModel->name,
+
+                'removed_by'=>
+                    $currentAdmin->name
+
+            ]
+
+        );
+
+
+
+
+
+
+
+        return response()->json([
+
+
+            'success'=>true,
+
+
+            'message'=>'Permission removed successfully.'
+
+
+        ]);
 
     }
 
 
 
 
+
+
+
+
+
     /**
-     * Unlock admin account
+     * Unlock Admin Account
      */
-    public function unlock(int $id): JsonResponse
+    public function unlock(
+        int $id
+    ): JsonResponse
     {
 
 
         $admin = Admin::find($id);
+
 
 
 
@@ -992,36 +1107,15 @@ class AdminManagementController extends Controller
 
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Prevent unlocking super admin
-        |--------------------------------------------------------------------------
-        */
 
 
-        if($admin->role === 'super_admin'){
 
-
-            return response()->json([
-
-                'success'=>false,
-
-                'message'=>'Super admin security cannot be modified.'
-
-            ],403);
-
-
-        }
+        /** @var Admin|null $currentAdmin */
+        $currentAdmin = auth('admin')->user();
 
 
 
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Reset Login Security
-        |--------------------------------------------------------------------------
-        */
 
 
         $admin->update([
@@ -1052,7 +1146,7 @@ class AdminManagementController extends Controller
 
             request(),
 
-            auth('admin')->user(),
+            $currentAdmin,
 
             'warning',
 
@@ -1063,6 +1157,12 @@ class AdminManagementController extends Controller
             ]
 
         );
+
+
+
+
+
+
 
 
         AdminNotificationService::send(
@@ -1077,11 +1177,15 @@ class AdminManagementController extends Controller
 
             [
 
-                'unlocked_by'=>auth('admin')->user()->name
+                'unlocked_by'=>$currentAdmin?->name
 
             ]
 
         );
+
+
+
+
 
 
 
@@ -1092,26 +1196,36 @@ class AdminManagementController extends Controller
             'success'=>true,
 
 
-            'message'=>'Admin account unlocked successfully.',
+            'message'=>'Admin account unlocked successfully.'
 
 
+        ]);
+
+    }
+
+        /**
+     * Deleted Admin List
+     */
+    public function deleted(): JsonResponse
+    {
+
+
+        $admins = Admin::onlyTrashed()
+            ->with('permissions')
+            ->latest()
+            ->paginate(20);
+
+
+
+        return response()->json([
+
+            'success'=>true,
+
+            'message'=>'Deleted admins retrieved.',
 
             'data'=>[
-
-                'admin'=>[
-
-                    'id'=>$admin->id,
-
-                    'email'=>$admin->email,
-
-                    'failed_login_attempts'=>$admin->failed_login_attempts,
-
-                    'locked_until'=>$admin->locked_until
-
-                ]
-
+                'admins'=>$admins
             ]
-
 
         ]);
 
@@ -1120,52 +1234,142 @@ class AdminManagementController extends Controller
 
 
 
+
+
+
+
+
     /**
-     * Remove permission
+     * Restore Deleted Admin
      */
-    public function removePermission(
-        int $id,
-        int $permission
+    public function restore(
+        int $id
     ): JsonResponse
     {
 
 
+        $admin = Admin::onlyTrashed()
+            ->find($id);
+
+
+
+
+        if(!$admin){
+
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Deleted admin not found.'
+
+            ],404);
+
+
+        }
+
+
+
+
+
+
+        /** @var Admin|null $currentAdmin */
         $currentAdmin = auth('admin')->user();
 
 
-        if(!$currentAdmin || $currentAdmin->role !== 'super_admin'){
 
 
-            return response()->json([
 
-                'success'=>false,
-
-                'message'=>'Only super admin can manage permissions.'
-
-            ],403);
-
-
-        }
-
-
-        if(!$currentAdmin){
-
-
-            return response()->json([
-
-                'success'=>false,
-
-                'message'=>'Unauthenticated admin.'
-
-            ],401);
-
-
-        }
+        $admin->restore();
 
 
 
 
 
+        AdminActivityLogger::log(
+
+            'ADMIN_RESTORED',
+
+            'Restored admin: '.$admin->email,
+
+            request(),
+
+            $currentAdmin,
+
+            'warning',
+
+            [
+
+                'restored_admin_id'=>$admin->id,
+
+                'restored_email'=>$admin->email
+
+            ]
+
+        );
+
+
+
+
+
+
+        AdminNotificationService::send(
+
+            $admin,
+
+            'ACCOUNT',
+
+            'Account Restored',
+
+            'Your admin account has been restored.',
+
+            [
+
+                'restored_by'=>$currentAdmin?->name
+
+            ]
+
+        );
+
+
+
+
+
+
+        return response()->json([
+
+
+            'success'=>true,
+
+
+            'message'=>'Admin restored successfully.',
+
+
+            'data'=>[
+
+                'admin'=>$admin
+
+            ]
+
+        ]);
+
+    }
+
+
+
+
+
+
+
+
+
+    /**
+     * Soft Delete Admin
+     */
+    public function destroy(
+        int $id
+    ): JsonResponse
+    {
 
 
         $admin = Admin::find($id);
@@ -1192,62 +1396,26 @@ class AdminManagementController extends Controller
 
 
 
-
-        $permissionModel = Permission::find($permission);
-
-
-
-
-        if(!$permissionModel){
-
-
-            return response()->json([
-
-                'success'=>false,
-
-                'message'=>'Permission not found.'
-
-            ],404);
-
-
-        }
+        /** @var Admin|null $currentAdmin */
+        $currentAdmin = auth('admin')->user();
 
 
 
-
-
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Prevent removing manage_admins from own super admin
-        |--------------------------------------------------------------------------
-        */
 
 
         if(
-
-            $admin->id === $currentAdmin->id
-
+            $currentAdmin
             &&
-
-            $permissionModel->name === 'manage_admins'
-
+            $currentAdmin->id === $admin->id
         ){
-
 
             return response()->json([
 
-
                 'success'=>false,
 
-
-                'message'=>'Cannot remove manage_admins from your own account.'
-
+                'message'=>'You cannot delete your own account.'
 
             ],403);
-
 
         }
 
@@ -1257,12 +1425,11 @@ class AdminManagementController extends Controller
 
 
 
+        $email = $admin->email;
 
 
-        $admin->permissions()
 
-            ->detach($permission);
-
+        $admin->delete();
 
 
 
@@ -1272,9 +1439,9 @@ class AdminManagementController extends Controller
 
         AdminActivityLogger::log(
 
-            'ADMIN_PERMISSION_REMOVED',
+            'ADMIN_DELETED',
 
-            'Removed permission '.$permissionModel->name,
+            'Deleted admin: '.$email,
 
             request(),
 
@@ -1284,9 +1451,9 @@ class AdminManagementController extends Controller
 
             [
 
-                'target_admin'=>$admin->email,
+                'deleted_admin_id'=>$id,
 
-                'permission'=>$permissionModel->name
+                'deleted_email'=>$email
 
             ]
 
@@ -1298,54 +1465,38 @@ class AdminManagementController extends Controller
 
 
 
+        AdminNotificationService::send(
 
-        return response()->json([
+            $admin,
 
+            'ACCOUNT',
 
-            'success'=>true,
+            'Account Disabled',
 
+            'Your admin account has been disabled.',
 
-            'message'=>'Permission removed successfully.'
+            [
 
-
-        ]);
-
-
-
-    }
-
-        /**
-     * Deleted admins list
-     */
-    public function deleted(): JsonResponse
-    {
-
-
-        $admins = Admin::onlyTrashed()
-            ->with('permissions')
-            ->latest('deleted_at')
-            ->get();
-
-
-
-
-        return response()->json([
-
-
-            'success'=>true,
-
-
-            'message'=>'Deleted admins retrieved.',
-
-
-
-            'data'=>[
-
-
-                'admins'=>$admins
-
+                'deleted_by'=>$currentAdmin?->name
 
             ]
+
+        );
+
+
+
+
+
+
+
+        return response()->json([
+
+
+            'success'=>true,
+
+
+            'message'=>'Admin deleted successfully.'
+
 
         ]);
 
@@ -1360,9 +1511,9 @@ class AdminManagementController extends Controller
 
 
     /**
-     * Restore deleted admin
+     * Permanent Delete Admin
      */
-    public function restore(
+    public function forceDelete(
         int $id
     ): JsonResponse
     {
@@ -1394,24 +1545,8 @@ class AdminManagementController extends Controller
 
 
 
-
-        $admin->restore();
-
-
-
-
-
-
-
-        AdminActivityLogger::log(
-
-            'ADMIN_RESTORED',
-
-            'Restored admin: '.$admin->email,
-
-            request()
-
-        );
+        /** @var Admin|null $currentAdmin */
+        $currentAdmin = auth('admin')->user();
 
 
 
@@ -1419,114 +1554,17 @@ class AdminManagementController extends Controller
 
 
 
-
-        return response()->json([
-
-
-            'success'=>true,
-
-
-            'message'=>'Admin restored successfully.'
-
-
-        ]);
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-    /**
-     * Soft delete admin
-     */
-    public function destroy(
-        int $id
-    ): JsonResponse
-    {
-
-
-        $admin = Admin::find($id);
-
-
-
-
-
-        if(!$admin){
-
+        if(
+            !$currentAdmin
+            ||
+            $currentAdmin->role !== 'super_admin'
+        ){
 
             return response()->json([
 
                 'success'=>false,
 
-                'message'=>'Admin not found.'
-
-            ],404);
-
-
-        }
-
-
-
-
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Protect Super Admin
-        |--------------------------------------------------------------------------
-        */
-
-
-        if($admin->role === 'super_admin'){
-
-
-            return response()->json([
-
-
-                'success'=>false,
-
-
-                'message'=>'Super admin cannot be deleted.'
-
-
-            ],403);
-
-
-        }
-
-
-
-
-
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Prevent self delete
-        |--------------------------------------------------------------------------
-        */
-
-
-        if(auth('admin')->id() === $admin->id){
-
-
-            return response()->json([
-
-
-                'success'=>false,
-
-
-                'message'=>'You cannot delete your own account.'
-
+                'message'=>'Only super admin can permanently delete admin.'
 
             ],403);
 
@@ -1543,189 +1581,7 @@ class AdminManagementController extends Controller
 
 
 
-
-
-
-
-        $admin->permissions()
-
-            ->detach();
-
-
-
-
-
-
-        $admin->delete();
-
-
-
-
-
-
-
-
-        AdminActivityLogger::log(
-
-            'ADMIN_DELETED',
-
-            'Deleted admin: '.$email,
-
-            request()
-
-        );
-
-
-
-
-
-
-
-        return response()->json([
-
-
-            'success'=>true,
-
-
-            'message'=>'Admin deleted successfully.'
-
-
-        ]);
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-    /**
-     * Permanently delete admin
-     */
-    public function forceDelete(
-        int $id
-    ): JsonResponse
-    {
-
-
-        $admin = Admin::withTrashed()
-            ->find($id);
-
-
-
-
-
-
-        if(!$admin){
-
-
-            return response()->json([
-
-
-                'success'=>false,
-
-
-                'message'=>'Admin not found.'
-
-
-            ],404);
-
-
-        }
-
-
-
-
-
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Super Admin Protection
-        |--------------------------------------------------------------------------
-        */
-
-
-        if($admin->role === 'super_admin'){
-
-
-            return response()->json([
-
-
-                'success'=>false,
-
-
-                'message'=>'Super admin cannot be permanently deleted.'
-
-
-            ],403);
-
-
-        }
-
-
-
-
-
-
-
-
-
-        DB::transaction(function() use ($admin){
-
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Remove permissions
-            |--------------------------------------------------------------------------
-            */
-
-
-            $admin->permissions()
-
-                ->detach();
-
-
-
-
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Remove activity logs
-            |--------------------------------------------------------------------------
-            */
-
-
-            $admin->activityLogs()
-
-                ->delete();
-
-
-
-
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Permanent delete
-            |--------------------------------------------------------------------------
-            */
-
-
-            $admin->forceDelete();
-
-
-
-        });
-
+        $admin->forceDelete();
 
 
 
@@ -1738,12 +1594,23 @@ class AdminManagementController extends Controller
 
             'ADMIN_FORCE_DELETED',
 
-            'Permanently deleted admin ID: '.$id,
+            'Permanently deleted admin: '.$email,
 
-            request()
+            request(),
+
+            $currentAdmin,
+
+            'critical',
+
+            [
+
+                'deleted_admin_id'=>$id,
+
+                'deleted_email'=>$email
+
+            ]
 
         );
-
 
 
 
@@ -1762,9 +1629,8 @@ class AdminManagementController extends Controller
 
         ]);
 
-
-
     }
+
 
 
 }

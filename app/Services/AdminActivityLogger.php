@@ -16,6 +16,22 @@ class AdminActivityLogger
 {
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Severity Constants
+    |--------------------------------------------------------------------------
+    */
+
+
+    public const INFO = 'info';
+
+    public const WARNING = 'warning';
+
+    public const CRITICAL = 'critical';
+
+
+
+
     /**
      * Create admin activity log
      */
@@ -29,7 +45,7 @@ class AdminActivityLogger
 
         ?Admin $admin = null,
 
-        string $severity = 'info',
+        string $severity = self::INFO,
 
         array $metadata = []
 
@@ -40,66 +56,74 @@ class AdminActivityLogger
         try {
 
 
+
             /*
             |--------------------------------------------------------------------------
-            | Resolve Admin
+            | Validate Severity
+            |--------------------------------------------------------------------------
+            */
+
+
+            if(
+                !in_array(
+                    $severity,
+                    [
+                        self::INFO,
+                        self::WARNING,
+                        self::CRITICAL
+                    ],
+                    true
+                )
+            ){
+
+                $severity = self::INFO;
+
+            }
+
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Resolve Admin Safely
             |--------------------------------------------------------------------------
             */
 
 
             if(!$admin){
 
-                $admin = auth('admin')->user();
+
+                $authAdmin = auth('admin')->user();
+
+
+                if($authAdmin instanceof Admin){
+
+                    $admin = $authAdmin;
+
+                }
+
 
             }
+
+
 
 
 
 
             /*
             |--------------------------------------------------------------------------
-            | Validate Admin Model
+            | Create Log
             |--------------------------------------------------------------------------
             */
-
-
-            if(
-                $admin !== null &&
-                !($admin instanceof Admin)
-            ){
-
-                throw new \Exception(
-                    'Invalid admin model passed to AdminActivityLogger'
-                );
-
-            }
-
-
-
 
 
             return AdminActivityLog::create([
 
 
 
-                /*
-                |--------------------------------------------------------------------------
-                | Admin
-                |--------------------------------------------------------------------------
-                */
-
-
                 'admin_id'=>$admin?->id,
-
-
-
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | Activity
-                |--------------------------------------------------------------------------
-                */
 
 
                 'action'=>$action,
@@ -112,65 +136,38 @@ class AdminActivityLogger
 
 
 
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | Request Information
-                |--------------------------------------------------------------------------
-                */
-
-
-                'ip_address'=>$request?->ip(),
-
-
-                'user_agent'=>$request?->userAgent(),
+                'ip_address'=>
+                    $request?->ip(),
 
 
 
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | Device Information
-                |--------------------------------------------------------------------------
-                */
-
-
-                'device'=>self::device($request),
-
-
-                'browser'=>self::browser($request),
-
-
-                'os'=>self::os($request),
+                'user_agent'=>
+                    $request?->userAgent(),
 
 
 
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | Session
-                |--------------------------------------------------------------------------
-                */
-
-
-                'session_id'=>self::sessionId(),
+                'device'=>
+                    self::device($request),
 
 
 
+                'browser'=>
+                    self::browser($request),
 
 
-                /*
-                |--------------------------------------------------------------------------
-                | Metadata
-                |--------------------------------------------------------------------------
-                */
+
+                'os'=>
+                    self::os($request),
 
 
-                'metadata'=>$metadata,
 
+                'session_id'=>
+                    self::sessionId(),
+
+
+
+                'metadata'=>
+                    $metadata,
 
 
             ]);
@@ -178,13 +175,13 @@ class AdminActivityLogger
 
 
 
-        }catch(Throwable $e){
 
+        }catch(Throwable $e){
 
 
             /*
             |--------------------------------------------------------------------------
-            | Logging failure should not break application
+            | Never Break Application
             |--------------------------------------------------------------------------
             */
 
@@ -195,9 +192,7 @@ class AdminActivityLogger
             return null;
 
 
-
         }
-
 
 
     }
@@ -210,7 +205,7 @@ class AdminActivityLogger
 
 
     /**
-     * Get Session ID safely
+     * Get Session ID
      */
     private static function sessionId(): ?string
     {
@@ -228,9 +223,7 @@ class AdminActivityLogger
             }
 
 
-
         }catch(Throwable $e){
-
 
 
         }
@@ -274,6 +267,7 @@ class AdminActivityLogger
 
 
 
+
         if(
             str_contains(
                 $agent,
@@ -284,6 +278,7 @@ class AdminActivityLogger
             return 'Mobile';
 
         }
+
 
 
 
@@ -325,63 +320,35 @@ class AdminActivityLogger
 
 
 
-        if(
-            str_contains(
-                $agent,
-                'edge'
-            )
-        ){
+        return match(true){
 
-            return 'Edge';
 
-        }
+            str_contains($agent,'edg')
+                => 'Edge',
 
 
 
-
-        if(
-            str_contains(
-                $agent,
-                'chrome'
-            )
-        ){
-
-            return 'Chrome';
-
-        }
+            str_contains($agent,'chrome')
+                && !str_contains($agent,'edg')
+                => 'Chrome',
 
 
 
-
-        if(
-            str_contains(
-                $agent,
-                'firefox'
-            )
-        ){
-
-            return 'Firefox';
-
-        }
+            str_contains($agent,'firefox')
+                => 'Firefox',
 
 
 
-
-        if(
-            str_contains(
-                $agent,
-                'safari'
-            )
-        ){
-
-            return 'Safari';
-
-        }
+            str_contains($agent,'safari')
+                && !str_contains($agent,'chrome')
+                => 'Safari',
 
 
 
+            default
+                => 'Unknown',
 
-        return 'Unknown';
+        };
 
 
     }
@@ -411,6 +378,7 @@ class AdminActivityLogger
 
 
 
+
         $agent = strtolower(
             $request->userAgent() ?? ''
         );
@@ -418,82 +386,44 @@ class AdminActivityLogger
 
 
 
-        if(
-            str_contains(
-                $agent,
-                'windows'
-            )
-        ){
 
-            return 'Windows';
-
-        }
+        return match(true){
 
 
 
-
-        if(
-            str_contains(
-                $agent,
-                'android'
-            )
-        ){
-
-            return 'Android';
-
-        }
+            str_contains($agent,'android')
+                => 'Android',
 
 
 
-
-        if(
-            str_contains(
-                $agent,
-                'iphone'
-            )
-        ){
-
-            return 'iOS';
-
-        }
+            str_contains($agent,'iphone')
+                => 'iOS',
 
 
 
-
-        if(
-            str_contains(
-                $agent,
-                'mac'
-            )
-        ){
-
-            return 'MacOS';
-
-        }
+            str_contains($agent,'windows')
+                => 'Windows',
 
 
 
-
-        if(
-            str_contains(
-                $agent,
-                'linux'
-            )
-        ){
-
-            return 'Linux';
-
-        }
+            str_contains($agent,'mac')
+                => 'MacOS',
 
 
 
+            str_contains($agent,'linux')
+                => 'Linux',
 
-        return 'Unknown';
+
+
+            default
+                => 'Unknown',
+
+
+        };
 
 
     }
-
-
 
 
 
