@@ -53,11 +53,25 @@ class AdminLoginSecurity
     {
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | Super Admin Bypass
+        |--------------------------------------------------------------------------
+        */
+
+        if($admin->role === 'super_admin'){
+
+            return;
+
+        }
+
+
+
         $attempts = $admin->failed_login_attempts + 1;
 
 
 
-        $data=[
+        $data = [
 
 
             'failed_login_attempts'=>$attempts,
@@ -71,17 +85,15 @@ class AdminLoginSecurity
 
 
 
-        if($attempts >= 5){
 
+        if($attempts >= 5){
 
 
             $data['locked_until'] =
                 now()->addMinutes(15);
 
 
-
         }
-
 
 
 
@@ -97,12 +109,19 @@ class AdminLoginSecurity
 
 
 
-
     /**
      * Successful login
      */
     public static function success(Admin $admin): void
     {
+
+
+        if($admin->role === 'super_admin'){
+
+            return;
+
+        }
+
 
 
         $admin->update([
@@ -121,7 +140,6 @@ class AdminLoginSecurity
 
 
     }
-
 
 
 

@@ -847,7 +847,132 @@ class AdminManagementController extends Controller
 
 
 
+    /**
+     * Unlock admin account
+     */
+    public function unlock(int $id): JsonResponse
+    {
 
+
+        $admin = Admin::find($id);
+
+
+
+        if(!$admin){
+
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Admin not found.'
+
+            ],404);
+
+
+        }
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent unlocking super admin
+        |--------------------------------------------------------------------------
+        */
+
+
+        if($admin->role === 'super_admin'){
+
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Super admin security cannot be modified.'
+
+            ],403);
+
+
+        }
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Reset Login Security
+        |--------------------------------------------------------------------------
+        */
+
+
+        $admin->update([
+
+
+            'failed_login_attempts'=>0,
+
+
+            'locked_until'=>null,
+
+
+            'last_failed_login_at'=>null
+
+
+        ]);
+
+
+
+
+
+
+
+        AdminActivityLogger::log(
+
+            'ADMIN_ACCOUNT_UNLOCKED',
+
+            'Unlocked admin account: '.$admin->email,
+
+            request()
+
+        );
+
+
+
+
+
+
+
+        return response()->json([
+
+
+            'success'=>true,
+
+
+            'message'=>'Admin account unlocked successfully.',
+
+
+
+            'data'=>[
+
+                'admin'=>[
+
+                    'id'=>$admin->id,
+
+                    'email'=>$admin->email,
+
+                    'failed_login_attempts'=>$admin->failed_login_attempts,
+
+                    'locked_until'=>$admin->locked_until
+
+                ]
+
+            ]
+
+
+        ]);
+
+    }
 
 
 

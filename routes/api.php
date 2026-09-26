@@ -583,6 +583,12 @@ Route::middleware('permission:manage_admins')
         [AdminManagementController::class,'restore']
     );
 
+    
+    Route::middleware('permission:manage_admins')
+    ->post(
+        '/admins/{id}/unlock',
+        [AdminManagementController::class,'unlock']
+    );
 
 
     Route::delete(

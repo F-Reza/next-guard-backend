@@ -131,7 +131,11 @@ class AdminAuthController extends Controller
         */
 
 
-        if(AdminLoginSecurity::isLocked($admin)){
+        if(
+            $admin->role !== 'super_admin'
+            &&
+            AdminLoginSecurity::isLocked($admin)
+        ){
 
 
 
