@@ -387,7 +387,7 @@ Route::middleware('auth:admin')
 
 
 
-    
+
 
     /*
     |--------------------------------------------------------------------------
@@ -447,6 +447,7 @@ Route::get(
     '/profile',
     [AdminAuthController::class,'profile']
 );
+
 
 
 
