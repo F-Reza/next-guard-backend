@@ -495,17 +495,29 @@ Route::middleware('permission:manage_admins')
 
 
 Route::middleware('permission:view_logs')
-->get(
-    '/activity-logs',
-    [AdminActivityLogController::class,'index']
-);
+->group(function(){
 
 
-Route::get(
-    'admin/activity-logs/security',
-    [AdminActivityLogController::class,'security']
-);
+    Route::get(
 
+        '/activity-logs',
+
+        [AdminActivityLogController::class,'index']
+
+    );
+
+
+
+    Route::get(
+
+        '/activity-logs/security',
+
+        [AdminActivityLogController::class,'security']
+
+    );
+
+
+});
 
 
 

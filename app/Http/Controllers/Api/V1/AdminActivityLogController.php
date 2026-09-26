@@ -206,13 +206,19 @@ class AdminActivityLogController extends Controller
 
         ->whereIn(
 
-            'severity',
+            'action',
 
             [
 
-                'warning',
+                'ADMIN_LOGIN_FAILED',
 
-                'critical'
+                'ADMIN_LOGIN_BLOCKED',
+
+                'ADMIN_ACCOUNT_LOCKED',
+
+                'ADMIN_PASSWORD_CHANGED',
+
+                'ADMIN_PERMISSION_UPDATED'
 
             ]
 
