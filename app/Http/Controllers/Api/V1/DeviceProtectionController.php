@@ -2,109 +2,162 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+
 use App\Http\Controllers\Controller;
+
 use App\Models\Device;
-use App\Models\DeviceProtectionSetting;
-use Illuminate\Http\JsonResponse;
+
+use App\Services\ProtectionService;
+
 use Illuminate\Http\Request;
+
+use Illuminate\Http\JsonResponse;
+
 use Illuminate\Support\Facades\Validator;
+
+
 
 class DeviceProtectionController extends Controller
 {
 
+
+
+
+
     /**
-     * Get device protection settings.
+     * Get protection settings
      */
-    public function show(int $id): JsonResponse
+    public function show(
+        int $id
+    ): JsonResponse
     {
+
+
         $user = auth('api')->user();
 
 
+
         $device = $user->devices()
-            ->where('id', $id)
+            ->where('id',$id)
             ->first();
 
 
-        if (!$device) {
+
+        if(!$device){
+
 
             return response()->json([
-                'success' => false,
-                'message' => 'Device not found.',
-            ], 404);
+
+                'success'=>false,
+
+                'message'=>'Device not found.'
+
+            ],404);
+
 
         }
 
 
-        $settings = DeviceProtectionSetting::firstOrCreate(
+
+        $settings =
+            ProtectionService::get(
+                $device
+            );
+
+
+
+
+        return response()->json([
+
+
+            'success'=>true,
+
+
+            'message'=>'Protection settings retrieved.',
+
+
+            'data'=>[
+
+                'device_id'=>$device->id,
+
+                'settings'=>$settings
+
+            ]
+
+
+        ]);
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    /**
+     * Update protection
+     */
+    public function update(
+        Request $request,
+        int $id
+    ): JsonResponse
+    {
+
+
+        $validator = Validator::make(
+            $request->all(),
             [
-                'device_id' => $device->id,
-            ],
-            [
-                'protection_status' => 'inactive',
+
+                'betting_block'=>'boolean',
+
+                'adult_content_block'=>'boolean',
+
+                'facebook_ad_block'=>'boolean',
+
+                'youtube_ad_block'=>'boolean',
+
+                'safe_search'=>'boolean',
+
+                'dns_protection'=>'boolean',
+
             ]
         );
 
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Protection settings retrieved.',
-            'data' => [
-                'device_id' => $device->id,
-                'settings' => $settings,
-            ],
-        ]);
-    }
 
 
+        if($validator->fails()){
 
-    /**
-     * Update protection settings.
-     */
-    public function update(Request $request, int $id): JsonResponse
-    {
-
-        $validator = Validator::make($request->all(), [
-
-            'betting_block' => [
-                'boolean',
-            ],
-
-            'adult_content_block' => [
-                'boolean',
-            ],
-
-            'facebook_ad_block' => [
-                'boolean',
-            ],
-
-            'youtube_ad_block' => [
-                'boolean',
-            ],
-
-            'safe_search' => [
-                'boolean',
-            ],
-
-            'dns_protection' => [
-                'boolean',
-            ],
-
-        ]);
-
-
-        if ($validator->fails()) {
 
             return response()->json([
+
+
                 'success'=>false,
+
+
                 'message'=>'Validation failed.',
-                'errors'=>$validator->errors(),
+
+
+                'errors'=>$validator->errors()
+
+
             ],422);
+
+
 
         }
 
 
 
+
+
         $user = auth('api')->user();
+
 
 
         $device = $user->devices()
@@ -112,65 +165,94 @@ class DeviceProtectionController extends Controller
             ->first();
 
 
+
+
         if(!$device){
 
+
             return response()->json([
+
                 'success'=>false,
-                'message'=>'Device not found.',
+
+                'message'=>'Device not found.'
+
             ],404);
+
 
         }
 
 
 
-        $settings = DeviceProtectionSetting::updateOrCreate(
 
-            [
-                'device_id'=>$device->id,
-            ],
 
-            array_merge(
+        $settings =
+            ProtectionService::update(
+
+                $device,
+
                 $request->only([
-                    'betting_block',
-                    'adult_content_block',
-                    'facebook_ad_block',
-                    'youtube_ad_block',
-                    'safe_search',
-                    'dns_protection',
-                ]),
-                [
-                    'protection_status'=>'active',
-                    'last_sync_at'=>now(),
-                ]
-            )
 
-        );
+                    'betting_block',
+
+                    'adult_content_block',
+
+                    'facebook_ad_block',
+
+                    'youtube_ad_block',
+
+                    'safe_search',
+
+                    'dns_protection',
+
+                ])
+
+            );
+
+
+
 
 
         return response()->json([
 
+
             'success'=>true,
+
 
             'message'=>'Protection settings updated.',
 
+
             'data'=>[
-                'settings'=>$settings,
-            ],
+
+                'settings'=>$settings
+
+            ]
+
 
         ]);
+
+
 
     }
 
 
 
 
+
+
+
+
+
     /**
-     * Android app sync status.
+     * Android sync
      */
-    public function sync(Request $request, int $id): JsonResponse
+    public function sync(
+        int $id
+    ): JsonResponse
     {
 
+
         $user = auth('api')->user();
+
 
 
         $device = $user->devices()
@@ -178,57 +260,63 @@ class DeviceProtectionController extends Controller
             ->first();
 
 
+
+
         if(!$device){
 
-            return response()->json([
-                'success'=>false,
-                'message'=>'Device not found.',
-            ],404);
-
-        }
-
-
-        $settings = DeviceProtectionSetting::where(
-            'device_id',
-            $device->id
-        )->first();
-
-
-        if(!$settings){
 
             return response()->json([
+
                 'success'=>false,
-                'message'=>'Protection settings not found.',
+
+                'message'=>'Device not found.'
+
             ],404);
+
 
         }
 
 
 
-        $settings->update([
 
-            'last_sync_at'=>now(),
 
-            'protection_status'=>'active',
+        $settings =
+            ProtectionService::sync(
+                $device
+            );
 
-        ]);
+
+
 
 
 
         return response()->json([
 
+
             'success'=>true,
+
 
             'message'=>'Protection sync completed.',
 
+
             'data'=>[
+
                 'device_id'=>$device->id,
-                'last_sync_at'=>$settings->last_sync_at,
+
                 'status'=>$settings->protection_status,
-            ],
+
+                'last_sync_at'=>$settings->last_sync_at
+
+            ]
 
         ]);
 
+
+
     }
+
+
+
+
 
 }
