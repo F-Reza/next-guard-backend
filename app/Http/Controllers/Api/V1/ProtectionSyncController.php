@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 
 use Illuminate\Http\JsonResponse;
 
+use Illuminate\Support\Facades\DB;
+
 
 
 class ProtectionSyncController extends Controller
@@ -33,7 +35,6 @@ class ProtectionSyncController extends Controller
 
 
 
-
         /*
         |--------------------------------------------------------------------------
         | Verify Device Ownership
@@ -42,19 +43,12 @@ class ProtectionSyncController extends Controller
 
 
         $device = $user->devices()
-
-            ->where(
-                'id',
-                $id
-            )
-
+            ->where('id',$id)
             ->first();
 
 
 
-
         if(!$device){
-
 
             return response()->json([
 
@@ -64,7 +58,6 @@ class ProtectionSyncController extends Controller
 
             ],404);
 
-
         }
 
 
@@ -73,7 +66,7 @@ class ProtectionSyncController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Generate Current Protection Payload
+        | Generate Payload
         |--------------------------------------------------------------------------
         */
 
@@ -88,15 +81,24 @@ class ProtectionSyncController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Generate Rules Hash
+        | Stable Hash
         |--------------------------------------------------------------------------
         */
+
+
+        $rules = collect($payload['rules'])
+            ->sortBy('id')
+            ->values()
+            ->toArray();
+
 
 
         $rulesHash = hash(
             'sha256',
-            json_encode($payload['rules'])
+            json_encode($rules)
         );
+
+
 
 
 
@@ -104,14 +106,22 @@ class ProtectionSyncController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Client Existing Hash
+        | Existing Sync Check
         |--------------------------------------------------------------------------
         */
 
 
-        $clientHash = $request->input(
-            'last_rules_hash'
-        );
+        $existing = ProtectionSyncLog::where(
+            'device_id',
+            $device->id
+        )
+        ->where(
+            'rules_hash',
+            $rulesHash
+        )
+        ->latest('id')
+        ->first();
+
 
 
 
@@ -120,26 +130,15 @@ class ProtectionSyncController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | No Changes
+        | Already Applied
         |--------------------------------------------------------------------------
         */
 
 
         if(
-            $clientHash &&
-            hash_equals(
-                $rulesHash,
-                $clientHash
-            )
+            $existing &&
+            $existing->apply_status === 'applied'
         ){
-
-
-            $this->createSyncLog(
-                $device->id,
-                $rulesHash,
-                $request
-            );
-
 
 
             return response()->json([
@@ -148,7 +147,7 @@ class ProtectionSyncController extends Controller
                 'success'=>true,
 
 
-                'message'=>'Protection already up to date.',
+                'message'=>'Protection already applied.',
 
 
 
@@ -161,14 +160,13 @@ class ProtectionSyncController extends Controller
                     'changed'=>false,
 
 
-                    'sync_version'=>1,
+                    'sync_version'=>$existing->sync_version,
 
 
                     'rules_hash'=>$rulesHash,
 
 
-                    'synced_at'=>now()
-
+                    'synced_at'=>$existing->synced_at,
 
 
                 ]
@@ -184,22 +182,131 @@ class ProtectionSyncController extends Controller
 
 
 
+
         /*
         |--------------------------------------------------------------------------
-        | Changed / First Sync
+        | Pending Sync Exists
         |--------------------------------------------------------------------------
         */
 
 
-        $this->createSyncLog(
+        if(
+            $existing &&
+            $existing->apply_status === 'pending'
+        ){
 
-            $device->id,
 
+
+            return response()->json([
+
+
+                'success'=>true,
+
+
+                'message'=>'Protection update pending.',
+
+
+
+                'data'=>[
+
+
+                    'device_id'=>$device->id,
+
+
+                    'changed'=>true,
+
+
+                    'sync_version'=>$existing->sync_version,
+
+
+                    'rules_hash'=>$rulesHash,
+
+
+                    'protection'=>$payload['protection'],
+
+
+                    'rules'=>$rules,
+
+
+                    'synced_at'=>$existing->synced_at,
+
+
+                ]
+
+
+
+            ]);
+
+
+
+        }
+
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create New Sync Version
+        |--------------------------------------------------------------------------
+        */
+
+
+        $log = DB::transaction(function() use(
+            $device,
             $rulesHash,
-
             $request
+        ){
 
-        );
+
+
+            $lastVersion = ProtectionSyncLog::where(
+                'device_id',
+                $device->id
+            )
+            ->lockForUpdate()
+            ->max(
+                'sync_version'
+            );
+
+
+
+
+            return ProtectionSyncLog::create([
+
+
+                'device_id'=>$device->id,
+
+
+                'sync_version'=>
+                    ($lastVersion ?? 0)+1,
+
+
+                'rules_hash'=>$rulesHash,
+
+
+                'apply_status'=>'pending',
+
+
+                'ip_address'=>$request->ip(),
+
+
+                'user_agent'=>$request->userAgent(),
+
+
+                'synced_at'=>now(),
+
+
+            ]);
+
+
+
+        });
+
+
 
 
 
@@ -226,7 +333,7 @@ class ProtectionSyncController extends Controller
                 'changed'=>true,
 
 
-                'sync_version'=>1,
+                'sync_version'=>$log->sync_version,
 
 
                 'rules_hash'=>$rulesHash,
@@ -235,11 +342,10 @@ class ProtectionSyncController extends Controller
                 'protection'=>$payload['protection'],
 
 
-                'rules'=>$payload['rules'],
+                'rules'=>$rules,
 
 
-                'synced_at'=>now()
-
+                'synced_at'=>$log->synced_at,
 
 
             ]
@@ -251,58 +357,6 @@ class ProtectionSyncController extends Controller
 
 
     }
-
-
-
-
-
-
-
-
-    /**
-     * Save sync history
-     */
-    private function createSyncLog(
-
-        int $deviceId,
-
-        string $rulesHash,
-
-        Request $request
-
-    ): void
-    {
-
-
-        ProtectionSyncLog::create([
-
-
-            'device_id'=>$deviceId,
-
-
-            'sync_version'=>1,
-
-
-            'rules_hash'=>$rulesHash,
-
-
-            'ip_address'=>$request->ip(),
-
-
-            'user_agent'=>$request->userAgent(),
-
-
-            'synced_at'=>now(),
-
-
-
-        ]);
-
-
-    }
-
-
-
 
 
 }
