@@ -45,6 +45,7 @@ class SubscriptionInvoice extends Model
 
 
 
+
     public function user(): BelongsTo
     {
 
@@ -53,6 +54,7 @@ class SubscriptionInvoice extends Model
         );
 
     }
+
 
 
 
