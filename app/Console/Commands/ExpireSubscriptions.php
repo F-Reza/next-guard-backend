@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 
 use App\Models\Subscription;
-
+use App\Models\SubscriptionEvent;
 use Illuminate\Console\Command;
 
 use Illuminate\Support\Facades\DB;
@@ -68,11 +68,31 @@ class ExpireSubscriptions extends Command
                 */
 
 
-                $subscription->update([
+        $oldStatus = $subscription->status;
 
-                    'status'=>'expired'
 
-                ]);
+        $subscription->update([
+
+            'status'=>'expired'
+
+        ]);
+
+
+
+        SubscriptionEvent::create([
+
+            'subscription_id'=>$subscription->id,
+
+            'event'=>'expired',
+
+            'old_status'=>$oldStatus,
+
+            'new_status'=>'expired',
+
+            'description'=>
+                'Subscription expired automatically.'
+
+        ]);
 
 
 
