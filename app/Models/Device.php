@@ -54,6 +54,16 @@ class Device extends Model
         );
     }
 
+     public function protectionSyncLogs(): HasMany
+    {
+
+        return $this->hasMany(
+            ProtectionSyncLog::class
+        );
+
+    }
+    
+    
     /**
      * Get the trial events associated with the device.
      */
@@ -61,6 +71,7 @@ class Device extends Model
     {
         return $this->hasMany(TrialEvent::class);
     }
+
 
 
     public function subscriptions(): HasMany

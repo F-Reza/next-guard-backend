@@ -23,9 +23,11 @@ use App\Http\Controllers\Api\V1\SubscriptionPlanController;
 use App\Http\Controllers\Api\V1\LicenseCodeController;
 use App\Http\Controllers\Api\V1\AdminNotificationController;
 use App\Http\Controllers\Api\V1\ProtectionRuleController;
+use App\Http\Controllers\Api\V1\ProtectionSyncController;
 use App\Http\Controllers\Api\V1\AdminSecurityController;
 use App\Http\Controllers\Api\V1\AdminSessionController;
 use App\Http\Controllers\Api\V1\AdminSecurityDashboardController;
+
 
 
 /*
@@ -254,7 +256,14 @@ Route::middleware('auth:api')
     );
 
 
+    Route::get(
+        '/devices/{id}/protection/sync',
+        [ProtectionSyncController::class,'sync']
+    );
 
+
+
+    
     /*
     |--------------------------------------------------------------------------
     | Trial
