@@ -79,18 +79,18 @@ class ExpireSubscriptions extends Command
 
 
 
-        SubscriptionEvent::create([
+        SubscriptionEvent::firstOrCreate([
 
             'subscription_id'=>$subscription->id,
 
             'event'=>'expired',
 
+        ],[
             'old_status'=>$oldStatus,
 
             'new_status'=>'expired',
 
-            'description'=>
-                'Subscription expired automatically.'
+            'description'=>'Subscription expired automatically.'
 
         ]);
 
