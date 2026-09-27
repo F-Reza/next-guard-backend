@@ -19,7 +19,7 @@ use App\Http\Controllers\Api\V1\TrialController;
 
 use App\Http\Controllers\Api\V1\SubscriptionController;
 use App\Http\Controllers\Api\V1\SubscriptionPlanController;
-
+use App\Http\Controllers\Api\V1\DeviceManagementController;
 use App\Http\Controllers\Api\V1\LicenseCodeController;
 use App\Http\Controllers\Api\V1\AdminNotificationController;
 use App\Http\Controllers\Api\V1\ProtectionRuleController;
@@ -211,7 +211,33 @@ Route::middleware('auth:api')
 
 
 
+    Route::patch(
+        '/devices/{id}/rename',
+        [
+            DeviceManagementController::class,
+            'rename'
+        ]
+    );
 
+
+
+    Route::post(
+        '/devices/{id}/revoke',
+        [
+            DeviceManagementController::class,
+            'revoke'
+        ]
+    );
+
+
+
+    Route::post(
+        '/devices/{id}/transfer',
+        [
+            DeviceManagementController::class,
+            'transfer'
+        ]
+    );
 
 
 
