@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 27, 2026 at 03:39 PM
+-- Generation Time: Sep 27, 2026 at 05:32 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -298,13 +298,6 @@ CREATE TABLE `cache` (
   `expiration` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `cache`
---
-
-INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
-('next-guard-api-cache-illuminate:queue:restart', 'i:1790515681;', 2105875681);
-
 -- --------------------------------------------------------
 
 --
@@ -326,6 +319,7 @@ CREATE TABLE `cache_locks` (
 CREATE TABLE `devices` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `user_id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(255) DEFAULT NULL,
   `device_uuid_hash` char(64) NOT NULL,
   `platform` varchar(20) NOT NULL DEFAULT 'android',
   `model` varchar(120) DEFAULT NULL,
@@ -343,10 +337,10 @@ CREATE TABLE `devices` (
 -- Dumping data for table `devices`
 --
 
-INSERT INTO `devices` (`id`, `user_id`, `device_uuid_hash`, `platform`, `model`, `manufacturer`, `android_version`, `app_version`, `management_mode`, `status`, `last_seen_at`, `created_at`, `updated_at`) VALUES
-(1, 1, '9a99afcdb6c372ef38297f86cb266b5553f8e96839ab190fd599cef9ae2dce91', 'android', 'Test Phone', 'Test Manufacturer', '16', '1.0.0', 'standard', 'active', '2026-09-24 02:41:36', '2026-09-24 02:39:43', '2026-09-24 02:41:36'),
-(2, 1, 'a1ddee54421b782cfba548d4ff4efd63fbca9c01503da23908dccaa34eca2a1d', 'android', 'Test Phone 2', 'Test Manufacturer', '16', '1.0.0', 'standard', 'active', '2026-09-24 03:40:36', '2026-09-24 03:40:36', '2026-09-24 03:40:36'),
-(3, 2, '2fab4650568803abb681c779d88f0c8b4807ef852bd2268690e832fdafd176c5', 'android', 'Samsung S24', 'Samsung', '14', '1.0.0', 'standard', 'active', '2026-09-27 03:41:09', '2026-09-27 03:20:49', '2026-09-27 03:41:09');
+INSERT INTO `devices` (`id`, `user_id`, `name`, `device_uuid_hash`, `platform`, `model`, `manufacturer`, `android_version`, `app_version`, `management_mode`, `status`, `last_seen_at`, `created_at`, `updated_at`) VALUES
+(1, 1, NULL, '9a99afcdb6c372ef38297f86cb266b5553f8e96839ab190fd599cef9ae2dce91', 'android', 'Test Phone', 'Test Manufacturer', '16', '1.0.0', 'standard', 'active', '2026-09-24 02:41:36', '2026-09-24 02:39:43', '2026-09-24 02:41:36'),
+(2, 1, NULL, 'a1ddee54421b782cfba548d4ff4efd63fbca9c01503da23908dccaa34eca2a1d', 'android', 'Test Phone 2', 'Test Manufacturer', '16', '1.0.0', 'standard', 'active', '2026-09-24 03:40:36', '2026-09-24 03:40:36', '2026-09-24 03:40:36'),
+(3, 1, 'My Android Phone', '2fab4650568803abb681c779d88f0c8b4807ef852bd2268690e832fdafd176c5', 'android', 'Samsung S24', 'Samsung', '14', '1.0.0', 'standard', 'active', '2026-09-27 03:41:09', '2026-09-27 03:20:49', '2026-09-27 08:25:14');
 
 -- --------------------------------------------------------
 
@@ -375,7 +369,7 @@ CREATE TABLE `device_protection_settings` (
 
 INSERT INTO `device_protection_settings` (`id`, `device_id`, `betting_block`, `adult_content_block`, `facebook_ad_block`, `youtube_ad_block`, `safe_search`, `dns_protection`, `protection_status`, `last_sync_at`, `created_at`, `updated_at`) VALUES
 (1, 1, 1, 1, 1, 1, 1, 1, 'active', '2026-09-24 04:32:52', '2026-09-24 04:30:47', '2026-09-24 04:32:52'),
-(2, 3, 1, 1, 0, 0, 0, 1, 'active', '2026-09-27 06:34:15', '2026-09-27 04:34:07', '2026-09-27 06:34:15');
+(2, 3, 0, 0, 0, 0, 0, 0, 'expired', '2026-09-27 06:34:15', '2026-09-27 04:34:07', '2026-09-27 09:14:04');
 
 -- --------------------------------------------------------
 
@@ -406,15 +400,7 @@ INSERT INTO `device_sessions` (`id`, `user_id`, `device_id`, `refresh_token_hash
 (1, 1, 1, '3a224e2d7fc9bbc6ebf0a0b021ead5f404587d57a319f8ef2a58da9e7b3469a2', 'revoked', '2026-09-24 10:04:27', '2026-09-24 03:58:32', '2026-09-24 04:04:27', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-24 03:58:32', '2026-09-24 04:04:27'),
 (2, 1, 1, '9c6331c6f4050c9a53aeba721b009dea7854587be4a6b4098a3eb49294b9353d', 'revoked', '2026-09-24 10:04:27', '2026-09-24 04:02:04', '2026-09-24 04:04:27', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-24 04:01:15', '2026-09-24 04:04:27'),
 (3, 1, 1, '98a4e12bed4a57e189ac207c359fadb50954003f48722f38a0fd9994316069c4', 'active', '2026-10-24 05:08:26', '2026-09-24 05:08:26', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-24 05:08:26', '2026-09-24 05:08:26'),
-(4, 1, 1, '815b75895f28a00c46d0fa35c17dc07140de2becc75f0a4e7a77ed6b1f21c656', 'active', '2026-10-24 06:06:55', '2026-09-24 06:06:55', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-24 06:06:55', '2026-09-24 06:06:55'),
-(5, 2, 3, 'd6aa68b2474a94dc4a83b19dd2a213949ee4d275bc53a91f07e26cdb3c258d72', 'revoked', '2026-09-27 09:42:25', '2026-09-27 03:20:49', '2026-09-27 03:42:25', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-27 03:20:49', '2026-09-27 03:42:25'),
-(6, 2, 3, '5ad0d1e00c6cd3f84d702d2a9fba5679c1fc44a9ff66e502a31a36e77a4d503c', 'revoked', '2026-09-27 09:42:25', '2026-09-27 03:31:01', '2026-09-27 03:42:25', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-27 03:21:10', '2026-09-27 03:42:25'),
-(7, 2, 3, '46c5f25f93cfe45c23b9e4dac198b0ab389f1cfb89adc4f667899b4ecf27aca9', 'revoked', '2026-09-27 09:42:25', '2026-09-27 03:42:02', '2026-09-27 03:42:25', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-27 03:40:30', '2026-09-27 03:42:25'),
-(8, 2, 3, 'ac7dd3b96086ea6735a7e1b4c72cc17964084d3b2c840f00777be705ffe09559', 'active', '2026-10-27 03:59:59', '2026-09-27 03:59:59', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-27 03:59:59', '2026-09-27 03:59:59'),
-(9, 2, 3, '75a19d1ba431a75f2273a77a1eb691a55ee8d1c2035c3e0a1a9b28afade7243e', 'active', '2026-10-27 05:08:03', '2026-09-27 05:08:03', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-27 05:08:03', '2026-09-27 05:08:03'),
-(10, 2, 3, 'fdf77738b55c604fc71b0207fd186b691af36a71b6a107359480437c2439f148', 'active', '2026-10-27 05:20:49', '2026-09-27 05:20:49', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-27 05:20:49', '2026-09-27 05:20:49'),
-(11, 2, 3, '0b12729bac717895c6374122f1e640fad4e8ce16572cc979dc7646e0c30cdd20', 'active', '2026-10-27 06:23:21', '2026-09-27 06:23:21', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-27 06:23:21', '2026-09-27 06:23:21'),
-(12, 2, 3, '8a29b941f6ff2ebc56d6b612d87b5888b447bf406e0b819be8fef871ee73da38', 'active', '2026-10-27 06:28:31', '2026-09-27 06:28:31', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-27 06:28:31', '2026-09-27 06:28:31');
+(4, 1, 1, '815b75895f28a00c46d0fa35c17dc07140de2becc75f0a4e7a77ed6b1f21c656', 'active', '2026-10-24 06:06:55', '2026-09-24 06:06:55', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-24 06:06:55', '2026-09-24 06:06:55');
 
 -- --------------------------------------------------------
 
@@ -545,7 +531,39 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (29, '2026_09_27_113634_create_protection_sync_logs_table', 22),
 (30, '2026_09_27_115659_add_ack_fields_to_protection_sync_logs_table', 23),
 (31, '2026_09_27_123145_add_retry_fields_to_protection_sync_logs_table', 24),
-(32, '2026_09_27_124859_add_max_retry_fields_to_protection_sync_logs_table', 25);
+(32, '2026_09_27_124859_add_max_retry_fields_to_protection_sync_logs_table', 25),
+(33, '2026_09_27_135531_add_name_to_devices_table', 26),
+(34, '2026_09_27_140517_add_device_limit_to_subscription_plans_table', 27),
+(35, '2026_09_27_144039_create_subscription_events_table', 28),
+(36, '2026_09_27_151617_create_payments_table', 29),
+(37, '2026_09_27_151704_create_subscription_invoices_table', 30);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `payments`
+--
+
+CREATE TABLE `payments` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `subscription_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `gateway` varchar(255) DEFAULT NULL,
+  `transaction_id` varchar(255) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `currency` varchar(255) NOT NULL DEFAULT 'USD',
+  `status` enum('pending','paid','failed','refunded') NOT NULL DEFAULT 'pending',
+  `paid_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `payments`
+--
+
+INSERT INTO `payments` (`id`, `user_id`, `subscription_id`, `gateway`, `transaction_id`, `amount`, `currency`, `status`, `paid_at`, `created_at`, `updated_at`) VALUES
+(1, 2, 3, 'manual', 'TXN-10001', 99.00, 'USD', 'paid', '2026-09-27 09:25:00', '2026-09-27 09:25:00', '2026-09-27 09:25:00');
 
 -- --------------------------------------------------------
 
@@ -668,7 +686,56 @@ CREATE TABLE `subscriptions` (
 INSERT INTO `subscriptions` (`id`, `user_id`, `subscription_plan_id`, `device_id`, `starts_at`, `expires_at`, `status`, `source`, `payment_reference`, `created_at`, `updated_at`) VALUES
 (1, 1, 1, 1, '2026-09-24 05:09:20', '2027-09-24 05:09:20', 'cancelled', 'admin', NULL, '2026-09-24 05:09:20', '2026-09-24 06:44:45'),
 (2, 1, 1, 1, '2026-09-24 05:37:27', '2027-09-24 05:37:27', 'active', 'license', NULL, '2026-09-24 05:37:27', '2026-09-24 05:37:27'),
-(3, 2, 1, 3, '2026-09-27 10:33:49', '2027-09-27 10:33:49', 'active', 'admin', NULL, '2026-09-27 10:33:49', '2026-09-27 10:33:49');
+(3, 2, 1, 3, '2026-09-27 10:33:49', '2026-09-26 09:13:43', 'active', 'admin', 'TXN-10001', '2026-09-27 10:33:49', '2026-09-27 09:25:00');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `subscription_events`
+--
+
+CREATE TABLE `subscription_events` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `subscription_id` bigint(20) UNSIGNED NOT NULL,
+  `event` varchar(255) NOT NULL,
+  `old_status` varchar(255) DEFAULT NULL,
+  `new_status` varchar(255) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `subscription_events`
+--
+
+INSERT INTO `subscription_events` (`id`, `subscription_id`, `event`, `old_status`, `new_status`, `description`, `created_at`, `updated_at`) VALUES
+(1, 3, 'expired', 'active', 'expired', 'Subscription expired automatically.', '2026-09-27 08:44:47', '2026-09-27 08:44:47');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `subscription_invoices`
+--
+
+CREATE TABLE `subscription_invoices` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `subscription_id` bigint(20) UNSIGNED NOT NULL,
+  `invoice_no` varchar(255) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `currency` varchar(255) NOT NULL DEFAULT 'USD',
+  `status` enum('paid','unpaid','cancelled') NOT NULL DEFAULT 'paid',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `subscription_invoices`
+--
+
+INSERT INTO `subscription_invoices` (`id`, `user_id`, `subscription_id`, `invoice_no`, `amount`, `currency`, `status`, `created_at`, `updated_at`) VALUES
+(1, 2, 3, 'INV-20260927-3TRZPI', 99.00, 'USD', 'paid', '2026-09-27 09:25:00', '2026-09-27 09:25:00');
 
 -- --------------------------------------------------------
 
@@ -681,6 +748,7 @@ CREATE TABLE `subscription_plans` (
   `name` varchar(100) NOT NULL,
   `description` text DEFAULT NULL,
   `price` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `device_limit` int(10) UNSIGNED NOT NULL DEFAULT 1,
   `currency` varchar(10) NOT NULL DEFAULT 'BDT',
   `duration_days` int(11) NOT NULL,
   `status` varchar(20) NOT NULL DEFAULT 'active',
@@ -693,9 +761,9 @@ CREATE TABLE `subscription_plans` (
 -- Dumping data for table `subscription_plans`
 --
 
-INSERT INTO `subscription_plans` (`id`, `name`, `description`, `price`, `currency`, `duration_days`, `status`, `features`, `created_at`, `updated_at`) VALUES
-(1, 'Premium', 'Full Next Guard protection', 999.00, 'BDT', 365, 'active', '{\"betting_block\":true,\"adult_block\":true,\"dns_protection\":true}', '2026-09-24 04:53:03', '2026-09-24 04:53:03'),
-(2, 'Basic', 'Basic protection', 499.00, 'BDT', 30, 'active', '{\"betting_block\":true,\"dns_protection\":true}', '2026-09-24 06:48:02', '2026-09-24 06:48:02');
+INSERT INTO `subscription_plans` (`id`, `name`, `description`, `price`, `device_limit`, `currency`, `duration_days`, `status`, `features`, `created_at`, `updated_at`) VALUES
+(1, 'Premium', 'Full Next Guard protection', 999.00, 5, 'BDT', 365, 'active', '{\"betting_block\":true,\"adult_block\":true,\"dns_protection\":true}', '2026-09-24 04:53:03', '2026-09-24 04:53:03'),
+(2, 'Basic', 'Basic protection', 499.00, 1, 'BDT', 30, 'active', '{\"betting_block\":true,\"dns_protection\":true}', '2026-09-24 06:48:02', '2026-09-24 06:48:02');
 
 -- --------------------------------------------------------
 
@@ -899,6 +967,15 @@ ALTER TABLE `migrations`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `payments`
+--
+ALTER TABLE `payments`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `payments_transaction_id_unique` (`transaction_id`),
+  ADD KEY `payments_user_id_foreign` (`user_id`),
+  ADD KEY `payments_subscription_id_foreign` (`subscription_id`);
+
+--
 -- Indexes for table `permissions`
 --
 ALTER TABLE `permissions`
@@ -930,6 +1007,22 @@ ALTER TABLE `subscriptions`
   ADD KEY `subscriptions_user_id_status_index` (`user_id`,`status`),
   ADD KEY `subscriptions_device_id_status_index` (`device_id`,`status`),
   ADD KEY `subscriptions_expires_at_index` (`expires_at`);
+
+--
+-- Indexes for table `subscription_events`
+--
+ALTER TABLE `subscription_events`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `subscription_events_subscription_id_foreign` (`subscription_id`);
+
+--
+-- Indexes for table `subscription_invoices`
+--
+ALTER TABLE `subscription_invoices`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `subscription_invoices_invoice_no_unique` (`invoice_no`),
+  ADD KEY `subscription_invoices_user_id_foreign` (`user_id`),
+  ADD KEY `subscription_invoices_subscription_id_foreign` (`subscription_id`);
 
 --
 -- Indexes for table `subscription_plans`
@@ -1015,7 +1108,7 @@ ALTER TABLE `device_protection_settings`
 -- AUTO_INCREMENT for table `device_sessions`
 --
 ALTER TABLE `device_sessions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -1039,7 +1132,13 @@ ALTER TABLE `license_codes`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+
+--
+-- AUTO_INCREMENT for table `payments`
+--
+ALTER TABLE `payments`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `permissions`
@@ -1064,6 +1163,18 @@ ALTER TABLE `protection_sync_logs`
 --
 ALTER TABLE `subscriptions`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `subscription_events`
+--
+ALTER TABLE `subscription_events`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `subscription_invoices`
+--
+ALTER TABLE `subscription_invoices`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `subscription_plans`
@@ -1152,6 +1263,13 @@ ALTER TABLE `license_codes`
   ADD CONSTRAINT `license_codes_used_device_id_foreign` FOREIGN KEY (`used_device_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL;
 
 --
+-- Constraints for table `payments`
+--
+ALTER TABLE `payments`
+  ADD CONSTRAINT `payments_subscription_id_foreign` FOREIGN KEY (`subscription_id`) REFERENCES `subscriptions` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `payments_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `protection_rules`
 --
 ALTER TABLE `protection_rules`
@@ -1170,6 +1288,19 @@ ALTER TABLE `subscriptions`
   ADD CONSTRAINT `subscriptions_device_id_foreign` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `subscriptions_subscription_plan_id_foreign` FOREIGN KEY (`subscription_plan_id`) REFERENCES `subscription_plans` (`id`) ON UPDATE CASCADE,
   ADD CONSTRAINT `subscriptions_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE;
+
+--
+-- Constraints for table `subscription_events`
+--
+ALTER TABLE `subscription_events`
+  ADD CONSTRAINT `subscription_events_subscription_id_foreign` FOREIGN KEY (`subscription_id`) REFERENCES `subscriptions` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `subscription_invoices`
+--
+ALTER TABLE `subscription_invoices`
+  ADD CONSTRAINT `subscription_invoices_subscription_id_foreign` FOREIGN KEY (`subscription_id`) REFERENCES `subscriptions` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `subscription_invoices_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `trial_entitlements`
