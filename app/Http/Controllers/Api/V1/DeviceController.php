@@ -9,6 +9,8 @@ use App\Models\Device;
 
 use App\Services\DeviceEnrollmentService;
 
+use App\Services\DeviceLimitService;
+
 use Illuminate\Http\Request;
 
 use Illuminate\Http\JsonResponse;
@@ -30,7 +32,6 @@ class DeviceController extends Controller
 
 
 
-
     /**
      * Enroll Device
      */
@@ -43,7 +44,6 @@ class DeviceController extends Controller
         $validator = Validator::make(
             $request->all(),
             [
-
 
                 'device_uuid'=>[
                     'required',
@@ -100,26 +100,23 @@ class DeviceController extends Controller
 
 
 
+
         if($validator->fails()){
 
 
             return response()->json([
 
-
                 'success'=>false,
-
 
                 'message'=>'Validation failed.',
 
-
                 'errors'=>$validator->errors()
-
 
             ],422);
 
 
-
         }
+
 
 
 
@@ -129,6 +126,60 @@ class DeviceController extends Controller
 
 
             $user = auth('api')->user();
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Device Limit Check
+            |--------------------------------------------------------------------------
+            */
+
+
+            $deviceExists = $user
+                ->devices()
+                ->where(
+                    'device_uuid_hash',
+                    hash(
+                        'sha256',
+                        $request->device_uuid
+                    )
+                )
+                ->exists();
+
+
+
+
+
+            if(
+                !$deviceExists &&
+                !DeviceLimitService::canAdd($user)
+            ){
+
+
+                return response()->json([
+
+
+                    'success'=>false,
+
+
+                    'message'=>'Device limit reached.',
+
+
+                    'data'=>DeviceLimitService::info(
+                        $user
+                    )
+
+
+                ],403);
+
+
+
+            }
+
+
+
 
 
 
@@ -151,6 +202,9 @@ class DeviceController extends Controller
 
 
 
+
+
+
             return response()->json([
 
 
@@ -158,9 +212,13 @@ class DeviceController extends Controller
 
 
                 'message'=>
+
                     $result['is_new']
+
                     ? 'Device enrolled successfully.'
+
                     : 'Device already enrolled. Updated successfully.',
+
 
 
 
@@ -168,16 +226,21 @@ class DeviceController extends Controller
 
 
                     'device'=>
+
                         $this->deviceData(
                             $result['device']
                         ),
 
 
+
                     'refresh_token'=>
+
                         $result['refresh_token'],
 
 
+
                     'is_new'=>
+
                         $result['is_new']
 
 
@@ -187,20 +250,19 @@ class DeviceController extends Controller
 
             ],
 
-
             $result['is_new']
+
             ? 201
+
             : 200
-
-
 
             );
 
 
 
 
-        }catch(Throwable $e){
-
+        }
+        catch(Throwable $e){
 
 
             report($e);
@@ -236,7 +298,7 @@ class DeviceController extends Controller
 
 
     /**
-     * Get User Devices
+     * Get Devices
      */
     public function index(): JsonResponse
     {
@@ -246,14 +308,16 @@ class DeviceController extends Controller
 
 
 
-        $devices =
-            $user
+        $devices = $user
             ->devices()
             ->latest()
             ->get()
             ->map(
+
                 fn(Device $device)=>
+
                 $this->deviceData($device)
+
             );
 
 
@@ -270,9 +334,7 @@ class DeviceController extends Controller
 
             'data'=>[
 
-
                 'devices'=>$devices
-
 
             ]
 
@@ -301,12 +363,8 @@ class DeviceController extends Controller
     {
 
 
-        $user = auth('api')->user();
-
-
-
-        $device =
-            $user
+        $device = auth('api')
+            ->user()
             ->devices()
             ->where(
                 'id',
@@ -316,17 +374,16 @@ class DeviceController extends Controller
 
 
 
+
+
         if(!$device){
 
 
             return response()->json([
 
-
                 'success'=>false,
 
-
                 'message'=>'Device not found.'
-
 
             ],404);
 
@@ -349,10 +406,8 @@ class DeviceController extends Controller
 
             'data'=>[
 
-
                 'device'=>
                     $this->deviceData($device)
-
 
             ]
 
@@ -372,7 +427,7 @@ class DeviceController extends Controller
 
 
     /**
-     * Device Heartbeat
+     * Heartbeat
      */
     public function heartbeat(
         int $id
@@ -380,12 +435,8 @@ class DeviceController extends Controller
     {
 
 
-        $user = auth('api')->user();
-
-
-
-        $device =
-            $user
+        $device = auth('api')
+            ->user()
             ->devices()
             ->where(
                 'id',
@@ -395,7 +446,29 @@ class DeviceController extends Controller
 
 
 
+
+
         if(!$device){
+
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Device not found.'
+
+            ],404);
+
+
+
+        }
+
+
+
+
+
+
+        if($device->isRevoked()){
 
 
             return response()->json([
@@ -404,10 +477,10 @@ class DeviceController extends Controller
                 'success'=>false,
 
 
-                'message'=>'Device not found.'
+                'message'=>'Device revoked.'
 
 
-            ],404);
+            ],403);
 
 
 
@@ -426,8 +499,8 @@ class DeviceController extends Controller
             'last_seen_at'=>now()
 
 
-
         ]);
+
 
 
 
@@ -457,7 +530,6 @@ class DeviceController extends Controller
             ]
 
 
-
         ]);
 
 
@@ -471,9 +543,8 @@ class DeviceController extends Controller
 
 
 
-
     /**
-     * Format Device Response
+     * Format Device
      */
     private function deviceData(
         Device $device
@@ -485,6 +556,9 @@ class DeviceController extends Controller
 
 
             'id'=>$device->id,
+
+
+            'name'=>$device->name,
 
 
             'platform'=>$device->platform,
@@ -522,6 +596,7 @@ class DeviceController extends Controller
 
 
     }
+
 
 
 

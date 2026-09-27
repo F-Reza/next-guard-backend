@@ -6,11 +6,11 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 
 use App\Models\Device;
-
 use App\Models\User;
 
-use Illuminate\Http\Request;
+use App\Services\DeviceLimitService;
 
+use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 use Illuminate\Support\Facades\DB;
@@ -28,13 +28,18 @@ class DeviceManagementController extends Controller
     */
 
 
-    private function findDevice(int $id): ?Device
+    private function findDevice(
+        int $id
+    ): ?Device
     {
 
         return auth('api')
             ->user()
             ->devices()
-            ->where('id',$id)
+            ->where(
+                'id',
+                $id
+            )
             ->first();
 
     }
@@ -122,6 +127,7 @@ class DeviceManagementController extends Controller
 
 
 
+
     /*
     |--------------------------------------------------------------------------
     | Revoke Device
@@ -135,7 +141,7 @@ class DeviceManagementController extends Controller
     {
 
 
-        $device=$this->findDevice($id);
+        $device = $this->findDevice($id);
 
 
 
@@ -222,8 +228,11 @@ class DeviceManagementController extends Controller
         $request->validate([
 
             'email'=>[
+
                 'required',
+
                 'email'
+
             ]
 
         ]);
@@ -231,7 +240,8 @@ class DeviceManagementController extends Controller
 
 
 
-        $device=$this->findDevice($id);
+        $device = $this->findDevice($id);
+
 
 
 
@@ -262,6 +272,7 @@ class DeviceManagementController extends Controller
 
 
 
+
         if(!$newOwner){
 
 
@@ -281,6 +292,77 @@ class DeviceManagementController extends Controller
 
 
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Same Owner Check
+        |--------------------------------------------------------------------------
+        */
+
+
+        if(
+            $device->user_id === $newOwner->id
+        ){
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Device already belongs to this user.'
+
+            ],400);
+
+        }
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Device Limit Check
+        |--------------------------------------------------------------------------
+        */
+
+
+        if(
+            !DeviceLimitService::canAdd(
+                $newOwner
+            )
+        ){
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'New owner device limit reached.',
+
+
+                'data'=>DeviceLimitService::info(
+                    $newOwner
+                )
+
+            ],403);
+
+
+        }
+
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Transfer Transaction
+        |--------------------------------------------------------------------------
+        */
+
+
         DB::transaction(function() use(
             $device,
             $newOwner
@@ -296,6 +378,9 @@ class DeviceManagementController extends Controller
             ]);
 
 
+
+
+            // remove old sessions
 
             $device->deviceSessions()
                 ->delete();

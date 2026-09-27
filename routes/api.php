@@ -20,8 +20,10 @@ use App\Http\Controllers\Api\V1\TrialController;
 use App\Http\Controllers\Api\V1\SubscriptionController;
 use App\Http\Controllers\Api\V1\SubscriptionPlanController;
 use App\Http\Controllers\Api\V1\DeviceManagementController;
+use App\Http\Controllers\Api\V1\DeviceLimitController;
 use App\Http\Controllers\Api\V1\LicenseCodeController;
 use App\Http\Controllers\Api\V1\AdminNotificationController;
+
 use App\Http\Controllers\Api\V1\ProtectionRuleController;
 use App\Http\Controllers\Api\V1\ProtectionSyncController;
 use App\Http\Controllers\Api\V1\ProtectionAckController;
@@ -238,6 +240,13 @@ Route::middleware('auth:api')
             'transfer'
         ]
     );
+
+
+    Route::get(
+        '/device-limit',
+        [DeviceLimitController::class, 'status']
+    );
+
 
 
 

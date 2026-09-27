@@ -24,18 +24,24 @@ class SubscriptionPlan extends Model
 
         'features',
 
+        'device_limit',
+
     ];
 
 
     protected function casts(): array
     {
+
         return [
 
-            'price' => 'decimal:2',
+            'price'=>'decimal:2',
 
-            'features' => 'array',
+            'features'=>'array',
+
+            'device_limit'=>'integer',
 
         ];
+
     }
 
     public function subscriptions(): HasMany
