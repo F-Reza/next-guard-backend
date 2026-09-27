@@ -16,7 +16,7 @@ use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\DeviceProtectionController;
 
 use App\Http\Controllers\Api\V1\TrialController;
-
+use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\SubscriptionController;
 use App\Http\Controllers\Api\V1\SubscriptionPlanController;
 use App\Http\Controllers\Api\V1\DeviceManagementController;
@@ -345,9 +345,40 @@ Route::middleware('auth:api')
 
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Payments
+    |--------------------------------------------------------------------------
+    */
+
+
+    Route::post(
+        '/payments/confirm',
+        [
+            PaymentController::class,
+            'confirm'
+        ]
+    );
 
 
 
+    Route::get(
+        '/payments',
+        [
+            PaymentController::class,
+            'history'
+        ]
+    );
+
+
+
+    Route::get(
+        '/invoices',
+        [
+            PaymentController::class,
+            'invoices'
+        ]
+    );
 
 
 
