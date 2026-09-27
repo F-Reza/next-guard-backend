@@ -20,6 +20,12 @@ class ProtectionSyncLog extends Model
 
         'rules_hash',
 
+        'apply_status',
+
+        'applied_at',
+
+        'device_version',
+
         'ip_address',
 
         'user_agent',
@@ -37,6 +43,8 @@ class ProtectionSyncLog extends Model
         return [
 
             'synced_at'=>'datetime',
+
+            'applied_at'=>'datetime',
 
         ];
 

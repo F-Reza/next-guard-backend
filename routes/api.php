@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\V1\LicenseCodeController;
 use App\Http\Controllers\Api\V1\AdminNotificationController;
 use App\Http\Controllers\Api\V1\ProtectionRuleController;
 use App\Http\Controllers\Api\V1\ProtectionSyncController;
+use App\Http\Controllers\Api\V1\ProtectionAckController;
 use App\Http\Controllers\Api\V1\AdminSecurityController;
 use App\Http\Controllers\Api\V1\AdminSessionController;
 use App\Http\Controllers\Api\V1\AdminSecurityDashboardController;
@@ -262,8 +263,14 @@ Route::middleware('auth:api')
     );
 
 
+    Route::post(
+        '/devices/{id}/protection/ack',
+        [ProtectionAckController::class,'acknowledge']
+    );
+        
 
-    
+
+
     /*
     |--------------------------------------------------------------------------
     | Trial
