@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Artisan;
 use App\Jobs\RetryFailedProtectionSync;
 use Illuminate\Support\Facades\Schedule;
 
+
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
@@ -14,3 +15,8 @@ Schedule::job(
     new RetryFailedProtectionSync()
 )
 ->everyFiveMinutes();
+
+Schedule::command(
+    'subscriptions:expire'
+)
+->daily();
