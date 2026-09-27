@@ -2,12 +2,18 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+
 use App\Http\Controllers\Controller;
+
 use App\Models\ProtectionRule;
+
+use App\Services\AdminActivityLogger;
+use App\Services\ProtectionRuleService;
+
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use App\Services\AdminActivityLogger;
+
 
 
 class ProtectionRuleController extends Controller
@@ -15,16 +21,17 @@ class ProtectionRuleController extends Controller
 
 
     /**
-     * Get all active protection rules.
+     * Admin: Get protection rules
      */
-    public function index(): JsonResponse
+    public function index(
+        Request $request
+    ): JsonResponse
     {
 
-        $rules = ProtectionRule::where(
-            'status',
-            'active'
-        )
-        ->get();
+
+        $rules = ProtectionRuleService::list(
+            $request->device_id
+        );
 
 
 
@@ -51,58 +58,89 @@ class ProtectionRuleController extends Controller
 
 
     /**
-     * Create protection rule.
+     * Admin: Create protection rule
      */
-    public function store(Request $request): JsonResponse
+    public function store(
+        Request $request
+    ): JsonResponse
     {
 
 
-        $validator = Validator::make($request->all(),[
+        $validator = Validator::make(
+
+            $request->all(),
+
+            [
+
+                'device_id'=>[
+
+                    'nullable',
+
+                    'integer',
+
+                    'exists:devices,id'
+
+                ],
 
 
-            'category'=>[
 
-                'required',
+                'category'=>[
 
-                'string',
+                    'required',
 
-                'max:50'
+                    'string',
 
-            ],
+                    'max:100'
 
-
-            'domain'=>[
-
-                'required',
-
-                'string',
-
-                'max:255'
-
-            ],
+                ],
 
 
-            'rule_type'=>[
 
-                'nullable',
+                'domain'=>[
 
-                'string',
+                    'required',
 
-                'max:30'
+                    'string',
 
-            ],
+                    'max:255'
 
-
-            'description'=>[
-
-                'nullable',
-
-                'string'
-
-            ],
+                ],
 
 
-        ]);
+
+                'rule_type'=>[
+
+                    'required',
+
+                    'string',
+
+                    'max:50'
+
+                ],
+
+
+
+                'status'=>[
+
+                    'nullable',
+
+                    'in:active,inactive'
+
+                ],
+
+
+
+                'description'=>[
+
+                    'nullable',
+
+                    'string'
+
+                ]
+
+            ]
+
+        );
 
 
 
@@ -133,38 +171,16 @@ class ProtectionRuleController extends Controller
 
 
 
+        $rule = ProtectionRuleService::create(
 
-        $rule = ProtectionRule::create([
+            $request->all()
 
-
-            'category'=>$request->category,
-
-
-            'domain'=>$request->domain,
-
-
-            'rule_type'=>$request->rule_type ?? 'domain',
-
-
-            'status'=>'active',
-
-
-            'description'=>$request->description,
-
-
-        ]);
+        );
 
 
 
 
 
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Admin Activity Log
-        |--------------------------------------------------------------------------
-        */
 
 
         AdminActivityLogger::log(
@@ -187,14 +203,13 @@ class ProtectionRuleController extends Controller
 
 
 
-
         return response()->json([
 
 
             'success'=>true,
 
 
-            'message'=>'Protection rule created.',
+            'message'=>'Protection rule created successfully.',
 
 
             'data'=>[
@@ -216,19 +231,35 @@ class ProtectionRuleController extends Controller
 
 
 
+
     /**
-     * Sync rules for a device.
+     * User Device: Sync protection rules
      */
-    public function deviceRules(int $id): JsonResponse
+    public function deviceRules(
+        int $id
+    ): JsonResponse
     {
+
 
         $user = auth('api')->user();
 
 
 
+
+
         $device = $user->devices()
-            ->where('id',$id)
+
+            ->where(
+
+                'id',
+
+                $id
+
+            )
+
             ->first();
+
+
 
 
 
@@ -253,12 +284,186 @@ class ProtectionRuleController extends Controller
 
 
 
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Global Rules + Device Specific Rules
+        |--------------------------------------------------------------------------
+        */
+
+
+
         $rules = ProtectionRule::where(
-            'status',
-            'active'
+
+
+            function($query) use($device){
+
+
+                $query
+
+                ->whereNull(
+
+                    'device_id'
+
+                )
+
+                ->orWhere(
+
+                    'device_id',
+
+                    $device->id
+
+                );
+
+
+            }
+
+
         )
+
+        ->where(
+
+            'status',
+
+            'active'
+
+        )
+
+        ->latest()
+
         ->get()
-        ->groupBy('category');
+
+        ->groupBy(
+
+            'category'
+
+        );
+
+
+
+
+
+
+
+
+        return response()->json([
+
+
+
+            'success'=>true,
+
+
+
+            'message'=>'Device protection rules synced.',
+
+
+
+            'data'=>[
+
+
+
+                'device_id'=>$device->id,
+
+
+
+                'rules'=>$rules
+
+
+
+            ]
+
+
+
+        ]);
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    /**
+     * Admin: Delete protection rule
+     */
+    public function destroy(
+        int $id
+    ): JsonResponse
+    {
+
+
+        $rule = ProtectionRule::find($id);
+
+
+
+
+
+
+        if(!$rule){
+
+
+            return response()->json([
+
+
+                'success'=>false,
+
+
+                'message'=>'Protection rule not found.'
+
+
+            ],404);
+
+
+        }
+
+
+
+
+
+
+
+        $domain = $rule->domain;
+
+
+
+
+
+
+        ProtectionRuleService::delete(
+
+            $rule
+
+        );
+
+
+
+
+
+
+
+        AdminActivityLogger::log(
+
+
+            'PROTECTION_RULE_DELETED',
+
+
+            'Deleted protection rule: '.$domain,
+
+
+            request()
+
+
+        );
+
+
+
 
 
 
@@ -269,22 +474,17 @@ class ProtectionRuleController extends Controller
             'success'=>true,
 
 
-            'message'=>'Device protection rules synced.',
-
-
-            'data'=>[
-
-                'device_id'=>$device->id,
-
-                'rules'=>$rules
-
-            ]
+            'message'=>'Protection rule deleted successfully.'
 
 
         ]);
 
 
+
     }
+
+
+
 
 
 }

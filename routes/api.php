@@ -248,8 +248,10 @@ Route::middleware('auth:api')
 
 
 
-
-
+    Route::get(
+        '/devices/{id}/protection-rules',
+        [ProtectionRuleController::class,'deviceRules']
+    );
 
 
 
@@ -863,6 +865,11 @@ Route::middleware('permission:manage_rules')
         [ProtectionRuleController::class,'store']
     );
 
+    Route::delete(
+        '/protection-rules/{id}',
+        [ProtectionRuleController::class,'destroy']
+    );   
+    
 
 
 });
