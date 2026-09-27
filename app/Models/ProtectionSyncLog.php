@@ -24,6 +24,14 @@ class ProtectionSyncLog extends Model
 
         'applied_at',
 
+        'retry_count',
+
+        'max_retry',
+
+        'failure_reason',
+
+        'last_retry_at',
+
         'device_version',
 
         'ip_address',
@@ -45,6 +53,8 @@ class ProtectionSyncLog extends Model
             'synced_at'=>'datetime',
 
             'applied_at'=>'datetime',
+
+            'last_retry_at'=>'datetime',
 
         ];
 

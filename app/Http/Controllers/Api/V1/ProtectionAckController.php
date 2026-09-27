@@ -17,6 +17,9 @@ class ProtectionAckController extends Controller
 {
 
 
+    /**
+     * Device acknowledgement
+     */
     public function acknowledge(
         Request $request,
         int $id
@@ -26,6 +29,13 @@ class ProtectionAckController extends Controller
 
         $user = auth('api')->user();
 
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Verify Device
+        |--------------------------------------------------------------------------
+        */
 
 
         $device = $user->devices()
@@ -53,17 +63,25 @@ class ProtectionAckController extends Controller
 
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | Validation
+        |--------------------------------------------------------------------------
+        */
+
+
         $request->validate([
+
 
             'rules_hash'=>[
                 'required',
-                'string',
+                'string'
             ],
 
 
             'status'=>[
                 'required',
-                'in:applied,failed',
+                'in:applied,failed'
             ],
 
 
@@ -71,40 +89,73 @@ class ProtectionAckController extends Controller
                 'nullable',
                 'string',
                 'max:50'
+            ],
+
+
+            'failure_reason'=>[
+                'nullable',
+                'string'
             ]
+
 
         ]);
 
 
 
 
-        $log = ProtectionSyncLog::where(
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Latest Pending Sync
+        |--------------------------------------------------------------------------
+        */
+
+
+        $sync = ProtectionSyncLog::where(
+
             'device_id',
+
             $device->id
+
         )
         ->where(
+
             'rules_hash',
+
             $request->rules_hash
+
         )
         ->where(
+
             'apply_status',
+
             'pending'
+
         )
-        ->latest()
+        ->latest('id')
         ->first();
 
 
 
 
-        if(!$log){
+
+
+        if(!$sync){
+
 
             return response()->json([
 
+
                 'success'=>false,
 
-                'message'=>'Sync record not found.'
+
+                'message'=>'Pending sync record not found.'
+
 
             ],404);
+
 
         }
 
@@ -114,10 +165,19 @@ class ProtectionAckController extends Controller
 
 
 
-        $log->update([
+        /*
+        |--------------------------------------------------------------------------
+        | Update ACK
+        |--------------------------------------------------------------------------
+        */
 
 
-            'apply_status'=>$request->status,
+        $sync->update([
+
+
+            'apply_status'=>
+                $request->status,
+
 
 
             'applied_at'=>
@@ -126,11 +186,25 @@ class ProtectionAckController extends Controller
                     : null,
 
 
+
             'device_version'=>
                 $request->device_version,
 
 
+
+            'failure_reason'=>
+                $request->failure_reason,
+
+
+
+            'retry_count'=>
+                $request->status === 'failed'
+                    ? $sync->retry_count + 1
+                    : $sync->retry_count,
+
+
         ]);
+
 
 
 
@@ -144,21 +218,35 @@ class ProtectionAckController extends Controller
             'success'=>true,
 
 
-            'message'=>'Protection acknowledgement received.',
+            'message'=>
+                $request->status === 'applied'
+                    ? 'Protection applied successfully.'
+                    : 'Protection apply failed.',
+
 
 
             'data'=>[
 
+
                 'device_id'=>$device->id,
 
-                'rules_hash'=>$log->rules_hash,
 
-                'status'=>$log->apply_status,
+                'rules_hash'=>$sync->rules_hash,
 
-                'applied_at'=>$log->applied_at,
+
+                'status'=>$sync->apply_status,
+
+
+                'retry_count'=>$sync->retry_count,
+
+
+                'failure_reason'=>$sync->failure_reason,
+
+
+                'applied_at'=>$sync->applied_at,
+
 
             ]
-
 
 
         ]);
