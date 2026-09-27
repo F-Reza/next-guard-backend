@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 26, 2026 at 03:37 PM
+-- Generation Time: Sep 27, 2026 at 11:44 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -294,6 +294,17 @@ CREATE TABLE `cache` (
   `expiration` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `cache`
+--
+
+INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
+('next-guard-api-cache-BQAd8DS5sndXKuFs', 'a:1:{s:11:\"valid_until\";i:1790502145;}', 1791711805),
+('next-guard-api-cache-qjcZry4JaFaGDkSw', 'a:1:{s:11:\"valid_until\";i:1790501320;}', 1791710320),
+('next-guard-api-cache-r9OEcDhvFdAuW5Qh', 'a:1:{s:11:\"valid_until\";i:1790502029;}', 1791711689),
+('next-guard-api-cache-YA5KVkLvthicTlCk', 'a:1:{s:11:\"valid_until\";i:1790500707;}', 1791710367),
+('next-guard-api-cache-Yf5GAIPAmVxSLFZG', 'a:1:{s:11:\"valid_until\";i:1790500870;}', 1791710530);
+
 -- --------------------------------------------------------
 
 --
@@ -334,7 +345,8 @@ CREATE TABLE `devices` (
 
 INSERT INTO `devices` (`id`, `user_id`, `device_uuid_hash`, `platform`, `model`, `manufacturer`, `android_version`, `app_version`, `management_mode`, `status`, `last_seen_at`, `created_at`, `updated_at`) VALUES
 (1, 1, '9a99afcdb6c372ef38297f86cb266b5553f8e96839ab190fd599cef9ae2dce91', 'android', 'Test Phone', 'Test Manufacturer', '16', '1.0.0', 'standard', 'active', '2026-09-24 02:41:36', '2026-09-24 02:39:43', '2026-09-24 02:41:36'),
-(2, 1, 'a1ddee54421b782cfba548d4ff4efd63fbca9c01503da23908dccaa34eca2a1d', 'android', 'Test Phone 2', 'Test Manufacturer', '16', '1.0.0', 'standard', 'active', '2026-09-24 03:40:36', '2026-09-24 03:40:36', '2026-09-24 03:40:36');
+(2, 1, 'a1ddee54421b782cfba548d4ff4efd63fbca9c01503da23908dccaa34eca2a1d', 'android', 'Test Phone 2', 'Test Manufacturer', '16', '1.0.0', 'standard', 'active', '2026-09-24 03:40:36', '2026-09-24 03:40:36', '2026-09-24 03:40:36'),
+(3, 2, '2fab4650568803abb681c779d88f0c8b4807ef852bd2268690e832fdafd176c5', 'android', 'Samsung S24', 'Samsung', '14', '1.0.0', 'standard', 'active', '2026-09-27 03:41:09', '2026-09-27 03:20:49', '2026-09-27 03:41:09');
 
 -- --------------------------------------------------------
 
@@ -393,7 +405,10 @@ INSERT INTO `device_sessions` (`id`, `user_id`, `device_id`, `refresh_token_hash
 (1, 1, 1, '3a224e2d7fc9bbc6ebf0a0b021ead5f404587d57a319f8ef2a58da9e7b3469a2', 'revoked', '2026-09-24 10:04:27', '2026-09-24 03:58:32', '2026-09-24 04:04:27', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-24 03:58:32', '2026-09-24 04:04:27'),
 (2, 1, 1, '9c6331c6f4050c9a53aeba721b009dea7854587be4a6b4098a3eb49294b9353d', 'revoked', '2026-09-24 10:04:27', '2026-09-24 04:02:04', '2026-09-24 04:04:27', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-24 04:01:15', '2026-09-24 04:04:27'),
 (3, 1, 1, '98a4e12bed4a57e189ac207c359fadb50954003f48722f38a0fd9994316069c4', 'active', '2026-10-24 05:08:26', '2026-09-24 05:08:26', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-24 05:08:26', '2026-09-24 05:08:26'),
-(4, 1, 1, '815b75895f28a00c46d0fa35c17dc07140de2becc75f0a4e7a77ed6b1f21c656', 'active', '2026-10-24 06:06:55', '2026-09-24 06:06:55', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-24 06:06:55', '2026-09-24 06:06:55');
+(4, 1, 1, '815b75895f28a00c46d0fa35c17dc07140de2becc75f0a4e7a77ed6b1f21c656', 'active', '2026-10-24 06:06:55', '2026-09-24 06:06:55', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-24 06:06:55', '2026-09-24 06:06:55'),
+(5, 2, 3, 'd6aa68b2474a94dc4a83b19dd2a213949ee4d275bc53a91f07e26cdb3c258d72', 'revoked', '2026-09-27 09:42:25', '2026-09-27 03:20:49', '2026-09-27 03:42:25', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-27 03:20:49', '2026-09-27 03:42:25'),
+(6, 2, 3, '5ad0d1e00c6cd3f84d702d2a9fba5679c1fc44a9ff66e502a31a36e77a4d503c', 'revoked', '2026-09-27 09:42:25', '2026-09-27 03:31:01', '2026-09-27 03:42:25', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-27 03:21:10', '2026-09-27 03:42:25'),
+(7, 2, 3, '46c5f25f93cfe45c23b9e4dac198b0ab389f1cfb89adc4f667899b4ecf27aca9', 'revoked', '2026-09-27 09:42:25', '2026-09-27 03:42:02', '2026-09-27 03:42:25', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-27 03:40:30', '2026-09-27 03:42:25');
 
 -- --------------------------------------------------------
 
@@ -713,7 +728,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `phone`, `password`, `status`, `email_verified_at`, `phone_verified_at`, `last_login_at`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 'Reza Test', 'reza@example.com', '01700000000', '$2y$12$Mc3EnPGTWLX8aMGStfTStOEcrT0AcfydI5v6mUs/g2YulC83ZYkNu', 'active', NULL, NULL, NULL, NULL, '2026-09-24 02:06:49', '2026-09-24 02:06:49');
+(1, 'Reza Test', 'reza@example.com', '01700000000', '$2y$12$Mc3EnPGTWLX8aMGStfTStOEcrT0AcfydI5v6mUs/g2YulC83ZYkNu', 'active', NULL, NULL, NULL, NULL, '2026-09-24 02:06:49', '2026-09-24 02:06:49'),
+(2, 'Test User', 'user@test.com', '01700000001', '$2y$12$H3OGu8yLg6SZSL0zqamSmem79W9i.vA5c949nwYL1WmHRagZ5HtK.', 'active', NULL, NULL, NULL, NULL, '2026-09-27 03:17:42', '2026-09-27 03:17:42');
 
 --
 -- Indexes for dumped tables
@@ -929,7 +945,7 @@ ALTER TABLE `admin_sessions`
 -- AUTO_INCREMENT for table `devices`
 --
 ALTER TABLE `devices`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `device_protection_settings`
@@ -941,7 +957,7 @@ ALTER TABLE `device_protection_settings`
 -- AUTO_INCREMENT for table `device_sessions`
 --
 ALTER TABLE `device_sessions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -1007,7 +1023,7 @@ ALTER TABLE `trial_events`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Constraints for dumped tables
