@@ -4,14 +4,12 @@ namespace App\Services;
 
 
 use App\Models\User;
-
 use App\Models\Subscription;
-
 use App\Models\SubscriptionPlan;
-
 use App\Models\SubscriptionEvent;
 
 use Illuminate\Support\Facades\DB;
+use Exception;
 
 
 
@@ -19,9 +17,6 @@ class SubscriptionChangeService
 {
 
 
-    /**
-     * Change subscription plan
-     */
     public static function changePlan(
         User $user,
         SubscriptionPlan $newPlan
@@ -29,10 +24,47 @@ class SubscriptionChangeService
     {
 
 
+
         return DB::transaction(function() use(
             $user,
             $newPlan
         ){
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Check Device Limit
+            |--------------------------------------------------------------------------
+            */
+
+
+            $activeDevices = $user
+                ->devices()
+                ->where(
+                    'status',
+                    'active'
+                )
+                ->count();
+
+
+
+
+            if(
+                $activeDevices >
+                $newPlan->device_limit
+            ){
+
+                throw new Exception(
+
+                    'Current devices exceed new plan limit.'
+
+                );
+
+            }
+
+
+
 
 
 
@@ -57,9 +89,12 @@ class SubscriptionChangeService
 
 
 
+
+
+
             /*
             |--------------------------------------------------------------------------
-            | Expire Old Subscription
+            | Close Old Subscription
             |--------------------------------------------------------------------------
             */
 
@@ -67,7 +102,7 @@ class SubscriptionChangeService
             if($oldSubscription){
 
 
-                $oldStatus = 
+                $oldStatus =
                     $oldSubscription->status;
 
 
@@ -77,6 +112,7 @@ class SubscriptionChangeService
                     'status'=>'changed'
 
                 ]);
+
 
 
 
@@ -103,6 +139,8 @@ class SubscriptionChangeService
 
                 ]);
 
+
+
             }
 
 
@@ -121,28 +159,34 @@ class SubscriptionChangeService
             $subscription = Subscription::create([
 
 
-                'user_id'=>$user->id,
+                'user_id'=>
+                    $user->id,
 
 
-                'subscription_plan_id'=>$newPlan->id,
+                'subscription_plan_id'=>
+                    $newPlan->id,
 
 
                 'device_id'=>
                     $oldSubscription?->device_id,
 
 
-                'starts_at'=>now(),
+                'starts_at'=>
+                    now(),
 
 
-                'expires_at'=>now()->addDays(
-                    $newPlan->duration_days
-                ),
+                'expires_at'=>
+                    now()->addDays(
+                        $newPlan->duration_days
+                    ),
 
 
-                'status'=>'active',
+                'status'=>
+                    'active',
 
 
-                'source'=>'upgrade',
+                'source'=>
+                    'upgrade',
 
 
             ]);
@@ -153,11 +197,6 @@ class SubscriptionChangeService
 
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | Event Log
-            |--------------------------------------------------------------------------
-            */
 
 
             SubscriptionEvent::create([

@@ -342,11 +342,33 @@ class SubscriptionController extends Controller
 
 
 
-        $subscription =
-            SubscriptionChangeService::changePlan(
-                $user,
-                $plan
-            );
+        try {
+
+
+            $subscription =
+                SubscriptionChangeService::changePlan(
+                    $user,
+                    $plan
+                );
+
+
+        }
+        catch(\Exception $e){
+
+
+            return response()->json([
+
+
+                'success'=>false,
+
+
+                'message'=>$e->getMessage()
+
+
+            ],422);
+
+
+        }
 
 
 
