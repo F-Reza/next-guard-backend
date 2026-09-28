@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Services\ProtectionEngineService;
+use App\Models\ProtectionViolationLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -70,7 +71,34 @@ class ProtectionCheckController extends Controller
 
             );
 
+            if(
+                isset($result['allowed'])
+                &&
+                $result['allowed'] === false
+            ){
 
+
+                ProtectionViolationLog::create([
+
+
+                    'device_id'=>$device->id,
+
+
+                    'rule_id'=>$result['rule_id'] ?? null,
+
+
+                    'domain'=>$result['domain'],
+
+
+                    'category'=>$result['category'] ?? null,
+
+
+                    'action'=>'blocked',
+
+
+                ]);
+
+            }
 
 
 
