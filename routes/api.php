@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\DeviceHeartbeatController;
 use App\Http\Controllers\Api\V1\DeviceController;
+use App\Http\Controllers\Api\V1\DeviceEventController;
 use App\Http\Controllers\Api\V1\DeviceProtectionController;
 use App\Http\Controllers\Api\V1\ProtectionStatusController;
 use App\Http\Controllers\Api\V1\TrialController;
@@ -315,6 +316,12 @@ Route::middleware('auth:api')
     Route::get(
         '/devices/{id}/protection/sync-history',
         [ProtectionSyncHistoryController::class,'index']
+    );
+
+
+    Route::get(
+        '/devices/{id}/events',
+        [DeviceEventController::class,'index']
     );
 
 
