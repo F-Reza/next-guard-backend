@@ -20,3 +20,14 @@ Schedule::command(
     'subscriptions:expire'
 )
 ->daily();
+
+Schedule::command(
+    'protection:check-timeout'
+)
+->everyMinute();
+
+
+Schedule::command(
+    'protection:retry-sync'
+)
+->everyMinute();
