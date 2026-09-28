@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\V1\ProtectionRuleController;
 use App\Http\Controllers\Api\V1\ProtectionSyncController;
 use App\Http\Controllers\Api\V1\ProtectionAckController;
 use App\Http\Controllers\Api\V1\ProtectionRetryController;
+use App\Http\Controllers\Api\V1\ProtectionCheckController;
 use App\Http\Controllers\Api\V1\ProtectionSyncHistoryController;
 use App\Http\Controllers\Api\V1\AdminSecurityController;
 use App\Http\Controllers\Api\V1\AdminSessionController;
@@ -316,6 +317,16 @@ Route::middleware('auth:api')
             '/protection-sync/{id}/retry',
             [ProtectionRetryController::class,'retry']
         );
+
+
+
+    Route::get(
+        '/devices/{id}/protection/check',
+        [ProtectionCheckController::class,'check']
+    );
+
+
+
 
 
 
