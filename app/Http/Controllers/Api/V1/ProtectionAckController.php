@@ -186,6 +186,11 @@ class ProtectionAckController extends Controller
                     : null,
 
 
+            'synced_at'=>
+                $request->status === 'applied'
+                    ? now()
+                    : null,
+
 
             'device_version'=>
                 $request->device_version,
@@ -244,6 +249,9 @@ class ProtectionAckController extends Controller
 
 
                 'applied_at'=>$sync->applied_at,
+
+                
+                'synced_at'=>$sync->synced_at,
 
 
             ]

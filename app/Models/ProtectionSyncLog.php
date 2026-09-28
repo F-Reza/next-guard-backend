@@ -61,7 +61,13 @@ class ProtectionSyncLog extends Model
     }
 
 
-
+    public function scopePending($query)
+    {
+        return $query->where(
+            'apply_status',
+            'pending'
+        );
+    }
 
 
     public function device(): BelongsTo

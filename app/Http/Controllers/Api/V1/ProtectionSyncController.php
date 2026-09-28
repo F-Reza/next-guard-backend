@@ -297,7 +297,8 @@ class ProtectionSyncController extends Controller
                 'user_agent'=>$request->userAgent(),
 
 
-                'synced_at'=>now(),
+                // 'synced_at'=>now(),
+                'synced_at'=>null,
 
 
             ]);
