@@ -14,7 +14,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\DeviceProtectionController;
-
+use App\Http\Controllers\Api\V1\ProtectionStatusController;
 use App\Http\Controllers\Api\V1\TrialController;
 use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\SubscriptionController;
@@ -300,6 +300,11 @@ Route::middleware('auth:api')
         [ProtectionSyncController::class,'sync']
     );
 
+
+    Route::get(
+        '/devices/{id}/protection/status',
+        [ProtectionStatusController::class,'status']
+    );
 
     Route::post(
         '/devices/{id}/protection/ack',
