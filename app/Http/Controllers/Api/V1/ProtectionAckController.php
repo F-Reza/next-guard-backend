@@ -216,7 +216,6 @@ class ProtectionAckController extends Controller
 
 
 
-
         return response()->json([
 
 
@@ -250,7 +249,7 @@ class ProtectionAckController extends Controller
 
                 'applied_at'=>$sync->applied_at,
 
-                
+
                 'synced_at'=>$sync->synced_at,
 
 
