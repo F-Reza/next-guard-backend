@@ -34,26 +34,30 @@ class DeviceOfflineDetector
         foreach($devices as $device){
 
 
-            $device->update([
-
-                'status'=>'offline'
-
-            ]);
+            if($device->status !== 'offline'){
 
 
+                $device->update([
 
-            DeviceEvent::create([
+                    'status'=>'offline'
 
-                'device_id'=>$device->id,
+                ]);
 
-                'event'=>'offline'
 
-            ]);
 
+                DeviceEvent::create([
+
+                    'device_id'=>$device->id,
+
+                    'event'=>'offline'
+
+                ]);
+
+
+            }
 
 
         }
-
 
 
         return $devices->count();

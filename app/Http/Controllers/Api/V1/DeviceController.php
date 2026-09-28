@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 
 use App\Models\Device;
-
+use App\Models\DeviceEvent;
 use App\Services\DeviceEnrollmentService;
 
 use App\Services\DeviceLimitService;
@@ -501,6 +501,7 @@ class DeviceController extends Controller
 
 
 
+        $oldStatus = $device->status;
 
 
         $device->update([
@@ -517,6 +518,17 @@ class DeviceController extends Controller
         ]);
 
 
+        if($oldStatus === 'offline'
+            && $device->status === 'active'
+        ){
+            DeviceEvent::create([
+
+                'device_id'=>$device->id,
+
+                'event'=>'online'
+
+            ]);
+        }
 
 
 
