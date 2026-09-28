@@ -24,6 +24,7 @@ class ProtectionRetryService
         return DB::transaction(function() use($log){
 
 
+
             /*
             |--------------------------------------------------------------------------
             | Validate Failed State
@@ -74,12 +75,14 @@ class ProtectionRetryService
 
 
 
-
             /*
             |--------------------------------------------------------------------------
-            | Move Back To Pending
+            | Move Failed Sync Back To Pending
             |--------------------------------------------------------------------------
             */
+
+
+            $newRetryCount = $log->retry_count + 1;
 
 
             $log->update([
@@ -88,8 +91,7 @@ class ProtectionRetryService
                 'apply_status'=>'pending',
 
 
-                'retry_count'=>
-                    $log->retry_count + 1,
+                'retry_count'=>$newRetryCount,
 
 
                 'last_retry_at'=>now(),
@@ -112,19 +114,36 @@ class ProtectionRetryService
 
             return [
 
+
                 'retry'=>true,
 
 
-                'retry_count'=>$log->retry_count,
+                'sync_id'=>
+                    $log->id,
 
 
-                'max_retry'=>$log->max_retry,
+                'device_id'=>
+                    $log->device_id,
 
 
-                'status'=>$log->apply_status,
+                'sync_version'=>
+                    $log->sync_version,
 
 
-                'rules_hash'=>$log->rules_hash,
+                'retry_count'=>
+                    $log->retry_count,
+
+
+                'max_retry'=>
+                    $log->max_retry,
+
+
+                'status'=>
+                    $log->apply_status,
+
+
+                'rules_hash'=>
+                    $log->rules_hash,
 
 
             ];

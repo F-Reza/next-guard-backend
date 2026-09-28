@@ -17,13 +17,46 @@ class ProtectionRetryController extends Controller
 {
 
 
+    /**
+     * Retry failed protection sync
+     */
     public function retry(
+        int $device,
         int $id
     ): JsonResponse
     {
 
 
-        $log = ProtectionSyncLog::find($id);
+        $user = auth('api')->user();
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Find Sync Record
+        |--------------------------------------------------------------------------
+        */
+
+
+        $log = ProtectionSyncLog::where(
+
+                'id',
+
+                $id
+
+            )
+            ->where(
+
+                'device_id',
+
+                $device
+
+            )
+            ->first();
+
+
 
 
 
@@ -32,9 +65,12 @@ class ProtectionRetryController extends Controller
 
             return response()->json([
 
+
                 'success'=>false,
 
+
                 'message'=>'Sync record not found.'
+
 
             ],404);
 
@@ -45,10 +81,68 @@ class ProtectionRetryController extends Controller
 
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | Verify Device Ownership
+        |--------------------------------------------------------------------------
+        */
+
+
+        $ownedDevice = $user->devices()
+
+            ->where(
+
+                'id',
+
+                $device
+
+            )
+
+            ->first();
+
+
+
+
+
+        if(!$ownedDevice){
+
+
+            return response()->json([
+
+
+                'success'=>false,
+
+
+                'message'=>'Device not found.'
+
+            ],404);
+
+
+        }
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Retry Sync
+        |--------------------------------------------------------------------------
+        */
+
+
         $result =
+
             ProtectionRetryService::retry(
+
                 $log
+
             );
+
+
+
 
 
 
@@ -57,14 +151,23 @@ class ProtectionRetryController extends Controller
         return response()->json([
 
 
-            'success'=>true,
+
+            'success'=>
+
+                $result['retry'],
+
 
 
             'message'=>
+
                 $result['retry']
+
                 ?
+
                 'Protection retry queued.'
+
                 :
+
                 $result['message'],
 
 
@@ -72,7 +175,20 @@ class ProtectionRetryController extends Controller
             'data'=>$result
 
 
-        ]);
+
+        ],
+
+        $result['retry']
+
+            ?
+
+            200
+
+            :
+
+            422
+
+        );
 
 
 

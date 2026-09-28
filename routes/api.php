@@ -313,11 +313,10 @@ Route::middleware('auth:api')
     );
 
 
-        Route::post(
-            '/protection-sync/{id}/retry',
-            [ProtectionRetryController::class,'retry']
-        );
-
+    Route::post(
+        '/devices/{device}/protection/sync/{id}/retry',
+        [ProtectionRetryController::class,'retry']
+    );
 
 
     Route::get(
