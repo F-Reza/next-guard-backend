@@ -16,13 +16,15 @@ class ProtectionDeactivationService
 
 
     public static function deactivate(
-        Subscription $subscription
+        Subscription $subscription,
+        string $reason = 'subscription_expired'
     ): void
     {
 
 
         DB::transaction(function() use(
-            $subscription
+            $subscription,
+            $reason
         ){
 
 
@@ -54,30 +56,23 @@ class ProtectionDeactivationService
             )
             ->update([
 
-
                 'protection_status'=>'inactive',
 
+                'disabled_reason'=>$reason,
 
                 'betting_block'=>false,
 
-
                 'adult_content_block'=>false,
-
 
                 'facebook_ad_block'=>false,
 
-
                 'youtube_ad_block'=>false,
-
 
                 'safe_search'=>false,
 
-
                 'dns_protection'=>false,
 
-
                 'last_sync_at'=>now(),
-
 
             ]);
 

@@ -22,6 +22,8 @@ class DeviceProtectionSetting extends Model
 
         'protection_status',
 
+        'disabled_reason',
+
         'last_sync_at',
 
     ];

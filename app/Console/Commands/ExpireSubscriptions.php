@@ -90,7 +90,8 @@ class ExpireSubscriptions extends Command
 
 
             ProtectionDeactivationService::deactivate(
-                $subscription
+                $subscription,
+                'subscription_expired'
             );
 
 

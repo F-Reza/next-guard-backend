@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 
 use App\Models\ProtectionSyncLog;
 use App\Models\ProtectionViolationLog;
-
+use App\Models\Subscription;
 use Illuminate\Http\JsonResponse;
 
 
@@ -191,72 +191,67 @@ class ProtectionStatusController extends Controller
 
 
 
-                'subscription'=>[
+            'subscription'=>[
 
 
-                    'status'=>
-                        $subscription?->status
+                'status'=> 
+                    $subscription?->status
+                    ??
+                    null,
+
+
+                'is_active'=>
+                    $subscription?->status === 'active',
+
+
+                'expires_at'=> 
+                    $subscription?->expires_at
+                    ??
+                    null,
+
+
+            ],
+
+
+
+
+
+
+
+
+            'protection'=>[
+
+                'status'=> 
+                    $setting?->protection_status
+                    ??
+                    'inactive',
+
+            'disabled_reason'=>
+                $setting?->disabled_reason,
+                
+
+                'dns_protection'=> 
+                    (bool)(
+                        $setting?->dns_protection
                         ??
-                        null,
+                        false
+                    ),
 
-
-                    'expires_at'=>
-                        $subscription?->expires_at
+                'safe_search'=> 
+                    (bool)(
+                        $setting?->safe_search
                         ??
-                        null,
+                        false
+                    ),
 
-
-                ],
-
-
-
-
-
-
-
-
-                'protection'=>[
-
-
-
-                    'status'=>
-                        $setting?->protection_status
+                'betting_block'=> 
+                    (bool)(
+                        $setting?->betting_block
                         ??
-                        'inactive',
+                        false
+                    ),
 
-
-
-
-                    'dns_protection'=>
-                        (bool)(
-                            $setting?->dns_protection
-                            ??
-                            false
-                        ),
-
-
-
-
-                    'safe_search'=>
-                        (bool)(
-                            $setting?->safe_search
-                            ??
-                            false
-                        ),
-
-
-
-
-                    'betting_block'=>
-                        (bool)(
-                            $setting?->betting_block
-                            ??
-                            false
-                        ),
-
-
-
-                ],
+            ],
 
 
 
