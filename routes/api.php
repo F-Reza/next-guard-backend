@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\DeviceEventController;
 use App\Http\Controllers\Api\V1\DeviceProtectionController;
 use App\Http\Controllers\Api\V1\ProtectionStatusController;
+use App\Http\Controllers\Api\V1\DeviceSummaryController;
 use App\Http\Controllers\Api\V1\TrialController;
 use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\SubscriptionController;
@@ -307,6 +308,8 @@ Route::middleware('auth:api')
         [ProtectionStatusController::class,'status']
     );
 
+
+
     Route::post(
         '/devices/{id}/protection/ack',
         [ProtectionAckController::class,'acknowledge']
@@ -322,6 +325,12 @@ Route::middleware('auth:api')
     Route::get(
         '/devices/{id}/events',
         [DeviceEventController::class,'index']
+    );
+
+
+    Route::get(
+        '/devices/{id}/summary',
+        [DeviceSummaryController::class,'summary']
     );
 
 
