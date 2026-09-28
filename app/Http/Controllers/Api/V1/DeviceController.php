@@ -539,6 +539,9 @@ class DeviceController extends Controller
                 'status'=>$device->status,
 
 
+                'app_version'=>$device->app_version,
+
+
                 'last_seen_at'=>$device->last_seen_at
 
 

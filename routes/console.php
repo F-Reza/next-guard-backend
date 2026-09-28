@@ -16,15 +16,23 @@ Schedule::job(
 )
 ->everyFiveMinutes();
 
+
 Schedule::command(
     'subscriptions:expire'
 )
 ->daily();
 
+
 Schedule::command(
     'protection:check-timeout'
 )
 ->everyMinute();
+
+
+Schedule::command(
+    'devices:mark-offline'
+)
+->everyFiveMinutes();
 
 
 Schedule::command(
