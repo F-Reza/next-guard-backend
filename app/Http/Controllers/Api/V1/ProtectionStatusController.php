@@ -5,10 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 
-use App\Models\Device;
-
 use App\Models\ProtectionSyncLog;
-
 use App\Models\ProtectionViolationLog;
 
 use Illuminate\Http\JsonResponse;
@@ -27,6 +24,13 @@ class ProtectionStatusController extends Controller
 
         $user = auth('api')->user();
 
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Verify Device Ownership
+        |--------------------------------------------------------------------------
+        */
 
 
         $device = $user->devices()
@@ -56,11 +60,44 @@ class ProtectionStatusController extends Controller
 
 
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Protection Setting
+        |--------------------------------------------------------------------------
+        */
+
+
         $setting =
             $device->protectionSetting;
 
 
 
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Subscription
+        |--------------------------------------------------------------------------
+        */
+
+
+        $subscription =
+            $device->subscriptions()
+            ->latest('id')
+            ->first();
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Latest Sync
+        |--------------------------------------------------------------------------
+        */
 
 
         $lastSync =
@@ -83,6 +120,16 @@ class ProtectionStatusController extends Controller
 
 
 
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Blocked Count Today
+        |--------------------------------------------------------------------------
+        */
+
+
         $blockedCount =
             ProtectionViolationLog::where(
                 'device_id',
@@ -92,10 +139,24 @@ class ProtectionStatusController extends Controller
                 'action',
                 'blocked'
             )
+            ->whereDate(
+                'created_at',
+                today()
+            )
             ->count();
 
 
 
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Last Violation
+        |--------------------------------------------------------------------------
+        */
 
 
         $lastViolation =
@@ -112,6 +173,8 @@ class ProtectionStatusController extends Controller
 
 
 
+
+
         return response()->json([
 
 
@@ -121,16 +184,46 @@ class ProtectionStatusController extends Controller
             'data'=>[
 
 
+
                 'device_id'=>$device->id,
 
 
+
+
+
+                'subscription'=>[
+
+
+                    'status'=>
+                        $subscription?->status
+                        ??
+                        null,
+
+
+                    'expires_at'=>
+                        $subscription?->expires_at
+                        ??
+                        null,
+
+
+                ],
+
+
+
+
+
+
+
+
                 'protection'=>[
+
 
 
                     'status'=>
                         $setting?->protection_status
                         ??
                         'inactive',
+
 
 
 
@@ -143,12 +236,14 @@ class ProtectionStatusController extends Controller
 
 
 
+
                     'safe_search'=>
                         (bool)(
                             $setting?->safe_search
                             ??
                             false
                         ),
+
 
 
 
@@ -167,7 +262,10 @@ class ProtectionStatusController extends Controller
 
 
 
+
+
                 'sync'=>[
+
 
 
                     'status'=>
@@ -176,10 +274,14 @@ class ProtectionStatusController extends Controller
                         null,
 
 
+
+
                     'sync_version'=>
                         $lastSync?->sync_version
                         ??
                         null,
+
+
 
 
                     'synced_at'=>
@@ -188,11 +290,19 @@ class ProtectionStatusController extends Controller
                         null,
 
 
+
+
                     'needs_sync'=>
-                        $lastSync &&
+
+                        $lastSync
+                        &&
                         $lastSync->apply_status !== 'applied',
 
+
+
                 ],
+
+
 
 
 
@@ -201,32 +311,41 @@ class ProtectionStatusController extends Controller
                 'violations'=>[
 
 
+
                     'blocked_count'=>
                         $blockedCount,
 
 
 
+
+
                     'last'=>
+
                         $lastViolation
 
                         ?
 
                         [
 
+
                             'domain'=>
                                 $lastViolation->domain,
+
 
 
                             'category'=>
                                 $lastViolation->category,
 
 
+
                             'action'=>
                                 $lastViolation->action,
 
 
+
                             'created_at'=>
                                 $lastViolation->created_at,
+
 
                         ]
 
@@ -235,13 +354,19 @@ class ProtectionStatusController extends Controller
                         null,
 
 
+
                 ],
+
+
+
 
 
             ]
 
 
+
         ]);
+
 
 
     }
