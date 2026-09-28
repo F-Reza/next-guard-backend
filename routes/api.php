@@ -22,8 +22,8 @@ use App\Http\Controllers\Api\V1\SubscriptionPlanController;
 use App\Http\Controllers\Api\V1\DeviceManagementController;
 use App\Http\Controllers\Api\V1\DeviceLimitController;
 use App\Http\Controllers\Api\V1\LicenseCodeController;
+use App\Http\Controllers\Api\V1\LicenseController;
 use App\Http\Controllers\Api\V1\AdminNotificationController;
-
 use App\Http\Controllers\Api\V1\ProtectionRuleController;
 use App\Http\Controllers\Api\V1\ProtectionSyncController;
 use App\Http\Controllers\Api\V1\ProtectionAckController;
@@ -438,6 +438,12 @@ Route::middleware('auth:api')
     Route::post(
         '/license-codes/redeem',
         [LicenseCodeController::class,'redeem']
+    );
+
+
+    Route::post(
+        '/licenses/redeem',
+        [LicenseController::class,'redeem']
     );
 
 
