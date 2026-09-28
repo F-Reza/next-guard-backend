@@ -413,8 +413,16 @@ Route::middleware('auth:api')
     );
 
 
+    Route::post(
+        '/subscriptions/change-plan',
+        [SubscriptionController::class,'changePlan']
+    );
 
 
+    Route::get(
+        '/subscriptions/history',
+        [SubscriptionController::class,'history']
+    );    
 
 
 

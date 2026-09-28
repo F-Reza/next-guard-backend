@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
+use App\Services\SubscriptionChangeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -309,6 +310,101 @@ class SubscriptionController extends Controller
         ]);
 
     }
+
+
+    public function changePlan(
+        Request $request
+    ): JsonResponse
+    {
+
+
+        $request->validate([
+
+
+            'plan_id'=>[
+                'required',
+                'exists:subscription_plans,id'
+            ]
+
+
+        ]);
+
+
+
+        $user = auth('api')->user();
+
+
+
+        $plan = SubscriptionPlan::find(
+            $request->plan_id
+        );
+
+
+
+
+        $subscription =
+            SubscriptionChangeService::changePlan(
+                $user,
+                $plan
+            );
+
+
+
+
+
+        return response()->json([
+
+
+            'success'=>true,
+
+
+            'message'=>
+                'Subscription plan changed successfully.',
+
+
+            'data'=>[
+
+                'subscription'=>$subscription
+
+            ]
+
+
+        ]);
+
+
+
+    }
+
+    public function history(): JsonResponse
+    {
+
+        $subscriptions = auth('api')
+            ->user()
+            ->subscriptions()
+            ->with('plan')
+            ->latest()
+            ->get();
+
+
+
+        return response()->json([
+
+            'success'=>true,
+
+            'message'=>'Subscription history retrieved.',
+
+
+            'data'=>[
+
+                'subscriptions'=>$subscriptions
+
+            ]
+
+        ]);
+
+    }
+
+
 
 
 }
