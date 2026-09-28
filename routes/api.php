@@ -291,6 +291,8 @@ Route::middleware('auth:api')
 
 
 
+    
+
     Route::get(
         '/devices/{id}/protection-rules',
         [ProtectionRuleController::class,'deviceRules']
