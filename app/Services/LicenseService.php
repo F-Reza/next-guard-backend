@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Device;
 use App\Models\LicenseCode;
 use App\Models\Subscription;
+use App\Services\ProtectionActivationService;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -178,7 +179,10 @@ class LicenseService
 
             ]);
 
-
+            
+            ProtectionActivationService::activate(
+                $subscription
+            );
 
 
 

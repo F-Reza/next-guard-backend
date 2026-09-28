@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Payment;
 use App\Models\Subscription;
 use App\Models\SubscriptionInvoice;
+use App\Services\ProtectionActivationService;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -102,7 +103,9 @@ class PaymentService
             ]);
 
 
-
+            ProtectionActivationService::activate(
+                $subscription
+            );
 
 
 

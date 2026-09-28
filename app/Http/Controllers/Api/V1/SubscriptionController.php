@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
 use App\Services\SubscriptionChangeService;
+use App\Services\ProtectionActivationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -133,6 +134,9 @@ class SubscriptionController extends Controller
 
         ]);
 
+        ProtectionActivationService::activate(
+            $subscription
+        );
 
 
         return response()->json([
