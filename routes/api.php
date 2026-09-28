@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 
 
 use App\Http\Controllers\Api\V1\AuthController;
-
+use App\Http\Controllers\Api\V1\DeviceHeartbeatController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\DeviceProtectionController;
 use App\Http\Controllers\Api\V1\ProtectionStatusController;

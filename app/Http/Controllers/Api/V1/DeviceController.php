@@ -430,19 +430,32 @@ class DeviceController extends Controller
      * Heartbeat
      */
     public function heartbeat(
+        Request $request,
         int $id
     ): JsonResponse
     {
 
 
-        $device = auth('api')
-            ->user()
-            ->devices()
-            ->where(
-                'id',
-                $id
-            )
-            ->first();
+    $request->validate([
+
+        'app_version'=>[
+            'nullable',
+            'string',
+            'max:50'
+        ]
+
+    ]);
+
+
+
+    $device = auth('api')
+        ->user()
+        ->devices()
+        ->where(
+            'id',
+            $id
+        )
+        ->first();
 
 
 
@@ -492,12 +505,14 @@ class DeviceController extends Controller
 
         $device->update([
 
-
             'status'=>'active',
 
+            'last_seen_at'=>now(),
 
-            'last_seen_at'=>now()
-
+            'app_version'=>
+                $request->app_version
+                ??
+                $device->app_version,
 
         ]);
 
