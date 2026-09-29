@@ -116,72 +116,22 @@ class ProtectionSyncController extends Controller
 
 
 
-
         /*
         |--------------------------------------------------------------------------
-        | Find Existing States
+        | Latest Sync State
         |--------------------------------------------------------------------------
         */
 
 
-        $pending = ProtectionSyncLog::where(
+        $latest = ProtectionSyncLog::where(
 
                 'device_id',
 
                 $device->id
 
             )
-            ->where(
-
-                'apply_status',
-
-                'pending'
-
-            )
             ->latest('id')
             ->first();
-
-
-
-
-        $failed = ProtectionSyncLog::where(
-
-                'device_id',
-
-                $device->id
-
-            )
-            ->where(
-
-                'apply_status',
-
-                'failed'
-
-            )
-            ->latest('id')
-            ->first();
-
-
-
-
-        $applied = ProtectionSyncLog::where(
-
-                'device_id',
-
-                $device->id
-
-            )
-            ->where(
-
-                'apply_status',
-
-                'applied'
-
-            )
-            ->latest('id')
-            ->first();
-
-
 
 
 
@@ -190,13 +140,15 @@ class ProtectionSyncController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Pending Sync
+        | Pending
         |--------------------------------------------------------------------------
         */
 
 
-        if($pending){
-
+        if(
+            $latest &&
+            $latest->apply_status === 'pending'
+        ){
 
             return response()->json([
 
@@ -205,6 +157,7 @@ class ProtectionSyncController extends Controller
 
 
                 'message'=>'Protection update pending.',
+
 
 
                 'data'=>[
@@ -216,10 +169,10 @@ class ProtectionSyncController extends Controller
                     'changed'=>true,
 
 
-                    'sync_version'=>$pending->sync_version,
+                    'sync_version'=>$latest->sync_version,
 
 
-                    'rules_hash'=>$pending->rules_hash,
+                    'rules_hash'=>$latest->rules_hash,
 
 
                     'protection'=>$payload['protection'],
@@ -228,10 +181,11 @@ class ProtectionSyncController extends Controller
                     'rules'=>$rules,
 
 
-                    'synced_at'=>$pending->synced_at,
+                    'synced_at'=>$latest->synced_at,
 
 
                 ]
+
 
 
             ]);
@@ -247,13 +201,15 @@ class ProtectionSyncController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Failed Sync
+        | Failed
         |--------------------------------------------------------------------------
         */
 
 
-        if($failed){
-
+        if(
+            $latest &&
+            $latest->apply_status === 'failed'
+        ){
 
             return response()->json([
 
@@ -264,32 +220,37 @@ class ProtectionSyncController extends Controller
                 'message'=>'Protection sync failed. Retry required.',
 
 
+
                 'data'=>[
 
 
                     'device_id'=>$device->id,
 
 
-                    'sync_version'=>$failed->sync_version,
+                    'sync_version'=>$latest->sync_version,
 
 
-                    'rules_hash'=>$failed->rules_hash,
+                    'rules_hash'=>$latest->rules_hash,
 
 
-                    'retry_count'=>$failed->retry_count,
+                    'retry_count'=>$latest->retry_count,
 
 
-                    'max_retry'=>$failed->max_retry,
+                    'max_retry'=>$latest->max_retry,
 
 
-                    'failure_reason'=>$failed->failure_reason,
+                    'retry_available'=>
+                        $latest->retry_count < $latest->max_retry,
+
+
+                    'failure_reason'=>$latest->failure_reason,
 
 
                 ]
 
 
-            ]);
 
+            ]);
 
         }
 
@@ -302,13 +263,16 @@ class ProtectionSyncController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Already Applied
+        | Already Applied With Same Rules
         |--------------------------------------------------------------------------
         */
 
 
-        if($applied){
-
+        if(
+            $latest &&
+            $latest->apply_status === 'applied' &&
+            $latest->rules_hash === $rulesHash
+        ){
 
             return response()->json([
 
@@ -317,6 +281,7 @@ class ProtectionSyncController extends Controller
 
 
                 'message'=>'Protection already applied.',
+
 
 
                 'data'=>[
@@ -328,23 +293,22 @@ class ProtectionSyncController extends Controller
                     'changed'=>false,
 
 
-                    'sync_version'=>$applied->sync_version,
+                    'sync_version'=>$latest->sync_version,
 
 
-                    'rules_hash'=>$applied->rules_hash,
+                    'rules_hash'=>$latest->rules_hash,
 
 
-                    'synced_at'=>$applied->synced_at,
+                    'synced_at'=>$latest->synced_at,
 
 
                 ]
 
 
+
             ]);
 
-
         }
-
 
 
 
@@ -369,7 +333,6 @@ class ProtectionSyncController extends Controller
             $request
 
         ){
-
 
 
             $lastVersion = ProtectionSyncLog::where(
@@ -434,9 +397,7 @@ class ProtectionSyncController extends Controller
         return response()->json([
 
 
-
             'success'=>true,
-
 
 
             'message'=>'Protection updated.',
@@ -444,7 +405,6 @@ class ProtectionSyncController extends Controller
 
 
             'data'=>[
-
 
 
                 'device_id'=>$device->id,
