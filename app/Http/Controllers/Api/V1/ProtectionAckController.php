@@ -4,10 +4,15 @@ namespace App\Http\Controllers\Api\V1;
 
 
 use App\Http\Controllers\Controller;
+
 use Illuminate\Support\Facades\DB;
+
 use App\Models\ProtectionSyncLog;
+
 use App\Models\DeviceProtectionSetting;
+
 use Illuminate\Http\Request;
+
 use Illuminate\Http\JsonResponse;
 
 
@@ -61,7 +66,6 @@ class ProtectionAckController extends Controller
 
 
 
-
         /*
         |--------------------------------------------------------------------------
         | Validation
@@ -111,51 +115,63 @@ class ProtectionAckController extends Controller
 
 
 
-
         /*
         |--------------------------------------------------------------------------
-        | Latest Pending Sync
+        | Already Applied Check
         |--------------------------------------------------------------------------
         */
 
+
         $alreadyApplied = ProtectionSyncLog::where(
-            'device_id',
-            $device->id
-        )
-        ->where(
-            'sync_version',
-            $request->sync_version
-        )
-        ->where(
-            'rules_hash',
-            $request->rules_hash
-        )
-        ->where(
-            'apply_status',
-            'applied'
-        )
-        ->first();
+                'device_id',
+                $device->id
+            )
+            ->where(
+                'sync_version',
+                $request->sync_version
+            )
+            ->where(
+                'rules_hash',
+                $request->rules_hash
+            )
+            ->where(
+                'apply_status',
+                'applied'
+            )
+            ->first();
+
 
 
         if($alreadyApplied){
 
+
             return response()->json([
+
 
                 'success'=>true,
 
+
                 'message'=>'Protection already acknowledged.',
+
 
                 'data'=>[
 
+
                     'device_id'=>$device->id,
+
 
                     'sync_version'=>$alreadyApplied->sync_version,
 
+
                     'status'=>$alreadyApplied->apply_status,
+
 
                     'synced_at'=>$alreadyApplied->synced_at,
 
+
                 ]
+
+
 
             ]);
 
@@ -163,37 +179,48 @@ class ProtectionAckController extends Controller
 
 
 
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Find Pending Sync
+        |--------------------------------------------------------------------------
+        */
+
+
         $sync = ProtectionSyncLog::where(
 
-            'device_id',
+                'device_id',
 
-            $device->id
+                $device->id
 
-        )
-        ->where(
+            )
+            ->where(
 
-            'sync_version',
+                'sync_version',
 
-            $request->sync_version
+                $request->sync_version
 
-        )
-        ->where(
+            )
+            ->where(
 
-            'rules_hash',
+                'rules_hash',
 
-            $request->rules_hash
+                $request->rules_hash
 
-        )
-        ->where(
+            )
+            ->where(
 
-            'apply_status',
+                'apply_status',
 
-            'pending'
+                'pending'
 
-        )
-        ->latest('id')
-        ->first();
-
+            )
+            ->latest('id')
+            ->first();
 
 
 
@@ -211,6 +238,7 @@ class ProtectionAckController extends Controller
                 'message'=>'Pending sync record not found.'
 
 
+
             ],404);
 
 
@@ -224,67 +252,145 @@ class ProtectionAckController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Update ACK
+        | Apply Device ACK
         |--------------------------------------------------------------------------
         */
 
 
         DB::transaction(function() use(
+
             $sync,
+
             $request,
+
             $device
+
         ){
+
 
             $sync->update([
 
+
+
                 'apply_status'=>$request->status,
 
+
+
                 'applied_at'=>
+
                     $request->status === 'applied'
+
                         ? now()
+
                         : null,
+
+
 
                 'synced_at'=>
+
                     $request->status === 'applied'
+
                         ? now()
+
                         : null,
+
+
 
                 'device_version'=>
+
                     $request->device_version
+
                     ??
+
                     $sync->device_version,
 
+
+
+
                 'failure_reason'=>
+
                     $request->status === 'failed'
+
                         ? $request->failure_reason
+
                         : null,
 
+
+
+
+
                 'retry_count'=>
+
                     $request->status === 'failed'
-                        ? $sync->retry_count + 1
-                        : $sync->retry_count,
+
+                    ?
+
+                    min(
+
+                        $sync->retry_count + 1,
+
+                        $sync->max_retry
+
+                    )
+
+                    :
+
+                    $sync->retry_count,
+
+
 
             ]);
 
 
 
+
+
             if(
+
                 $request->status === 'applied'
+
             ){
 
+
+
                 DeviceProtectionSetting::where(
+
                     'device_id',
+
                     $device->id
+
                 )
                 ->update([
 
+
                     'last_sync_at'=>now(),
+
 
                 ]);
 
+
+
             }
 
+
+
         });
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Refresh Updated Data
+        |--------------------------------------------------------------------------
+        */
+
+
+        $sync->refresh();
+
+
 
 
 
@@ -293,41 +399,65 @@ class ProtectionAckController extends Controller
         return response()->json([
 
 
+
             'success'=>true,
 
 
+
             'message'=>
-                $request->status === 'applied'
+
+                $sync->apply_status === 'applied'
+
                     ? 'Protection applied successfully.'
+
                     : 'Protection apply failed.',
+
+
 
 
 
             'data'=>[
 
 
+
                 'device_id'=>$device->id,
+
+
+
+                'sync_version'=>$sync->sync_version,
+
 
 
                 'rules_hash'=>$sync->rules_hash,
 
 
+
                 'status'=>$sync->apply_status,
+
 
 
                 'retry_count'=>$sync->retry_count,
 
 
+
+                'max_retry'=>$sync->max_retry,
+
+
+
                 'failure_reason'=>$sync->failure_reason,
+
 
 
                 'applied_at'=>$sync->applied_at,
 
 
+
                 'synced_at'=>$sync->synced_at,
 
 
+
             ]
+
 
 
         ]);

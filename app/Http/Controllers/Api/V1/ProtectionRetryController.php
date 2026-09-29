@@ -31,6 +31,38 @@ class ProtectionRetryController extends Controller
 
 
 
+        /*
+        |--------------------------------------------------------------------------
+        | Verify Device Ownership
+        |--------------------------------------------------------------------------
+        */
+
+
+        $ownedDevice = $user->devices()
+            ->where(
+                'id',
+                $device
+            )
+            ->first();
+
+
+
+        if(!$ownedDevice){
+
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Device not found.'
+
+            ],404);
+
+
+        }
+
+
+
 
 
         /*
@@ -59,7 +91,6 @@ class ProtectionRetryController extends Controller
 
 
 
-
         if(!$log){
 
 
@@ -83,66 +114,14 @@ class ProtectionRetryController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Verify Device Ownership
+        | Retry
         |--------------------------------------------------------------------------
         */
 
 
-        $ownedDevice = $user->devices()
-
-            ->where(
-
-                'id',
-
-                $device
-
-            )
-
-            ->first();
-
-
-
-
-
-        if(!$ownedDevice){
-
-
-            return response()->json([
-
-
-                'success'=>false,
-
-
-                'message'=>'Device not found.'
-
-            ],404);
-
-
-        }
-
-
-
-
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Retry Sync
-        |--------------------------------------------------------------------------
-        */
-
-
-        $result =
-
-            ProtectionRetryService::retry(
-
-                $log
-
-            );
-
-
-
+        $result = ProtectionRetryService::retry(
+            $log
+        );
 
 
 
@@ -151,9 +130,7 @@ class ProtectionRetryController extends Controller
         return response()->json([
 
 
-
             'success'=>
-
                 $result['retry'],
 
 
@@ -164,7 +141,7 @@ class ProtectionRetryController extends Controller
 
                 ?
 
-                'Protection retry queued.'
+                'Protection retry started.'
 
                 :
 
@@ -189,7 +166,6 @@ class ProtectionRetryController extends Controller
             422
 
         );
-
 
 
     }
