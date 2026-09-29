@@ -134,36 +134,31 @@ class ProtectionActivationService
             );
 
 
+            $lastVersion = ProtectionSyncLog::where(
+                'device_id',
+                $device->id
+            )
+            ->lockForUpdate()
+            ->max('sync_version');
 
 
             ProtectionSyncLog::create([
 
-
                 'device_id'=>$device->id,
 
-
-                'sync_version'=>
-                    (ProtectionSyncLog::where(
-                        'device_id',
-                        $device->id
-                    )->max('sync_version') ?? 0) + 1,
-
+                'sync_version'=>($lastVersion ?? 0)+1,
 
                 'rules_hash'=>$hash,
 
-
                 'apply_status'=>'pending',
-
 
                 'retry_count'=>0,
 
-
                 'max_retry'=>3,
 
+                'device_version'=>$device->app_version,
 
-                'device_version'=>
-                    $device->app_version,
-
+                'synced_at'=>null,
 
             ]);
 
