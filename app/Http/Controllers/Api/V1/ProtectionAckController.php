@@ -257,130 +257,83 @@ class ProtectionAckController extends Controller
         */
 
 
+
         DB::transaction(function() use(
-
             $sync,
-
             $request,
-
             $device
-
         ){
 
-
             $sync->update([
-
-
 
                 'apply_status'=>$request->status,
 
 
-
                 'applied_at'=>
-
                     $request->status === 'applied'
-
                         ? now()
-
                         : null,
-
 
 
                 'synced_at'=>
-
                     $request->status === 'applied'
-
                         ? now()
-
                         : null,
-
 
 
                 'device_version'=>
-
                     $request->device_version
-
                     ??
-
                     $sync->device_version,
 
 
-
-
                 'failure_reason'=>
-
                     $request->status === 'failed'
-
                         ? $request->failure_reason
-
                         : null,
 
 
-
-
-
                 'retry_count'=>
-
                     $request->status === 'failed'
-
                     ?
-
                     min(
-
                         $sync->retry_count + 1,
-
                         $sync->max_retry
-
                     )
-
                     :
-
                     $sync->retry_count,
 
 
+                'last_retry_at'=>
+                    $request->status === 'failed'
+                        ? now()
+                        : $sync->last_retry_at,
 
             ]);
 
 
 
-
-
             if(
-
                 $request->status === 'applied'
-
             ){
 
-
-
                 DeviceProtectionSetting::where(
-
                     'device_id',
-
                     $device->id
-
                 )
                 ->update([
 
-
                     'last_sync_at'=>now(),
-
 
                 ]);
 
-
-
             }
-
 
 
         });
 
 
-
-
-
-
+        
         /*
         |--------------------------------------------------------------------------
         | Refresh Updated Data
