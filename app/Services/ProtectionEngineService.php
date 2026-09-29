@@ -6,7 +6,7 @@ namespace App\Services;
 use App\Models\Device;
 use App\Models\ProtectionRule;
 use App\Models\DeviceProtectionSetting;
-
+use App\Services\SubscriptionService;
 
 
 class ProtectionEngineService
@@ -26,7 +26,17 @@ class ProtectionEngineService
             $device
         );
 
+        $subscription = SubscriptionService::current(
+            $device->user
+        );
 
+
+        $isSubscriptionActive =
+            SubscriptionService::isActive(
+                $subscription
+            );
+
+            
         $rules = self::rules(
             $device
         );
@@ -41,32 +51,76 @@ class ProtectionEngineService
 
             'protection'=>[
 
-                'status'=>$settings?->protection_status 
-                    ?? 'inactive',
+                'status'=>
+
+                    !$isSubscriptionActive
+
+                    ? 'inactive'
+
+                    :
+
+                    ($settings?->protection_status
+                        ??
+                        'inactive'
+                    ),
 
 
                 'betting_block'=>
-                    (bool)($settings?->betting_block ?? false),
+
+                    $isSubscriptionActive
+
+                    ?
+
+                    (bool)($settings?->betting_block ?? false)
+
+                    :
+
+                    false,
 
 
                 'adult_content_block'=>
-                    (bool)($settings?->adult_content_block ?? false),
+
+                    $isSubscriptionActive
+                    ?
+                    (bool)($settings?->adult_content_block ?? false)
+                    :
+                    false,
 
 
                 'facebook_ad_block'=>
-                    (bool)($settings?->facebook_ad_block ?? false),
+
+                    $isSubscriptionActive
+                    ?
+                    (bool)($settings?->facebook_ad_block ?? false)
+                    :
+                    false,
 
 
                 'youtube_ad_block'=>
-                    (bool)($settings?->youtube_ad_block ?? false),
+
+                    $isSubscriptionActive
+                    ?
+                    (bool)($settings?->youtube_ad_block ?? false)
+                    :
+                    false,
 
 
                 'safe_search'=>
-                    (bool)($settings?->safe_search ?? false),
+
+                    $isSubscriptionActive
+                    ?
+                    (bool)($settings?->safe_search ?? false)
+                    :
+                    false,
 
 
                 'dns_protection'=>
-                    (bool)($settings?->dns_protection ?? false),
+
+                    $isSubscriptionActive
+                    ?
+                    (bool)($settings?->dns_protection ?? false)
+                    :
+                    false,
 
 
             ],
@@ -204,7 +258,29 @@ class ProtectionEngineService
         );
 
 
-        if(!$settings ||
+        $subscription = SubscriptionService::current(
+            $device->user
+        );
+
+
+        if(
+            !SubscriptionService::isActive($subscription)
+        ){
+
+            return [
+
+                'allowed'=>true,
+
+                'reason'=>'Subscription inactive.'
+
+            ];
+
+        }
+
+
+
+        if(
+            !$settings ||
             $settings->protection_status !== 'active'
         ){
 
@@ -289,31 +365,29 @@ class ProtectionEngineService
 
         $blocked = match($rule->category){
 
-
             'betting',
             'gambling'
                 =>
-                $settings->betting_block,
+                (bool)$settings->betting_block,
 
 
             'adult'
                 =>
-                $settings->adult_content_block,
+                (bool)$settings->adult_content_block,
 
 
             'youtube_ads'
                 =>
-                $settings->youtube_ad_block,
+                (bool)$settings->youtube_ad_block,
 
 
             'facebook_ads'
                 =>
-                $settings->facebook_ad_block,
+                (bool)$settings->facebook_ad_block,
 
 
             default =>
                 false,
-
 
         };
 
