@@ -24,27 +24,50 @@ class ProtectionRetryService
         return DB::transaction(function() use($log){
 
 
+            $log = ProtectionSyncLog::where(
+                'id',
+                $log->id
+            )
+            ->lockForUpdate()
+            ->first();
 
-            /*
-            |--------------------------------------------------------------------------
-            | Validate Failed State
-            |--------------------------------------------------------------------------
-            */
 
 
-            if(
-                $log->apply_status !== 'failed'
-            ){
+            if(!$log){
 
                 return [
 
                     'retry'=>false,
 
-                    'message'=>'Sync is not failed.'
+                    'message'=>'Sync not found.'
 
                 ];
 
             }
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Failed State
+        |--------------------------------------------------------------------------
+        */
+
+
+        if(
+            $log->apply_status !== 'failed'
+        ){
+
+            return [
+
+                'retry'=>false,
+
+                'message'=>'Sync is not failed.'
+
+            ];
+
+        }
 
 
 

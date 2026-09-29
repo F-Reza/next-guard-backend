@@ -8,15 +8,17 @@ use App\Services\ProtectionRetryService;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+
 
 use Illuminate\Support\Facades\Log;
 
 
 
-class RetryFailedProtectionSync implements ShouldQueue
+class RetryFailedProtectionSync implements ShouldQueue, ShouldBeUnique
 {
 
     use Dispatchable,
@@ -24,7 +26,7 @@ class RetryFailedProtectionSync implements ShouldQueue
         Queueable,
         SerializesModels;
 
-
+        public $uniqueFor = 300;
 
     /**
      * Retry failed protection sync
