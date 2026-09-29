@@ -26,6 +26,7 @@ class CheckProtectionSyncTimeout extends Command
 
 
 
+
     public function handle(): int
     {
 
@@ -33,86 +34,94 @@ class CheckProtectionSyncTimeout extends Command
         $timeoutMinutes = 5;
 
 
+        $count = 0;
 
-        $logs = ProtectionSyncLog::where(
 
+
+        ProtectionSyncLog::where(
                 'apply_status',
-
                 'pending'
-
+            )
+            ->whereColumn(
+                'retry_count',
+                '<',
+                'max_retry'
             )
             ->where(
-
                 'created_at',
-
                 '<',
-
                 Carbon::now()
                     ->subMinutes($timeoutMinutes)
-
             )
-            ->get();
+            ->orderBy('id')
+            ->chunkById(
+                100,
+                function($logs) use(&$count){
+
+
+                    foreach($logs as $log){
+
+
+
+                        $log->update([
+
+
+                            'apply_status'=>'failed',
+
+
+                            'failure_reason'=>
+                                'Device ACK timeout.',
+
+
+                            'last_retry_at'=>null,
+
+
+                        ]);
+
+
+
+
+
+                        $count++;
+
+
+
+                        $this->warn(
+
+                            "Sync #"
+                            .$log->id
+                            ." marked failed."
+
+                        );
+
+
+
+                    }
+
+
+
+                }
+            );
 
 
 
 
 
 
-
-        if($logs->isEmpty()){
+        if($count === 0){
 
 
             $this->info(
+
                 'No timed out sync found.'
+
             );
 
 
             return Command::SUCCESS;
 
-        }
-
-
-
-
-
-
-
-        foreach($logs as $log){
-
-
-
-            $log->update([
-
-
-                'apply_status'=>'failed',
-
-
-                'failure_reason'=>
-                    'Device ACK timeout.',
-
-
-                'last_retry_at'=>null,
-
-
-            ]);
-
-
-
-
-
-            $this->warn(
-
-                "Sync #"
-                .$log->id
-                ." marked failed."
-
-            );
-
-
 
         }
-
-
 
 
 
@@ -121,13 +130,14 @@ class CheckProtectionSyncTimeout extends Command
         $this->info(
 
             'Timeout processed: '
-            .$logs->count()
+            .$count
 
         );
 
 
 
         return Command::SUCCESS;
+
 
 
     }
