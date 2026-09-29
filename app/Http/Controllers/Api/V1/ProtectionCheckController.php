@@ -74,7 +74,6 @@ class ProtectionCheckController extends Controller
 
 
 
-
         /*
         |--------------------------------------------------------------------------
         | Validation
