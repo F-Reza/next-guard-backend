@@ -124,16 +124,11 @@ class ProtectionSyncController extends Controller
 
 
         $latest = ProtectionSyncLog::where(
-
-                'device_id',
-
-                $device->id
-
-            )
-            ->latest('id')
-            ->first();
-
-
+            'device_id',
+            $device->id
+        )
+        ->orderByDesc('sync_version')
+        ->first();
 
 
 
@@ -208,47 +203,34 @@ class ProtectionSyncController extends Controller
 
         if(
             $latest &&
-            $latest->apply_status === 'failed'
+            $latest->apply_status === 'failed' &&
+            $latest->rules_hash === $rulesHash
         ){
 
             return response()->json([
 
-
                 'success'=>true,
-
 
                 'message'=>'Protection sync failed. Retry required.',
 
-
-
                 'data'=>[
-
 
                     'device_id'=>$device->id,
 
-
                     'sync_version'=>$latest->sync_version,
-
 
                     'rules_hash'=>$latest->rules_hash,
 
-
                     'retry_count'=>$latest->retry_count,
 
-
                     'max_retry'=>$latest->max_retry,
-
 
                     'retry_available'=>
                         $latest->retry_count < $latest->max_retry,
 
-
                     'failure_reason'=>$latest->failure_reason,
 
-
                 ]
-
-
 
             ]);
 
