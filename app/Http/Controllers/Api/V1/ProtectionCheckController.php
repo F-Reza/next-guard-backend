@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Services\ProtectionEngineService;
 
 use App\Models\ProtectionViolationLog;
-
+use App\Services\ProtectionNotificationService;
 use Illuminate\Http\Request;
 
 use Illuminate\Http\JsonResponse;
@@ -151,6 +151,11 @@ class ProtectionCheckController extends Controller
                 'category'=>$result['category'] ?? null,
 
             ]);
+
+            ProtectionNotificationService::create(
+                $device,
+                $result
+            );           
 
         }
 
