@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 
-use App\Models\Device;
-
 use App\Models\ProtectionSyncLog;
 
 use Illuminate\Http\JsonResponse;
@@ -63,6 +61,7 @@ class ProtectionSyncHistoryController extends Controller
 
 
 
+
         /*
         |--------------------------------------------------------------------------
         | Get Sync History
@@ -75,8 +74,13 @@ class ProtectionSyncHistoryController extends Controller
                 $device->id
             )
             ->latest('sync_version')
-            ->get()
-            ->map(function($log){
+            ->paginate(50);
+
+
+
+        $history->getCollection()
+            ->transform(function($log){
+
 
                 return [
 
@@ -88,6 +92,12 @@ class ProtectionSyncHistoryController extends Controller
 
                     'apply_status'=>$log->apply_status,
 
+                    'retry_count'=>$log->retry_count,
+
+                    'max_retry'=>$log->max_retry,
+
+                    'failure_reason'=>$log->failure_reason,
+
                     'device_version'=>$log->device_version,
 
                     'synced_at'=>$log->synced_at,
@@ -96,7 +106,10 @@ class ProtectionSyncHistoryController extends Controller
 
                 ];
 
+
             });
+
+
 
 
 
