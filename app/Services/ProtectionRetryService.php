@@ -4,6 +4,7 @@ namespace App\Services;
 
 
 use App\Models\ProtectionSyncLog;
+
 use Illuminate\Support\Facades\DB;
 
 
@@ -24,6 +25,14 @@ class ProtectionRetryService
         return DB::transaction(function() use($log){
 
 
+
+            /*
+            |--------------------------------------------------------------------------
+            | Lock Sync Record
+            |--------------------------------------------------------------------------
+            */
+
+
             $log = ProtectionSyncLog::where(
                 'id',
                 $log->id
@@ -33,7 +42,9 @@ class ProtectionRetryService
 
 
 
+
             if(!$log){
+
 
                 return [
 
@@ -48,26 +59,27 @@ class ProtectionRetryService
 
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | Validate Failed State
-        |--------------------------------------------------------------------------
-        */
+
+            /*
+            |--------------------------------------------------------------------------
+            | Validate Failed State
+            |--------------------------------------------------------------------------
+            */
 
 
-        if(
-            $log->apply_status !== 'failed'
-        ){
+            if(
+                $log->apply_status !== 'failed'
+            ){
 
-            return [
+                return [
 
-                'retry'=>false,
+                    'retry'=>false,
 
-                'message'=>'Sync is not failed.'
+                    'message'=>'Sync is not failed.'
 
-            ];
+                ];
 
-        }
+            }
 
 
 
@@ -84,11 +96,33 @@ class ProtectionRetryService
                 $log->retry_count >= $log->max_retry
             ){
 
+
+                $log->update([
+
+
+                    'apply_status'=>'failed',
+
+
+                    'failure_reason'=>
+                        'Maximum retry reached.',
+
+
+                    'last_retry_at'=>now(),
+
+
+                ]);
+
+
+
                 return [
+
 
                     'retry'=>false,
 
-                    'message'=>'Maximum retry reached.'
+
+                    'message'=>
+                        'Maximum retry reached.'
+
 
                 ];
 
@@ -105,16 +139,14 @@ class ProtectionRetryService
             */
 
 
-            $newRetryCount = $log->retry_count + 1;
-
-
             $log->update([
 
 
                 'apply_status'=>'pending',
 
 
-                'retry_count'=>$newRetryCount,
+                'retry_count'=>
+                    $log->retry_count + 1,
 
 
                 'last_retry_at'=>now(),

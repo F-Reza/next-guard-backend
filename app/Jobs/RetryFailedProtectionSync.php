@@ -6,6 +6,7 @@ namespace App\Jobs;
 use App\Models\ProtectionSyncLog;
 use App\Services\ProtectionRetryService;
 
+
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -26,7 +27,11 @@ class RetryFailedProtectionSync implements ShouldQueue, ShouldBeUnique
         Queueable,
         SerializesModels;
 
-        public $uniqueFor = 300;
+
+
+    public $uniqueFor = 300;
+
+
 
     /**
      * Retry failed protection sync
@@ -35,16 +40,14 @@ class RetryFailedProtectionSync implements ShouldQueue, ShouldBeUnique
     {
 
 
+        $processed = 0;
 
-        $logs = ProtectionSyncLog::where(
-                'apply_status',
-                'failed'
-            )
-            ->whereColumn(
-                'retry_count',
-                '<',
-                'max_retry'
-            )
+        $found = 0;
+
+
+
+        ProtectionSyncLog::retryable()
+
             ->where(function($q){
 
                 $q->whereNull('last_retry_at')
@@ -55,39 +58,42 @@ class RetryFailedProtectionSync implements ShouldQueue, ShouldBeUnique
                 );
 
             })
+
             ->orderBy('id')
-            ->get();
 
-
-
-        $processed = 0;
-
-
-
-
-
-        foreach($logs as $log){
-
-
-            $result = ProtectionRetryService::retry(
-                $log
-            );
-
-
-
-            if(
-                $result['retry'] ?? false
+            ->chunkById(100, function($logs) use(
+                &$processed,
+                &$found
             ){
 
-                $processed++;
 
-            }
-
+                $found += $logs->count();
 
 
-        }
+
+                foreach($logs as $log){
 
 
+                    $result = ProtectionRetryService::retry(
+                        $log
+                    );
+
+
+
+                    if(
+                        $result['retry'] ?? false
+                    ){
+
+                        $processed++;
+
+                    }
+
+
+                }
+
+
+
+            });
 
 
 
@@ -95,7 +101,7 @@ class RetryFailedProtectionSync implements ShouldQueue, ShouldBeUnique
             'Protection retry job executed',
             [
 
-                'found'=>$logs->count(),
+                'found'=>$found,
 
                 'processed'=>$processed
 
@@ -103,9 +109,7 @@ class RetryFailedProtectionSync implements ShouldQueue, ShouldBeUnique
         );
 
 
-
     }
-
 
 
 }
