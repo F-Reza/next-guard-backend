@@ -4,9 +4,13 @@ namespace App\Http\Controllers\Api\V1;
 
 
 use App\Http\Controllers\Controller;
+
 use App\Services\ProtectionEngineService;
+
 use App\Models\ProtectionViolationLog;
+
 use Illuminate\Http\Request;
+
 use Illuminate\Http\JsonResponse;
 
 
@@ -15,6 +19,9 @@ class ProtectionCheckController extends Controller
 {
 
 
+    /**
+     * Check domain protection
+     */
     public function check(
         Request $request,
         int $id
@@ -22,19 +29,16 @@ class ProtectionCheckController extends Controller
     {
 
 
-        $request->validate([
-
-            'domain'=>[
-                'required',
-                'string'
-            ]
-
-        ]);
-
-
-
         $user = auth('api')->user();
 
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Verify Device Ownership
+        |--------------------------------------------------------------------------
+        */
 
 
         $device = $user->devices()
@@ -46,15 +50,22 @@ class ProtectionCheckController extends Controller
 
 
 
+
         if(!$device){
+
 
             return response()->json([
 
+
                 'success'=>false,
+
 
                 'message'=>'Device not found.'
 
+
+
             ],404);
+
 
         }
 
@@ -62,44 +73,123 @@ class ProtectionCheckController extends Controller
 
 
 
-        $result =
-            ProtectionEngineService::checkDomain(
-
-                $device,
-
-                $request->domain
-
-            );
-
-            if(
-                isset($result['allowed'])
-                &&
-                $result['allowed'] === false
-            ){
 
 
-                ProtectionViolationLog::create([
+        /*
+        |--------------------------------------------------------------------------
+        | Validation
+        |--------------------------------------------------------------------------
+        */
 
 
-                    'device_id'=>$device->id,
+        $request->validate([
 
 
-                    'rule_id'=>$result['rule_id'] ?? null,
+            'domain'=>[
+
+                'required',
+
+                'string',
+
+                'max:255'
+
+            ]
 
 
-                    'domain'=>$result['domain'],
+        ]);
 
 
-                    'category'=>$result['category'] ?? null,
 
 
-                    'action'=>'blocked',
 
 
-                ]);
 
-            }
+        /*
+        |--------------------------------------------------------------------------
+        | Protection Decision
+        |--------------------------------------------------------------------------
+        */
 
+
+        $result = ProtectionEngineService::checkDomain(
+
+            $device,
+
+            $request->domain
+
+        );
+
+
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Store Violation
+        |--------------------------------------------------------------------------
+        */
+
+
+        if(
+
+            isset($result['allowed'])
+
+            &&
+
+            $result['allowed'] === false
+
+        ){
+
+
+
+            ProtectionViolationLog::firstOrCreate([
+
+
+                'device_id'=>$device->id,
+
+
+                'domain'=>$result['domain'],
+
+
+                'action'=>'blocked',
+
+
+
+            ],[
+
+
+                'rule_id'=>
+                    $result['rule_id'] ?? null,
+
+
+                'category'=>
+                    $result['category'] ?? null,
+
+
+
+            ]);
+
+
+
+        }
+
+
+
+
+
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Response
+        |--------------------------------------------------------------------------
+        */
 
 
         return response()->json([
@@ -108,7 +198,17 @@ class ProtectionCheckController extends Controller
             'success'=>true,
 
 
-            'data'=>$result
+            'data'=>[
+
+
+                'device_id'=>$device->id,
+
+
+                ...$result
+
+
+            ]
+
 
 
         ]);
@@ -116,6 +216,7 @@ class ProtectionCheckController extends Controller
 
 
     }
+
 
 
 }

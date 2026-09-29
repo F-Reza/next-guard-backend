@@ -344,7 +344,7 @@ Route::middleware('auth:api')
     );
 
 
-    Route::get(
+    Route::post(
         '/devices/{id}/protection/check',
         [ProtectionCheckController::class,'check']
     );
