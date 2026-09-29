@@ -9,6 +9,8 @@ use App\Models\ProtectionSyncLog;
 
 use Carbon\Carbon;
 
+use Illuminate\Support\Facades\DB;
+
 
 
 class CheckProtectionSyncTimeout extends Command
@@ -22,7 +24,6 @@ class CheckProtectionSyncTimeout extends Command
 
     protected $description =
         'Mark pending protection sync as failed after timeout';
-
 
 
 
@@ -42,18 +43,26 @@ class CheckProtectionSyncTimeout extends Command
                 'apply_status',
                 'pending'
             )
-            ->whereColumn(
-                'retry_count',
-                '<',
-                'max_retry'
-            )
-            ->where(
-                'created_at',
-                '<',
-                Carbon::now()
-                    ->subMinutes($timeoutMinutes)
-            )
+
+            ->where(function($q) use($timeoutMinutes){
+
+
+                $q->whereNull(
+                    'last_retry_at'
+                )
+
+                ->orWhere(
+                    'last_retry_at',
+                    '<',
+                    Carbon::now()
+                        ->subMinutes($timeoutMinutes)
+                );
+
+
+            })
+
             ->orderBy('id')
+
             ->chunkById(
                 100,
                 function($logs) use(&$count){
@@ -62,37 +71,136 @@ class CheckProtectionSyncTimeout extends Command
                     foreach($logs as $log){
 
 
-
-                        $log->update([
-
-
-                            'apply_status'=>'failed',
-
-
-                            'failure_reason'=>
-                                'Device ACK timeout.',
+                        DB::transaction(function() use(
+                            $log,
+                            &$count
+                        ){
 
 
-                            'last_retry_at'=>null,
-
-
-                        ]);
+                            $log->refresh();
 
 
 
+                            /*
+                            |--------------------------------------------------------------------------
+                            | Ignore if already changed
+                            |--------------------------------------------------------------------------
+                            */
 
 
-                        $count++;
+                            if(
+                                $log->apply_status !== 'pending'
+                            ){
+
+                                return;
+
+                            }
 
 
 
-                        $this->warn(
 
-                            "Sync #"
-                            .$log->id
-                            ." marked failed."
 
-                        );
+                            /*
+                            |--------------------------------------------------------------------------
+                            | Maximum Retry Reached
+                            |--------------------------------------------------------------------------
+                            */
+
+
+                            if(
+                                $log->retry_count >= $log->max_retry
+                            ){
+
+
+                                $log->update([
+
+                                    'apply_status'=>'failed',
+
+                                    'failure_reason'=>
+                                        'Maximum retry reached.',
+
+                                    'last_retry_at'=>now(),
+
+                                ]);
+
+
+
+                                $count++;
+
+
+                                $this->warn(
+
+                                    "Sync #"
+                                    .$log->id
+                                    ." maximum retry reached."
+
+                                );
+
+
+                                return;
+
+
+                            }
+
+
+
+
+
+
+
+                            /*
+                            |--------------------------------------------------------------------------
+                            | ACK Timeout
+                            |--------------------------------------------------------------------------
+                            */
+
+
+                            $log->update([
+
+
+                                'apply_status'=>'failed',
+
+
+                                'failure_reason'=>
+                                    'Device ACK timeout.',
+
+
+
+                                'retry_count'=>
+                                    min(
+
+                                        $log->retry_count + 1,
+
+                                        $log->max_retry
+
+                                    ),
+
+
+
+                                'last_retry_at'=>null,
+
+
+                            ]);
+
+
+
+
+                            $count++;
+
+
+
+
+                            $this->warn(
+
+                                "Sync #"
+                                .$log->id
+                                ." marked failed."
+
+                            );
+
+
+
+                        });
 
 
 
@@ -101,6 +209,7 @@ class CheckProtectionSyncTimeout extends Command
 
 
                 }
+
             );
 
 

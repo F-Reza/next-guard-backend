@@ -59,7 +59,7 @@ class RetryFailedProtectionSync implements ShouldQueue, ShouldBeUnique
 
             })
 
-            ->orderBy('id')
+            ->orderBy('sync_version')
 
             ->chunkById(100, function($logs) use(
                 &$processed,
