@@ -12,6 +12,7 @@ use App\Models\ProtectionSyncLog;
 use App\Models\DeviceProtectionSetting;
 
 use Illuminate\Http\Request;
+use App\Services\SecurityEventService;
 
 use Illuminate\Http\JsonResponse;
 
@@ -330,6 +331,19 @@ class ProtectionAckController extends Controller
             }
 
 
+            if(
+                $request->status === 'failed'
+            ){
+
+                SecurityEventService::create(
+                    $device->id,
+                    'protection_sync_failed'
+                );
+
+            }           
+
+
+            
         });
 
 

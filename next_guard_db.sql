@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 29, 2026 at 05:02 PM
+-- Generation Time: Sep 29, 2026 at 05:44 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -304,6 +304,13 @@ CREATE TABLE `cache` (
   `expiration` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `cache`
+--
+
+INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
+('next-guard-api-cache-Ovl9TymbrIRbWqnU', 'a:1:{s:11:\"valid_until\";i:1790696458;}', 1791906118);
+
 -- --------------------------------------------------------
 
 --
@@ -353,7 +360,7 @@ CREATE TABLE `devices` (
 INSERT INTO `devices` (`id`, `user_id`, `name`, `device_uuid_hash`, `platform`, `model`, `manufacturer`, `android_version`, `app_version`, `management_mode`, `status`, `last_seen_at`, `created_at`, `updated_at`) VALUES
 (1, 1, NULL, '9a99afcdb6c372ef38297f86cb266b5553f8e96839ab190fd599cef9ae2dce91', 'android', 'Test Phone', 'Test Manufacturer', '16', '1.0.0', 'standard', 'offline', '2026-09-24 02:41:36', '2026-09-24 02:39:43', '2026-09-28 08:05:29'),
 (2, 1, NULL, 'a1ddee54421b782cfba548d4ff4efd63fbca9c01503da23908dccaa34eca2a1d', 'android', 'Test Phone 2', 'Test Manufacturer', '16', '1.0.0', 'standard', 'offline', '2026-09-24 03:40:36', '2026-09-24 03:40:36', '2026-09-28 08:05:29'),
-(3, 2, 'My Android Phone', '2fab4650568803abb681c779d88f0c8b4807ef852bd2268690e832fdafd176c5', 'android', 'Samsung S24', 'Samsung', '14', '1.0.2', 'standard', 'active', '2026-09-29 08:40:35', '2026-09-27 03:20:49', '2026-09-29 08:40:35');
+(3, 2, 'My Android Phone', '2fab4650568803abb681c779d88f0c8b4807ef852bd2268690e832fdafd176c5', 'android', 'Samsung S24', 'Samsung', '14', '1.0.2', 'standard', 'active', '2026-09-29 09:40:58', '2026-09-27 03:20:49', '2026-09-29 09:40:58');
 
 -- --------------------------------------------------------
 
@@ -411,7 +418,7 @@ CREATE TABLE `device_protection_settings` (
 
 INSERT INTO `device_protection_settings` (`id`, `device_id`, `betting_block`, `adult_content_block`, `facebook_ad_block`, `youtube_ad_block`, `safe_search`, `dns_protection`, `protection_status`, `disabled_reason`, `last_sync_at`, `created_at`, `updated_at`) VALUES
 (1, 1, 1, 1, 1, 1, 1, 1, 'active', NULL, '2026-09-24 04:32:52', '2026-09-24 04:30:47', '2026-09-24 04:32:52'),
-(2, 3, 1, 0, 0, 0, 0, 1, 'active', NULL, '2026-09-29 08:37:03', '2026-09-27 04:34:07', '2026-09-29 08:59:03');
+(2, 3, 1, 0, 0, 0, 0, 1, 'active', NULL, '2026-09-29 08:37:03', '2026-09-27 04:34:07', '2026-09-29 09:33:14');
 
 -- --------------------------------------------------------
 
@@ -460,7 +467,8 @@ INSERT INTO `device_sessions` (`id`, `user_id`, `device_id`, `refresh_token_hash
 (28, 2, 3, '82d9a535b09c99113f04182575c2098f12bbc7bda5bd918c1b7fb8cff2598d47', 'active', '2026-10-29 06:20:09', '2026-09-29 06:20:09', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 06:20:09', '2026-09-29 06:20:09'),
 (29, 2, 3, '9705a4c0d1c6dba7ec30d7f0850b670c1cee6a639b1f2b30a06b41dcce82179f', 'active', '2026-10-29 07:28:00', '2026-09-29 07:28:00', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 07:28:00', '2026-09-29 07:28:00'),
 (30, 2, 3, '005ed9e74e449218ef2009377b79e80fac30b9bc63cc533836623f0ab2e4580a', 'active', '2026-10-29 08:35:28', '2026-09-29 08:35:28', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 08:35:28', '2026-09-29 08:35:28'),
-(31, 2, 3, 'fbeeeb284ca53fe0dd0e12c1aca3ed876c156020aaecaf6bb1e9d37b6f9704c3', 'active', '2026-10-29 08:40:35', '2026-09-29 08:40:35', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 08:40:35', '2026-09-29 08:40:35');
+(31, 2, 3, 'fbeeeb284ca53fe0dd0e12c1aca3ed876c156020aaecaf6bb1e9d37b6f9704c3', 'active', '2026-10-29 08:40:35', '2026-09-29 08:40:35', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 08:40:35', '2026-09-29 08:40:35'),
+(32, 2, 3, '556e7b1e470899506405ba16d693d00710c34f1c8a971d74eb31ac800298b24c', 'active', '2026-10-29 09:40:58', '2026-09-29 09:40:58', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 09:40:58', '2026-09-29 09:40:58');
 
 -- --------------------------------------------------------
 
@@ -617,7 +625,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (39, '2026_09_28_141104_create_device_events_table', 32),
 (40, '2026_09_28_145839_add_disabled_reason_to_device_protection_settings_table', 33),
 (41, '2026_09_29_082249_add_auto_renew_to_subscriptions_table', 34),
-(42, '2026_09_29_142026_add_indexes_to_protection_sync_logs_table', 35);
+(42, '2026_09_29_142026_add_indexes_to_protection_sync_logs_table', 35),
+(43, '2026_09_29_150646_add_indexes_to_protection_violation_logs_table', 36),
+(44, '2026_09_29_153027_create_protection_notifications_table', 37);
 
 -- --------------------------------------------------------
 
@@ -673,6 +683,33 @@ INSERT INTO `permissions` (`id`, `name`, `description`, `created_at`, `updated_a
 (6, 'view_dashboard', 'View admin dashboard statistics', '2026-09-24 07:01:41', '2026-09-24 07:01:41'),
 (7, 'view_logs', 'View admin activity logs', '2026-09-24 07:01:41', '2026-09-24 07:01:41'),
 (8, 'manage_admins', 'Create and manage admin accounts', '2026-09-24 07:11:40', '2026-09-24 07:11:40');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `protection_notifications`
+--
+
+CREATE TABLE `protection_notifications` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `device_id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `type` varchar(255) NOT NULL DEFAULT 'protection_alert',
+  `title` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `domain` varchar(255) DEFAULT NULL,
+  `category` varchar(255) DEFAULT NULL,
+  `read_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `protection_notifications`
+--
+
+INSERT INTO `protection_notifications` (`id`, `device_id`, `user_id`, `type`, `title`, `message`, `domain`, `category`, `read_at`, `created_at`, `updated_at`) VALUES
+(1, 3, 2, 'protection_alert', 'Blocked website detected', 'bet365.com was blocked by protection.', 'bet365.com', 'betting', '2026-09-29 09:42:48', '2026-09-29 09:33:34', '2026-09-29 09:42:48');
 
 -- --------------------------------------------------------
 
@@ -775,7 +812,8 @@ CREATE TABLE `protection_violation_logs` (
 
 INSERT INTO `protection_violation_logs` (`id`, `device_id`, `rule_id`, `domain`, `category`, `action`, `created_at`, `updated_at`) VALUES
 (1, 3, 1, 'bet365.com', 'betting', 'blocked', '2026-09-28 06:18:29', '2026-09-28 06:18:29'),
-(2, 3, 1, 'bet365.com', 'betting', 'blocked', '2026-09-29 08:59:06', '2026-09-29 08:59:06');
+(2, 3, 1, 'bet365.com', 'betting', 'blocked', '2026-09-29 08:59:06', '2026-09-29 08:59:06'),
+(3, 3, 1, 'bet365.com', 'betting', 'blocked', '2026-09-29 09:33:34', '2026-09-29 09:33:34');
 
 -- --------------------------------------------------------
 
@@ -1126,6 +1164,14 @@ ALTER TABLE `permissions`
   ADD UNIQUE KEY `permissions_name_unique` (`name`);
 
 --
+-- Indexes for table `protection_notifications`
+--
+ALTER TABLE `protection_notifications`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `protection_notifications_device_id_created_at_index` (`device_id`,`created_at`),
+  ADD KEY `protection_notifications_user_id_read_at_index` (`user_id`,`read_at`);
+
+--
 -- Indexes for table `protection_rules`
 --
 ALTER TABLE `protection_rules`
@@ -1149,8 +1195,10 @@ ALTER TABLE `protection_sync_logs`
 --
 ALTER TABLE `protection_violation_logs`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `protection_violation_logs_device_id_foreign` (`device_id`),
-  ADD KEY `protection_violation_logs_rule_id_foreign` (`rule_id`);
+  ADD KEY `protection_violation_logs_rule_id_foreign` (`rule_id`),
+  ADD KEY `protection_violation_logs_device_id_created_at_index` (`device_id`,`created_at`),
+  ADD KEY `protection_violation_logs_device_id_category_index` (`device_id`,`category`),
+  ADD KEY `protection_violation_logs_device_id_action_index` (`device_id`,`action`);
 
 --
 -- Indexes for table `subscriptions`
@@ -1268,7 +1316,7 @@ ALTER TABLE `device_protection_settings`
 -- AUTO_INCREMENT for table `device_sessions`
 --
 ALTER TABLE `device_sessions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -1292,7 +1340,7 @@ ALTER TABLE `license_codes`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -1305,6 +1353,12 @@ ALTER TABLE `payments`
 --
 ALTER TABLE `permissions`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- AUTO_INCREMENT for table `protection_notifications`
+--
+ALTER TABLE `protection_notifications`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `protection_rules`
@@ -1322,7 +1376,7 @@ ALTER TABLE `protection_sync_logs`
 -- AUTO_INCREMENT for table `protection_violation_logs`
 --
 ALTER TABLE `protection_violation_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `subscriptions`
@@ -1440,6 +1494,13 @@ ALTER TABLE `license_codes`
 ALTER TABLE `payments`
   ADD CONSTRAINT `payments_subscription_id_foreign` FOREIGN KEY (`subscription_id`) REFERENCES `subscriptions` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `payments_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `protection_notifications`
+--
+ALTER TABLE `protection_notifications`
+  ADD CONSTRAINT `protection_notifications_device_id_foreign` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `protection_notifications_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `protection_rules`
