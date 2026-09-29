@@ -74,10 +74,9 @@ class ProtectionSyncHistoryController extends Controller
                 'device_id',
                 $device->id
             )
-            ->latest('synced_at')
+            ->latest('sync_version')
             ->get()
             ->map(function($log){
-
 
                 return [
 
@@ -96,7 +95,6 @@ class ProtectionSyncHistoryController extends Controller
                     'applied_at'=>$log->applied_at,
 
                 ];
-
 
             });
 

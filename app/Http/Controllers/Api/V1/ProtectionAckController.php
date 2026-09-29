@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 
 use App\Http\Controllers\Controller;
-
+use Illuminate\Support\Facades\DB;
 use App\Models\ProtectionSyncLog;
 use App\Models\DeviceProtectionSetting;
 use Illuminate\Http\Request;
@@ -80,7 +80,8 @@ class ProtectionAckController extends Controller
 
             'rules_hash'=>[
                 'required',
-                'string'
+                'string',
+                'size:64'
             ],
 
 
@@ -116,6 +117,50 @@ class ProtectionAckController extends Controller
         | Latest Pending Sync
         |--------------------------------------------------------------------------
         */
+
+        $alreadyApplied = ProtectionSyncLog::where(
+            'device_id',
+            $device->id
+        )
+        ->where(
+            'sync_version',
+            $request->sync_version
+        )
+        ->where(
+            'rules_hash',
+            $request->rules_hash
+        )
+        ->where(
+            'apply_status',
+            'applied'
+        )
+        ->first();
+
+
+        if($alreadyApplied){
+
+            return response()->json([
+
+                'success'=>true,
+
+                'message'=>'Protection already acknowledged.',
+
+                'data'=>[
+
+                    'device_id'=>$device->id,
+
+                    'sync_version'=>$alreadyApplied->sync_version,
+
+                    'status'=>$alreadyApplied->apply_status,
+
+                    'synced_at'=>$alreadyApplied->synced_at,
+
+                ]
+
+            ]);
+
+        }
+
 
 
         $sync = ProtectionSyncLog::where(
@@ -184,63 +229,62 @@ class ProtectionAckController extends Controller
         */
 
 
-        $sync->update([
-
-
-            'apply_status'=>
-                $request->status,
-
-
-
-            'applied_at'=>
-                $request->status === 'applied'
-                    ? now()
-                    : null,
-
-
-            'synced_at'=>
-                $request->status === 'applied'
-                    ? now()
-                    : null,
-
-
-            'device_version'=>
-                $request->device_version,
-
-
-
-            'failure_reason'=>
-                $request->status === 'failed'
-                    ? $request->failure_reason
-                    : null,
-
-
-
-            'retry_count'=>
-                $request->status === 'failed'
-                    ? $sync->retry_count + 1
-                    : $sync->retry_count,
-
-
-        ]);
-
-
-
-        if(
-            $request->status === 'applied'
+        DB::transaction(function() use(
+            $sync,
+            $request,
+            $device
         ){
 
-            DeviceProtectionSetting::where(
-                'device_id',
-                $device->id
-            )
-            ->update([
+            $sync->update([
 
-                'last_sync_at'=>now(),
+                'apply_status'=>$request->status,
+
+                'applied_at'=>
+                    $request->status === 'applied'
+                        ? now()
+                        : null,
+
+                'synced_at'=>
+                    $request->status === 'applied'
+                        ? now()
+                        : null,
+
+                'device_version'=>
+                    $request->device_version
+                    ??
+                    $sync->device_version,
+
+                'failure_reason'=>
+                    $request->status === 'failed'
+                        ? $request->failure_reason
+                        : null,
+
+                'retry_count'=>
+                    $request->status === 'failed'
+                        ? $sync->retry_count + 1
+                        : $sync->retry_count,
 
             ]);
 
-        }
+
+
+            if(
+                $request->status === 'applied'
+            ){
+
+                DeviceProtectionSetting::where(
+                    'device_id',
+                    $device->id
+                )
+                ->update([
+
+                    'last_sync_at'=>now(),
+
+                ]);
+
+            }
+
+        });
 
 
 
