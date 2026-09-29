@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 29, 2026 at 01:12 PM
+-- Generation Time: Sep 29, 2026 at 04:15 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -313,6 +313,13 @@ CREATE TABLE `cache_locks` (
   `expiration` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `cache_locks`
+--
+
+INSERT INTO `cache_locks` (`key`, `owner`, `expiration`) VALUES
+('next-guard-api-cache-laravel_unique_job:App\\Jobs\\RetryFailedProtectionSync:', 'p403i7EqeuuOD9Oz', 1790687700);
+
 -- --------------------------------------------------------
 
 --
@@ -343,7 +350,7 @@ CREATE TABLE `devices` (
 INSERT INTO `devices` (`id`, `user_id`, `name`, `device_uuid_hash`, `platform`, `model`, `manufacturer`, `android_version`, `app_version`, `management_mode`, `status`, `last_seen_at`, `created_at`, `updated_at`) VALUES
 (1, 1, NULL, '9a99afcdb6c372ef38297f86cb266b5553f8e96839ab190fd599cef9ae2dce91', 'android', 'Test Phone', 'Test Manufacturer', '16', '1.0.0', 'standard', 'offline', '2026-09-24 02:41:36', '2026-09-24 02:39:43', '2026-09-28 08:05:29'),
 (2, 1, NULL, 'a1ddee54421b782cfba548d4ff4efd63fbca9c01503da23908dccaa34eca2a1d', 'android', 'Test Phone 2', 'Test Manufacturer', '16', '1.0.0', 'standard', 'offline', '2026-09-24 03:40:36', '2026-09-24 03:40:36', '2026-09-28 08:05:29'),
-(3, 2, 'My Android Phone', '2fab4650568803abb681c779d88f0c8b4807ef852bd2268690e832fdafd176c5', 'android', 'Samsung S24', 'Samsung', '14', '1.0.2', 'standard', 'active', '2026-09-29 04:23:07', '2026-09-27 03:20:49', '2026-09-29 04:23:07');
+(3, 2, 'My Android Phone', '2fab4650568803abb681c779d88f0c8b4807ef852bd2268690e832fdafd176c5', 'android', 'Samsung S24', 'Samsung', '14', '1.0.2', 'standard', 'active', '2026-09-29 07:28:00', '2026-09-27 03:20:49', '2026-09-29 07:28:00');
 
 -- --------------------------------------------------------
 
@@ -369,7 +376,9 @@ INSERT INTO `device_events` (`id`, `device_id`, `event`, `created_at`) VALUES
 (4, 3, 'offline', '2026-09-28 14:32:46'),
 (5, 3, 'online', '2026-09-28 14:32:55'),
 (6, 3, 'offline', '2026-09-29 05:55:26'),
-(7, 3, 'offline', '2026-09-29 07:55:51');
+(7, 3, 'offline', '2026-09-29 07:55:51'),
+(8, 3, 'offline', '2026-09-29 11:55:02'),
+(9, 3, 'offline', '2026-09-29 13:00:02');
 
 -- --------------------------------------------------------
 
@@ -399,7 +408,7 @@ CREATE TABLE `device_protection_settings` (
 
 INSERT INTO `device_protection_settings` (`id`, `device_id`, `betting_block`, `adult_content_block`, `facebook_ad_block`, `youtube_ad_block`, `safe_search`, `dns_protection`, `protection_status`, `disabled_reason`, `last_sync_at`, `created_at`, `updated_at`) VALUES
 (1, 1, 1, 1, 1, 1, 1, 1, 'active', NULL, '2026-09-24 04:32:52', '2026-09-24 04:30:47', '2026-09-24 04:32:52'),
-(2, 3, 0, 0, 0, 0, 1, 1, 'active', NULL, '2026-09-29 04:32:41', '2026-09-27 04:34:07', '2026-09-29 04:32:41');
+(2, 3, 0, 0, 0, 0, 1, 1, 'active', NULL, '2026-09-29 07:46:11', '2026-09-27 04:34:07', '2026-09-29 07:46:11');
 
 -- --------------------------------------------------------
 
@@ -443,7 +452,10 @@ INSERT INTO `device_sessions` (`id`, `user_id`, `device_id`, `refresh_token_hash
 (23, 2, 3, 'c73c1aea0f57697217d1e34a704d47d97776e265e4be69e284856e2a5c97a9cd', 'active', '2026-10-29 02:14:54', '2026-09-29 02:14:54', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 02:14:54', '2026-09-29 02:14:54'),
 (24, 2, 3, 'b1a9a4f21e94ff09cc70517c85ef56fa898835f04e1f396ab932db673683734b', 'active', '2026-10-29 03:21:35', '2026-09-29 03:21:35', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 03:21:35', '2026-09-29 03:21:35'),
 (25, 2, 3, '8774808d20af06ea16da6a1191c0da90a95e9222fbf3946ee4e9b9b98fe570b1', 'active', '2026-10-29 04:13:02', '2026-09-29 04:13:02', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 04:13:02', '2026-09-29 04:13:02'),
-(26, 2, 3, '9eaf0de641059607bc8eca1c29ab2122d9c7b61881ad82d85a05365a7dbb78e6', 'active', '2026-10-29 04:23:07', '2026-09-29 04:23:07', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 04:23:07', '2026-09-29 04:23:07');
+(26, 2, 3, '9eaf0de641059607bc8eca1c29ab2122d9c7b61881ad82d85a05365a7dbb78e6', 'active', '2026-10-29 04:23:07', '2026-09-29 04:23:07', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 04:23:07', '2026-09-29 04:23:07'),
+(27, 2, 3, '7d572f0a74811de05600542fa03bcbbe4afa76b936b65be21af8c9a6bc62d7de', 'active', '2026-10-29 05:40:21', '2026-09-29 05:40:21', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 05:40:21', '2026-09-29 05:40:21'),
+(28, 2, 3, '82d9a535b09c99113f04182575c2098f12bbc7bda5bd918c1b7fb8cff2598d47', 'active', '2026-10-29 06:20:09', '2026-09-29 06:20:09', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 06:20:09', '2026-09-29 06:20:09'),
+(29, 2, 3, '9705a4c0d1c6dba7ec30d7f0850b670c1cee6a639b1f2b30a06b41dcce82179f', 'active', '2026-10-29 07:28:00', '2026-09-29 07:28:00', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 07:28:00', '2026-09-29 07:28:00');
 
 -- --------------------------------------------------------
 
@@ -476,6 +488,20 @@ CREATE TABLE `jobs` (
   `available_at` int(10) UNSIGNED NOT NULL,
   `created_at` int(10) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `jobs`
+--
+
+INSERT INTO `jobs` (`id`, `queue`, `payload`, `attempts`, `reserved_at`, `available_at`, `created_at`) VALUES
+(22, 'default', '{\"uuid\":\"bddc5b27-470e-4de0-afec-cb1d584cdf7c\",\"displayName\":\"App\\\\Jobs\\\\RetryFailedProtectionSync\",\"job\":\"Illuminate\\\\Queue\\\\CallQueuedHandler@call\",\"maxTries\":null,\"maxExceptions\":null,\"failOnTimeout\":false,\"backoff\":null,\"timeout\":null,\"retryUntil\":null,\"data\":{\"commandName\":\"App\\\\Jobs\\\\RetryFailedProtectionSync\",\"command\":\"O:34:\\\"App\\\\Jobs\\\\RetryFailedProtectionSync\\\":0:{}\",\"batchId\":null},\"createdAt\":1790682900,\"delay\":null}', 0, NULL, 1790682900, 1790682900),
+(23, 'default', '{\"uuid\":\"10127b60-4e98-44ba-b69f-f35185c9e29b\",\"displayName\":\"App\\\\Jobs\\\\RetryFailedProtectionSync\",\"job\":\"Illuminate\\\\Queue\\\\CallQueuedHandler@call\",\"maxTries\":null,\"maxExceptions\":null,\"failOnTimeout\":false,\"backoff\":null,\"timeout\":null,\"retryUntil\":null,\"data\":{\"commandName\":\"App\\\\Jobs\\\\RetryFailedProtectionSync\",\"command\":\"O:34:\\\"App\\\\Jobs\\\\RetryFailedProtectionSync\\\":0:{}\",\"batchId\":null},\"createdAt\":1790683200,\"delay\":null}', 0, NULL, 1790683200, 1790683200),
+(24, 'default', '{\"uuid\":\"1b311128-7ca1-473a-9ab0-6415a8aca564\",\"displayName\":\"App\\\\Jobs\\\\RetryFailedProtectionSync\",\"job\":\"Illuminate\\\\Queue\\\\CallQueuedHandler@call\",\"maxTries\":null,\"maxExceptions\":null,\"failOnTimeout\":false,\"backoff\":null,\"timeout\":null,\"retryUntil\":null,\"data\":{\"commandName\":\"App\\\\Jobs\\\\RetryFailedProtectionSync\",\"command\":\"O:34:\\\"App\\\\Jobs\\\\RetryFailedProtectionSync\\\":0:{}\",\"batchId\":null},\"createdAt\":1790683500,\"delay\":null}', 0, NULL, 1790683500, 1790683500),
+(25, 'default', '{\"uuid\":\"fb0cbbe1-c371-4ca1-8d32-d1ed668975f9\",\"displayName\":\"App\\\\Jobs\\\\RetryFailedProtectionSync\",\"job\":\"Illuminate\\\\Queue\\\\CallQueuedHandler@call\",\"maxTries\":null,\"maxExceptions\":null,\"failOnTimeout\":false,\"backoff\":null,\"timeout\":null,\"retryUntil\":null,\"data\":{\"commandName\":\"App\\\\Jobs\\\\RetryFailedProtectionSync\",\"command\":\"O:34:\\\"App\\\\Jobs\\\\RetryFailedProtectionSync\\\":0:{}\",\"batchId\":null},\"createdAt\":1790683800,\"delay\":null}', 0, NULL, 1790683800, 1790683800),
+(26, 'default', '{\"uuid\":\"a872ae83-1c37-480a-9d81-5b2e7583af61\",\"displayName\":\"App\\\\Jobs\\\\RetryFailedProtectionSync\",\"job\":\"Illuminate\\\\Queue\\\\CallQueuedHandler@call\",\"maxTries\":null,\"maxExceptions\":null,\"failOnTimeout\":false,\"backoff\":null,\"timeout\":null,\"retryUntil\":null,\"data\":{\"commandName\":\"App\\\\Jobs\\\\RetryFailedProtectionSync\",\"command\":\"O:34:\\\"App\\\\Jobs\\\\RetryFailedProtectionSync\\\":0:{}\",\"batchId\":null},\"createdAt\":1790684100,\"delay\":null}', 0, NULL, 1790684100, 1790684100),
+(27, 'default', '{\"uuid\":\"be0cc143-97c6-4e85-9b74-f580975893de\",\"displayName\":\"App\\\\Jobs\\\\RetryFailedProtectionSync\",\"job\":\"Illuminate\\\\Queue\\\\CallQueuedHandler@call\",\"maxTries\":null,\"maxExceptions\":null,\"failOnTimeout\":false,\"backoff\":null,\"timeout\":null,\"retryUntil\":null,\"data\":{\"commandName\":\"App\\\\Jobs\\\\RetryFailedProtectionSync\",\"command\":\"O:34:\\\"App\\\\Jobs\\\\RetryFailedProtectionSync\\\":0:{}\",\"batchId\":null},\"createdAt\":1790686800,\"delay\":null}', 0, NULL, 1790686800, 1790686800),
+(28, 'default', '{\"uuid\":\"1f4e70f0-dec1-4bae-be42-f019dda6720e\",\"displayName\":\"App\\\\Jobs\\\\RetryFailedProtectionSync\",\"job\":\"Illuminate\\\\Queue\\\\CallQueuedHandler@call\",\"maxTries\":null,\"maxExceptions\":null,\"failOnTimeout\":false,\"backoff\":null,\"timeout\":null,\"retryUntil\":null,\"data\":{\"commandName\":\"App\\\\Jobs\\\\RetryFailedProtectionSync\",\"command\":\"O:34:\\\"App\\\\Jobs\\\\RetryFailedProtectionSync\\\":0:{}\",\"batchId\":null},\"createdAt\":1790687100,\"delay\":null}', 0, NULL, 1790687100, 1790687100),
+(29, 'default', '{\"uuid\":\"6150c788-8ec7-4aff-b921-080a5e5f059f\",\"displayName\":\"App\\\\Jobs\\\\RetryFailedProtectionSync\",\"job\":\"Illuminate\\\\Queue\\\\CallQueuedHandler@call\",\"maxTries\":null,\"maxExceptions\":null,\"failOnTimeout\":false,\"backoff\":null,\"timeout\":null,\"retryUntil\":null,\"data\":{\"commandName\":\"App\\\\Jobs\\\\RetryFailedProtectionSync\",\"command\":\"O:34:\\\"App\\\\Jobs\\\\RetryFailedProtectionSync\\\":0:{}\",\"batchId\":null},\"createdAt\":1790687400,\"delay\":null}', 0, NULL, 1790687400, 1790687400);
 
 -- --------------------------------------------------------
 
@@ -709,15 +735,15 @@ INSERT INTO `protection_sync_logs` (`id`, `device_id`, `sync_version`, `rules_ha
 (11, 3, 3, '39c0914ee6e3e17f2dc72aeec561bf2aefec75b527582b8e0745aacee9079a43', 'applied', 2, 3, NULL, '2026-09-28 07:22:07', '2026-09-28 07:35:04', '1.0.0', NULL, NULL, '2026-09-28 07:35:04', '2026-09-28 06:32:14', '2026-09-28 07:35:04'),
 (12, 3, 4, 'b9606708cc28dc40a8ee5e497d186d7d2062e0e5dad6feb1c81d32acd7fb2d87', 'applied', 0, 3, NULL, NULL, '2026-09-29 00:41:23', '1.0.2', NULL, NULL, '2026-09-29 00:41:23', '2026-09-29 00:03:32', '2026-09-29 00:41:23'),
 (13, 3, 5, 'b9606708cc28dc40a8ee5e497d186d7d2062e0e5dad6feb1c81d32acd7fb2d87', 'applied', 0, 3, NULL, NULL, '2026-09-29 01:24:39', '1.0.2', NULL, NULL, '2026-09-29 01:24:39', '2026-09-29 01:22:33', '2026-09-29 01:24:39'),
-(14, 3, 6, '6609fc20e4bbb75061c990d0a2e993aa82ee1b549738eed8d27e6835124e5297', 'failed', 3, 3, 'Device ACK timeout.', NULL, NULL, '1.0.2', NULL, NULL, NULL, '2026-09-29 01:22:38', '2026-09-29 04:39:47'),
+(14, 3, 6, '6609fc20e4bbb75061c990d0a2e993aa82ee1b549738eed8d27e6835124e5297', 'failed', 3, 3, 'Maximum retry reached.', '2026-09-29 07:42:18', NULL, '1.0.2', NULL, NULL, NULL, '2026-09-29 01:22:38', '2026-09-29 07:42:18'),
 (15, 3, 7, 'b9606708cc28dc40a8ee5e497d186d7d2062e0e5dad6feb1c81d32acd7fb2d87', 'failed', 3, 3, 'Device ACK timeout.', NULL, NULL, NULL, NULL, NULL, NULL, '2026-09-29 02:40:53', '2026-09-29 04:43:40'),
 (16, 3, 8, 'a3c17cb4e2f11a6fa1392a8b18b1b5d5fbab4c4415d9eca1bfb3f688955e2004', 'failed', 3, 3, 'Device ACK timeout.', NULL, NULL, '1.0.2', NULL, NULL, NULL, '2026-09-29 02:45:51', '2026-09-29 04:43:40'),
 (17, 3, 9, 'a3c17cb4e2f11a6fa1392a8b18b1b5d5fbab4c4415d9eca1bfb3f688955e2004', 'applied', 0, 3, NULL, NULL, '2026-09-29 03:22:20', '1.0.2', NULL, NULL, '2026-09-29 03:22:20', '2026-09-29 02:48:07', '2026-09-29 03:22:20'),
-(18, 3, 10, 'b9606708cc28dc40a8ee5e497d186d7d2062e0e5dad6feb1c81d32acd7fb2d87', 'failed', 3, 3, 'Device ACK timeout.', NULL, NULL, '1.0.2', NULL, NULL, NULL, '2026-09-29 03:22:49', '2026-09-29 04:43:40'),
+(18, 3, 10, 'b9606708cc28dc40a8ee5e497d186d7d2062e0e5dad6feb1c81d32acd7fb2d87', 'failed', 3, 3, 'Maximum retry reached.', '2026-09-29 07:40:03', NULL, '1.0.2', NULL, NULL, NULL, '2026-09-29 03:22:49', '2026-09-29 07:40:03'),
 (19, 3, 11, 'b9606708cc28dc40a8ee5e497d186d7d2062e0e5dad6feb1c81d32acd7fb2d87', 'applied', 0, 3, NULL, NULL, '2026-09-29 03:28:13', '1.0.2', NULL, NULL, '2026-09-29 03:28:13', '2026-09-29 03:24:10', '2026-09-29 03:28:13'),
 (20, 3, 12, 'a3c17cb4e2f11a6fa1392a8b18b1b5d5fbab4c4415d9eca1bfb3f688955e2004', 'applied', 0, 3, NULL, NULL, '2026-09-29 03:57:57', '1.0.2', NULL, NULL, '2026-09-29 03:57:57', '2026-09-29 03:53:59', '2026-09-29 03:57:57'),
 (21, 3, 13, 'a3c17cb4e2f11a6fa1392a8b18b1b5d5fbab4c4415d9eca1bfb3f688955e2004', 'applied', 0, 3, NULL, NULL, '2026-09-29 04:23:27', '1.0.2', NULL, NULL, '2026-09-29 04:23:27', '2026-09-29 04:21:37', '2026-09-29 04:23:27'),
-(22, 3, 14, 'a3c17cb4e2f11a6fa1392a8b18b1b5d5fbab4c4415d9eca1bfb3f688955e2004', 'pending', 1, 3, NULL, '2026-09-29 05:09:49', NULL, '1.0.2', NULL, NULL, NULL, '2026-09-29 04:29:09', '2026-09-29 05:09:49');
+(22, 3, 14, 'a3c17cb4e2f11a6fa1392a8b18b1b5d5fbab4c4415d9eca1bfb3f688955e2004', 'applied', 2, 3, NULL, '2026-09-29 07:43:30', '2026-09-29 07:46:11', '1.0.2', NULL, NULL, '2026-09-29 07:46:11', '2026-09-29 04:29:09', '2026-09-29 07:46:11');
 
 -- --------------------------------------------------------
 
@@ -1219,7 +1245,7 @@ ALTER TABLE `devices`
 -- AUTO_INCREMENT for table `device_events`
 --
 ALTER TABLE `device_events`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `device_protection_settings`
@@ -1231,7 +1257,7 @@ ALTER TABLE `device_protection_settings`
 -- AUTO_INCREMENT for table `device_sessions`
 --
 ALTER TABLE `device_sessions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -1243,7 +1269,7 @@ ALTER TABLE `failed_jobs`
 -- AUTO_INCREMENT for table `jobs`
 --
 ALTER TABLE `jobs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `license_codes`

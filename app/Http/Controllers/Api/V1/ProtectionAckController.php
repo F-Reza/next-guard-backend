@@ -219,7 +219,7 @@ class ProtectionAckController extends Controller
                 'pending'
 
             )
-            ->latest('id')
+            ->latest('sync_version')
             ->first();
 
 
