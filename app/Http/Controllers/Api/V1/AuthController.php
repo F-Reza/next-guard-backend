@@ -156,7 +156,7 @@ class AuthController extends Controller
          */
         $device = Device::where('id', $request->input('device_id'))
             ->where('user_id', $user->id)
-            ->where('status', 'active')
+            ->where('status', '!=', 'revoked')
             ->first();
 
         if (!$device) {
@@ -167,6 +167,24 @@ class AuthController extends Controller
                 'message' => 'Device is not registered for this account.',
             ], 403);
         }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Restore Device Online Status
+        |--------------------------------------------------------------------------
+        */
+
+        $device->update([
+
+            'status'=>'active',
+
+            'last_seen_at'=>now(),
+
+        ]);
+
+
+
 
         /**
          * Create an access token containing device_id.
@@ -381,7 +399,7 @@ class AuthController extends Controller
          */
         $device = Device::where('id', $session->device_id)
             ->where('user_id', $user->id)
-            ->where('status', 'active')
+            ->where('status', '!=', 'revoked')
             ->first();
 
         if (!$device) {
@@ -392,10 +410,20 @@ class AuthController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Device is no longer active.',
+                'message' => 'Device is revoked or unavailable.',
             ], 403);
         }
 
+
+
+        $device->update([
+
+            'status'=>'active',
+
+            'last_seen_at'=>now(),
+
+        ]);
+        
         /**
          * Everything is valid.
          *

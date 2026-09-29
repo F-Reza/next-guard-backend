@@ -6,9 +6,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 
 use App\Models\ProtectionSyncLog;
-
+use App\Models\DeviceProtectionSetting;
 use Illuminate\Http\Request;
-
 use Illuminate\Http\JsonResponse;
 
 
@@ -73,6 +72,12 @@ class ProtectionAckController extends Controller
         $request->validate([
 
 
+            'sync_version'=>[
+                'required',
+                'integer'
+            ],
+
+
             'rules_hash'=>[
                 'required',
                 'string'
@@ -118,6 +123,13 @@ class ProtectionAckController extends Controller
             'device_id',
 
             $device->id
+
+        )
+        ->where(
+
+            'sync_version',
+
+            $request->sync_version
 
         )
         ->where(
@@ -198,7 +210,9 @@ class ProtectionAckController extends Controller
 
 
             'failure_reason'=>
-                $request->failure_reason,
+                $request->status === 'failed'
+                    ? $request->failure_reason
+                    : null,
 
 
 
@@ -211,6 +225,22 @@ class ProtectionAckController extends Controller
         ]);
 
 
+
+        if(
+            $request->status === 'applied'
+        ){
+
+            DeviceProtectionSetting::where(
+                'device_id',
+                $device->id
+            )
+            ->update([
+
+                'last_sync_at'=>now(),
+
+            ]);
+
+        }
 
 
 
