@@ -384,10 +384,16 @@ Route::middleware('auth:api')
     );
 
 
+    Route::put(
+        '/devices/{device}/protection/notifications/{id}/read',
+        [ProtectionNotificationController::class,'read']
+    );
 
 
 
 
+
+    
     /*
     |--------------------------------------------------------------------------
     | Trial

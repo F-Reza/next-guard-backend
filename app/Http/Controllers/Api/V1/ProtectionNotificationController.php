@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 
 use App\Models\ProtectionNotification;
-
+use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 
@@ -122,6 +122,102 @@ class ProtectionNotificationController extends Controller
 
 
     }
+
+    public function read(
+        int $device,
+        int $id
+    ): JsonResponse
+    {
+
+
+        $user = auth('api')->user();
+
+
+
+        $ownedDevice = $user->devices()
+            ->where(
+                'id',
+                $device
+            )
+            ->first();
+
+
+
+        if(!$ownedDevice){
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Device not found.'
+
+            ],404);
+
+        }
+
+
+
+        $notification = ProtectionNotification::where(
+                'id',
+                $id
+            )
+            ->where(
+                'device_id',
+                $device
+            )
+            ->first();
+
+
+
+        if(!$notification){
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Notification not found.'
+
+            ],404);
+
+        }
+
+
+
+        $notification->update([
+
+            'read_at'=>now()
+
+        ]);
+
+
+
+        $notification->refresh();
+
+
+
+        return response()->json([
+
+
+            'success'=>true,
+
+
+            'message'=>'Notification marked as read.',
+
+
+            'data'=>[
+
+                'id'=>$notification->id,
+
+                'read_at'=>$notification->read_at
+
+            ]
+
+
+        ]);
+
+
+    }
+
 
 
 
