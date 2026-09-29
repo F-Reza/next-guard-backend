@@ -105,7 +105,7 @@ class ProtectionDeactivationService
                 'rules_hash'=>
                     hash(
                         'sha256',
-                        'protection-disabled-'.$device->id
+                        'protection-disabled-'.$device->id.'-'.$reason
                     ),
 
 

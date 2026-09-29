@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use App\Jobs\RetryFailedProtectionSync;
+// use App\Jobs\ExpireSubscriptionsJob;
 use Illuminate\Support\Facades\Schedule;
 
 
@@ -19,8 +20,8 @@ Schedule::job(
 
 Schedule::command(
     'subscriptions:expire'
-)
-->daily();
+)// ->daily();
+->everyMinute();
 
 
 Schedule::command(
