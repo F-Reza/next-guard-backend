@@ -6,7 +6,7 @@ namespace App\Services;
 use App\Models\DeviceProtectionSetting;
 use App\Models\ProtectionSyncLog;
 use App\Models\Subscription;
-
+use App\Services\ProtectionEngineService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -84,10 +84,13 @@ class ProtectionActivationService
                 'protection_status'=>'active',
 
 
-                'dns_protection'=>true,
+                'disabled_reason'=>null,
 
 
-                'safe_search'=>true,
+                // 'dns_protection'=>true,
+
+
+                // 'safe_search'=>true,
 
 
                 'last_sync_at'=>now(),
@@ -108,22 +111,45 @@ class ProtectionActivationService
             */
 
 
+            $payload = ProtectionEngineService::payload(
+                $device
+            );
+
+
+            $rules = collect($payload['rules'])
+                ->sortBy('id')
+                ->values()
+                ->toArray();
+
+
+            $syncData = [
+                'protection'=>$payload['protection'],
+                'rules'=>$rules,
+            ];
+
+
+            $hash = hash(
+                'sha256',
+                json_encode($syncData)
+            );
+
+
+
+
             ProtectionSyncLog::create([
 
 
                 'device_id'=>$device->id,
 
 
-                'sync_version'=>1,
+                'sync_version'=>
+                    (ProtectionSyncLog::where(
+                        'device_id',
+                        $device->id
+                    )->max('sync_version') ?? 0) + 1,
 
 
-                'rules_hash'=>hash(
-                    'sha256',
-                    json_encode([
-                        'dns_protection'=>true,
-                        'safe_search'=>true,
-                    ])
-                ),
+                'rules_hash'=>$hash,
 
 
                 'apply_status'=>'pending',

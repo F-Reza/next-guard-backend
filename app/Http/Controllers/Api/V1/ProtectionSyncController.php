@@ -93,9 +93,15 @@ class ProtectionSyncController extends Controller
 
 
 
+        $syncData = [
+            'protection'=>$payload['protection'],
+            'rules'=>$rules,
+        ];
+
+
         $rulesHash = hash(
             'sha256',
-            json_encode($rules)
+            json_encode($syncData)
         );
 
 
