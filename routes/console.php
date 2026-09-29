@@ -36,7 +36,7 @@ Schedule::command(
 ->everyFiveMinutes();
 
 
-Schedule::command(
-    'protection:retry-sync'
-)
-->everyMinute();
+// Schedule::command(
+//     'protection:retry-sync'
+// )
+// ->everyMinute();

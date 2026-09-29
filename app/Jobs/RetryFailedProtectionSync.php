@@ -33,6 +33,7 @@ class RetryFailedProtectionSync implements ShouldQueue
     {
 
 
+
         $logs = ProtectionSyncLog::where(
                 'apply_status',
                 'failed'
@@ -42,13 +43,18 @@ class RetryFailedProtectionSync implements ShouldQueue
                 '<',
                 'max_retry'
             )
-            ->orderBy(
-                'id'
-            )
+            ->where(function($q){
+
+                $q->whereNull('last_retry_at')
+                ->orWhere(
+                    'last_retry_at',
+                    '<',
+                    now()->subMinutes(5)
+                );
+
+            })
+            ->orderBy('id')
             ->get();
-
-
-
 
 
 
