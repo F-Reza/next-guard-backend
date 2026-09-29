@@ -121,9 +121,12 @@ class ProtectionSyncController extends Controller
             'device_id',
             $device->id
         )
-        ->where(
-            'rules_hash',
-            $rulesHash
+        ->whereIn(
+            'apply_status',
+            [
+                'pending',
+                'applied'
+            ]
         )
         ->latest('id')
         ->first();
