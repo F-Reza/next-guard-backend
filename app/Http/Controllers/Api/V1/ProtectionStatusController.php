@@ -113,7 +113,7 @@ class ProtectionStatusController extends Controller
                     ELSE 4
                 END
             ")
-            ->latest('id')
+            ->latest('sync_version')
             ->first();
 
 
