@@ -139,6 +139,8 @@ class ProtectionViolationController extends Controller
 
                     'id'=>$log->id,
 
+                    'rule_id'=>$log->rule_id,
+
                     'domain'=>$log->domain,
 
                     'category'=>$log->category,
