@@ -60,18 +60,6 @@ class ProtectionDeactivationService
 
                 'disabled_reason'=>$reason,
 
-                'betting_block'=>false,
-
-                'adult_content_block'=>false,
-
-                'facebook_ad_block'=>false,
-
-                'youtube_ad_block'=>false,
-
-                'safe_search'=>false,
-
-                'dns_protection'=>false,
-
                 'last_sync_at'=>now(),
 
             ]);
@@ -89,31 +77,34 @@ class ProtectionDeactivationService
             */
 
 
-            ProtectionSyncLog::create([
+            $lastVersion = ProtectionSyncLog::where(
+                'device_id',
+                $device->id
+            )
+            ->lockForUpdate()
+            ->max('sync_version');
 
+
+            ProtectionSyncLog::create([
 
                 'device_id'=>$device->id,
 
+                'sync_version'=>($lastVersion ?? 0)+1,
 
-                'sync_version'=>
-                    (ProtectionSyncLog::where(
-                        'device_id',
-                        $device->id
-                    )->max('sync_version') ?? 0) + 1,
-
-
-                'rules_hash'=>
-                    hash(
-                        'sha256',
-                        'protection-disabled-'.$device->id.'-'.$reason
-                    ),
-
+                'rules_hash'=>hash(
+                    'sha256',
+                    'protection-disabled-'.$device->id.'-'.$reason
+                ),
 
                 'apply_status'=>'pending',
 
+                'retry_count'=>0,
+
+                'max_retry'=>3,
+
+                'device_version'=>$device->app_version,
 
                 'synced_at'=>null,
-
 
             ]);
 

@@ -21,7 +21,7 @@ use App\Http\Controllers\Api\V1\TrialController;
 use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\SubscriptionController;
 use App\Http\Controllers\Api\V1\SubscriptionPlanController;
-
+use App\Http\Controllers\Api\V1\SubscriptionStatusController;
 
 use App\Http\Controllers\Api\V1\DeviceManagementController;
 use App\Http\Controllers\Api\V1\DeviceLimitController;
@@ -458,8 +458,12 @@ Route::middleware('auth:api')
         '/subscriptions/history',
         [SubscriptionController::class,'history']
     );    
+    
 
-
+    Route::get(
+        '/subscription/status',
+        [SubscriptionStatusController::class,'status']
+    );
 
 
 

@@ -27,6 +27,8 @@ class Subscription extends Model
 
         'payment_reference',
 
+        'auto_renew',
+
     ];
 
 
@@ -38,6 +40,8 @@ class Subscription extends Model
             'starts_at' => 'datetime',
 
             'expires_at' => 'datetime',
+
+            'auto_renew'=>'boolean',
 
         ];
     }
