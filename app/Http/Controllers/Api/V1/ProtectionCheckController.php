@@ -132,47 +132,25 @@ class ProtectionCheckController extends Controller
         |--------------------------------------------------------------------------
         */
 
-
         if(
-
             isset($result['allowed'])
-
             &&
-
             $result['allowed'] === false
-
         ){
 
-
-
-            ProtectionViolationLog::firstOrCreate([
-
+            ProtectionViolationLog::create([
 
                 'device_id'=>$device->id,
 
-
                 'domain'=>$result['domain'],
-
 
                 'action'=>'blocked',
 
+                'rule_id'=>$result['rule_id'] ?? null,
 
-
-            ],[
-
-
-                'rule_id'=>
-                    $result['rule_id'] ?? null,
-
-
-                'category'=>
-                    $result['category'] ?? null,
-
-
+                'category'=>$result['category'] ?? null,
 
             ]);
-
-
 
         }
 
