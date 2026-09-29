@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\V1\SubscriptionStatusController;
 use App\Http\Controllers\Api\V1\ProtectionViolationController;
 use App\Http\Controllers\Api\V1\ProtectionSummaryController;
 use App\Http\Controllers\Api\V1\ProtectionAnalyticsController;
+use App\Http\Controllers\Api\V1\ProtectionNotificationController;
 
 use App\Http\Controllers\Api\V1\DeviceManagementController;
 use App\Http\Controllers\Api\V1\DeviceLimitController;
@@ -375,6 +376,16 @@ Route::middleware('auth:api')
         '/devices/{id}/protection/analytics',
         [ProtectionAnalyticsController::class,'analytics']
     );
+
+
+    Route::get(
+        '/devices/{id}/protection/notifications',
+        [ProtectionNotificationController::class,'index']
+    );
+
+
+
+
 
 
     /*
