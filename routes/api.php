@@ -136,7 +136,6 @@ Route::post(
 
 
 
-
 /*
 |--------------------------------------------------------------------------
 | ADMIN LOGIN
@@ -458,7 +457,7 @@ Route::middleware('auth:api')
         '/subscriptions/history',
         [SubscriptionController::class,'history']
     );    
-    
+
 
     Route::get(
         '/subscription/status',
