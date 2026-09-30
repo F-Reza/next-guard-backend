@@ -33,9 +33,11 @@ class ApiResponseSchema
 
     #[OA\Property(
         property:"data",
-        type:"object"
+        type:"object",
+        nullable:true
     )]
-    public object $data;
+    public ?object $data;
+
 
 
 }
