@@ -26,7 +26,7 @@ class PaymentController extends Controller
     |--------------------------------------------------------------------------
     */
 
-
+    
     public function create(Request $request): JsonResponse
     {
 
@@ -90,7 +90,10 @@ class PaymentController extends Controller
                     'amount'=>
                         $subscription->plan->price,
 
-                    'currency'=>'USD',
+
+                    'currency'=>
+                        'USD',
+
 
                     'subscription_id'=>
                         $subscription->id
@@ -126,30 +129,6 @@ class PaymentController extends Controller
 
         }
 
-
-
-        $payment =
-            $gateway->createPayment([
-
-                'amount'=>
-                    $subscription->plan->price,
-
-
-                'currency'=>'USD'
-
-            ]);
-
-
-
-        return response()->json([
-
-            'success'=>true,
-
-            'message'=>'Payment created.',
-
-            'data'=>$payment
-
-        ]);
 
     }
 
