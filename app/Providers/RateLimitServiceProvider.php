@@ -29,7 +29,11 @@ class RateLimitServiceProvider extends ServiceProvider
             return Limit::perMinute(5)
                 ->by(
                     strtolower(
-                        $request->input('login')
+                        strtolower(
+                            $request->input('email')
+                            ??
+                            $request->input('login')
+                        )
                     )
                     .
                     '|'.
@@ -76,6 +80,36 @@ class RateLimitServiceProvider extends ServiceProvider
                 );
 
         });
+
+
+
+
+        RateLimiter::for('license', function(Request $request){
+
+            return Limit::perMinute(5)
+                ->by(
+                    $request->user()?->id
+                    ??
+                    $request->ip()
+                );
+
+        });
+
+
+
+        RateLimiter::for('protection', function(Request $request){
+
+            return Limit::perMinute(60)
+                ->by(
+                    $request->user()?->id
+                    ??
+                    $request->ip()
+                );
+
+        });
+
+
+
 
 
 
