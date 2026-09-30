@@ -524,6 +524,184 @@
                 ]
             }
         },
+        "/payments/create": {
+            "post": {
+                "tags": [
+                    "Payment System"
+                ],
+                "summary": "Create payment",
+                "operationId": "2acb7e163a8c7d5ebfb15427791558c5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "subscription_id",
+                                    "gateway"
+                                ],
+                                "properties": {
+                                    "subscription_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "gateway": {
+                                        "type": "string",
+                                        "example": "stripe"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Payment created successfully"
+                    },
+                    "422": {
+                        "description": "Payment creation failed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/payments/confirm": {
+            "post": {
+                "tags": [
+                    "Payment System"
+                ],
+                "summary": "Confirm payment",
+                "operationId": "fcda6b094e122869543f8c77eb33cedb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "transaction_id"
+                                ],
+                                "properties": {
+                                    "transaction_id": {
+                                        "type": "string",
+                                        "example": "STRIPE-ABC123"
+                                    },
+                                    "gateway": {
+                                        "type": "string",
+                                        "example": "stripe"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Payment confirmed"
+                    },
+                    "409": {
+                        "description": "Duplicate transaction"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/payments/webhook": {
+            "post": {
+                "tags": [
+                    "Payment System"
+                ],
+                "summary": "Payment gateway webhook",
+                "operationId": "fdc559cb1838b0f80544132136c09c20",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "gateway",
+                                    "event_id",
+                                    "transaction_id"
+                                ],
+                                "properties": {
+                                    "gateway": {
+                                        "type": "string",
+                                        "example": "stripe"
+                                    },
+                                    "event_id": {
+                                        "type": "string",
+                                        "example": "evt_12345"
+                                    },
+                                    "transaction_id": {
+                                        "type": "string",
+                                        "example": "STRIPE-ABC123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Webhook processed successfully"
+                    },
+                    "401": {
+                        "description": "Invalid webhook signature"
+                    },
+                    "409": {
+                        "description": "Duplicate webhook"
+                    }
+                }
+            }
+        },
+        "/payments": {
+            "get": {
+                "tags": [
+                    "Payment System"
+                ],
+                "summary": "Get payment history",
+                "operationId": "d9f2661d2e7d9a9f0263639447c4ec39",
+                "responses": {
+                    "200": {
+                        "description": "Payment history"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/invoices": {
+            "get": {
+                "tags": [
+                    "Payment System"
+                ],
+                "summary": "Get invoices",
+                "operationId": "fc0f7126aa33eaef23b8125473335fbd",
+                "responses": {
+                    "200": {
+                        "description": "Invoice list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/devices/{id}/protection/status": {
             "get": {
                 "tags": [
@@ -1309,6 +1487,10 @@
         {
             "name": "Health",
             "description": "Health"
+        },
+        {
+            "name": "Payment System",
+            "description": "Payment System"
         },
         {
             "name": "Protection Engine",
