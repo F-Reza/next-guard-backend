@@ -72,7 +72,8 @@ class PaymentSchema
         property:"paid_at",
         type:"string",
         format:"date-time",
-        nullable:true
+        nullable:true,
+        example:"2026-09-30T12:00:00Z"
     )]
     public ?string $paid_at;
 

@@ -6,7 +6,7 @@ use OpenApi\Attributes as OA;
 
 
 #[OA\Schema(
-    schema:"Device",
+    schema:"Notification",
 
     type:"object",
 
@@ -21,30 +21,30 @@ use OpenApi\Attributes as OA;
 
 
         new OA\Property(
-            property:"device_uuid_hash",
-            type:"string",
-            example:"a8f7c91d83..."
-        ),
-
-
-        new OA\Property(
-            property:"platform",
-            type:"string",
-            example:"android"
-        ),
-
-
-        new OA\Property(
-            property:"status",
-            type:"string",
-            example:"active"
-        ),
-
-
-        new OA\Property(
             property:"user_id",
             type:"integer",
             example:1
+        ),
+
+
+        new OA\Property(
+            property:"title",
+            type:"string",
+            example:"Protection alert"
+        ),
+
+
+        new OA\Property(
+            property:"message",
+            type:"string",
+            example:"Suspicious activity detected"
+        ),
+
+
+        new OA\Property(
+            property:"read_at",
+            type:"string",
+            nullable:true
         ),
 
 
@@ -59,7 +59,7 @@ use OpenApi\Attributes as OA;
 )]
 
 
-class DeviceSchema
+class NotificationSchema
 {
 
 }

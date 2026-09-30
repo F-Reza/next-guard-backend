@@ -6,7 +6,7 @@ use OpenApi\Attributes as OA;
 
 
 #[OA\Schema(
-    schema:"Device",
+    schema:"Invoice",
 
     type:"object",
 
@@ -21,36 +21,30 @@ use OpenApi\Attributes as OA;
 
 
         new OA\Property(
-            property:"device_uuid_hash",
+            property:"invoice_no",
             type:"string",
-            example:"a8f7c91d83..."
+            example:"INV-20260930-A8F92"
         ),
 
 
         new OA\Property(
-            property:"platform",
+            property:"amount",
+            type:"number",
+            example:10
+        ),
+
+
+        new OA\Property(
+            property:"currency",
             type:"string",
-            example:"android"
+            example:"USD"
         ),
 
 
         new OA\Property(
             property:"status",
             type:"string",
-            example:"active"
-        ),
-
-
-        new OA\Property(
-            property:"user_id",
-            type:"integer",
-            example:1
-        ),
-
-
-        new OA\Property(
-            property:"created_at",
-            type:"string"
+            example:"paid"
         )
 
 
@@ -59,7 +53,7 @@ use OpenApi\Attributes as OA;
 )]
 
 
-class DeviceSchema
+class InvoiceSchema
 {
 
 }

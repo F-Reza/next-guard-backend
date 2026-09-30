@@ -2295,7 +2295,7 @@
                     },
                     "device_uuid_hash": {
                         "type": "string",
-                        "example": "a83bd92..."
+                        "example": "a8f7c91d83..."
                     },
                     "platform": {
                         "type": "string",
@@ -2304,6 +2304,13 @@
                     "status": {
                         "type": "string",
                         "example": "active"
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "created_at": {
+                        "type": "string"
                     }
                 },
                 "type": "object"
@@ -2321,6 +2328,59 @@
                     "errors": {
                         "type": "object",
                         "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Invoice": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "invoice_no": {
+                        "type": "string",
+                        "example": "INV-20260930-A8F92"
+                    },
+                    "amount": {
+                        "type": "number",
+                        "example": 10
+                    },
+                    "currency": {
+                        "type": "string",
+                        "example": "USD"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "paid"
+                    }
+                },
+                "type": "object"
+            },
+            "Notification": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Protection alert"
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Suspicious activity detected"
+                    },
+                    "read_at": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "created_at": {
+                        "type": "string"
                     }
                 },
                 "type": "object"
@@ -2391,17 +2451,21 @@
                         "type": "integer",
                         "example": 1
                     },
+                    "subscription_plan_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
                     "status": {
                         "type": "string",
                         "example": "active"
                     },
                     "starts_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "example": "2026-09-30"
                     },
                     "expires_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "example": "2026-10-30"
                     }
                 },
                 "type": "object"
@@ -2422,7 +2486,11 @@
                     },
                     "created_at": {
                         "type": "string",
-                        "format": "date-time"
+                        "example": "2026-09-30T10:00:00Z"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "example": "2026-09-30T10:00:00Z"
                     }
                 },
                 "type": "object"
