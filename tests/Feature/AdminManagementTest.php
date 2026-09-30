@@ -504,5 +504,198 @@ class AdminManagementTest extends TestCase
     }
 
 
+    /**
+     * Super admin can restore deleted admin
+     */
+    public function test_super_admin_can_restore_admin()
+    {
+
+        [$admin,$token] =
+            $this->createAdmin();
+
+
+
+        $target = Admin::create([
+
+            'name'=>'Deleted Admin',
+
+            'email'=>'restore@test.com',
+
+            'password'=>'password',
+
+            'role'=>'admin',
+
+            'status'=>'active',
+
+        ]);
+
+
+
+        $target->delete();
+
+
+
+        $this->assertSoftDeleted(
+
+            'admins',
+
+            [
+
+                'id'=>$target->id
+
+            ]
+
+        );
+
+
+
+        $response = $this
+
+            ->withHeader(
+
+                'Authorization',
+
+                'Bearer '.$token
+
+            )
+
+            ->postJson(
+
+                '/api/v1/admin/admins/'.$target->id.'/restore'
+
+            );
+
+
+
+        $response
+
+            ->assertStatus(200)
+
+            ->assertJson([
+
+                'success'=>true
+
+            ]);
+
+
+
+        $this->assertDatabaseHas(
+
+            'admins',
+
+            [
+
+                'id'=>$target->id,
+
+                'deleted_at'=>null
+
+            ]
+
+        );
+
+    }
+
+
+
+
+
+    /**
+     * Super admin can unlock admin
+     */
+    public function test_super_admin_can_unlock_admin()
+    {
+
+        [$admin,$token] =
+            $this->createAdmin();
+
+
+
+        $target = Admin::create([
+
+            'name'=>'Locked Admin',
+
+            'email'=>'locked@test.com',
+
+            'password'=>'password',
+
+            'role'=>'admin',
+
+            'status'=>'active',
+
+            'failed_login_attempts'=>5,
+
+            'locked_until'=>now()->addMinutes(10),
+
+            'last_failed_login_at'=>now(),
+
+        ]);
+
+
+
+        $response = $this
+
+            ->withHeader(
+
+                'Authorization',
+
+                'Bearer '.$token
+
+            )
+
+            ->postJson(
+
+                '/api/v1/admin/admins/'.$target->id.'/unlock'
+
+            );
+
+
+
+        $response
+
+            ->assertStatus(200)
+
+            ->assertJson([
+
+                'success'=>true,
+
+                'message'=>'Admin account unlocked successfully.'
+
+            ]);
+
+
+
+        $target->refresh();
+
+
+
+        $this->assertSame(
+
+            0,
+
+            $target->failed_login_attempts
+
+        );
+
+
+
+        $this->assertNull(
+
+            $target->locked_until
+
+        );
+
+
+
+        $this->assertNull(
+
+            $target->last_failed_login_at
+
+        );
+
+    }
+
+
+
+
 
 }
