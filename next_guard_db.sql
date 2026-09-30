@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 29, 2026 at 05:44 PM
+-- Generation Time: Sep 30, 2026 at 12:12 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -50,7 +50,7 @@ CREATE TABLE `admins` (
 --
 
 INSERT INTO `admins` (`id`, `name`, `email`, `password`, `role`, `status`, `force_password_change`, `failed_login_attempts`, `locked_until`, `last_failed_login_at`, `created_by`, `last_login_at`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'Super Admin', 'admin@nextguard.com', '$2y$12$7SiyHEZ6yuuo9ZwhXYSPFej82RRy8Xgimr2/5ZSgokiSvBu1nXo0q', 'super_admin', 'active', 0, 0, NULL, NULL, NULL, '2026-09-29 08:32:11', '2026-09-24 05:42:00', '2026-09-29 08:32:11', NULL),
+(1, 'Super Admin', 'admin@nextguard.com', '$2y$12$7SiyHEZ6yuuo9ZwhXYSPFej82RRy8Xgimr2/5ZSgokiSvBu1nXo0q', 'super_admin', 'active', 0, 0, NULL, NULL, NULL, '2026-09-30 02:07:55', '2026-09-24 05:42:00', '2026-09-30 02:07:55', NULL),
 (2, 'Support Manager', 'support@nextguard.com', '$2y$12$CheRtqlmNQ4FgdrtMG33.Of4QQmAtNo0mhLoKltdaOJBkvg15qpcS', 'support', 'active', 0, 0, NULL, NULL, 1, '2026-09-26 07:25:19', '2026-09-24 07:22:20', '2026-09-26 07:25:19', NULL),
 (3, 'Support Admin', 'support1@nextguard.com', '$2y$12$QLDFdlMdrGQbhnYIbGF7ge5DYMMlQvxsUs7hl9CiZ5dbzZmo78R1a', 'support', 'active', 0, 0, NULL, NULL, 1, NULL, '2026-09-24 08:14:02', '2026-09-24 08:19:52', NULL),
 (4, 'Test Admin', 'testadmin@nextguard.com', '$2y$12$s1WEVkPI6nHwSrFGABUYZOqfwDjPCnHAPMbobET6k.lKqssxtmyhm', 'support', 'active', 0, 0, NULL, NULL, 1, NULL, '2026-09-26 06:30:10', '2026-09-26 06:30:10', NULL);
@@ -197,7 +197,8 @@ INSERT INTO `admin_activity_logs` (`id`, `admin_id`, `action`, `severity`, `desc
 (112, 1, 'ADMIN_LOGIN', 'info', 'Admin logged in successfully.', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', 'Desktop', 'Unknown', 'Unknown', 'gZhA0YA5fRwLjEZvC4CvvgceVMv3dUT2oV7bxdrW', '{\"session_created\":true}', '2026-09-27 05:09:14', '2026-09-27 05:09:14'),
 (113, 1, 'PROTECTION_RULE_CREATED', 'info', 'Created protection rule: example.com', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', 'Desktop', 'Unknown', 'Unknown', 'zHATh94kRBEI2tednpCJHX0BXhqx4NBEegpAsF9p', '[]', '2026-09-27 05:13:12', '2026-09-27 05:13:12'),
 (114, 1, 'ADMIN_LOGIN', 'info', 'Admin logged in successfully.', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', 'Desktop', 'Unknown', 'Unknown', 'aqmdSd5iNXMJaKpzlyaggQqkXEgRgIZEkpDaOfzA', '{\"session_created\":true}', '2026-09-29 04:12:46', '2026-09-29 04:12:46'),
-(115, 1, 'ADMIN_LOGIN', 'info', 'Admin logged in successfully.', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', 'Desktop', 'Unknown', 'Unknown', 'UOXVwaB1Uph0mghgXTNGKyvhp1e8LDIQDj6wWRiD', '{\"session_created\":true}', '2026-09-29 08:32:11', '2026-09-29 08:32:11');
+(115, 1, 'ADMIN_LOGIN', 'info', 'Admin logged in successfully.', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', 'Desktop', 'Unknown', 'Unknown', 'UOXVwaB1Uph0mghgXTNGKyvhp1e8LDIQDj6wWRiD', '{\"session_created\":true}', '2026-09-29 08:32:11', '2026-09-29 08:32:11'),
+(116, 1, 'ADMIN_LOGIN', 'info', 'Admin logged in successfully.', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', 'Desktop', 'Unknown', 'Unknown', 'y0wYCsTAo7GGDSivNq9TWAyxhWExBY582rGxqlwD', '{\"session_created\":true}', '2026-09-30 02:07:55', '2026-09-30 02:07:55');
 
 -- --------------------------------------------------------
 
@@ -227,7 +228,8 @@ INSERT INTO `admin_notifications` (`id`, `admin_id`, `type`, `title`, `message`,
 (4, 2, 'LOGIN', 'New Admin Login', 'Your admin account was logged in successfully.', 0, '{\"ip\":\"127.0.0.1\",\"user_agent\":\"Thunder Client (https:\\/\\/www.thunderclient.com)\",\"time\":\"2026-09-26T13:25:19.766626Z\"}', '2026-09-26 07:25:19', '2026-09-26 07:25:19'),
 (5, 1, 'LOGIN', 'New Admin Login', 'Your admin account was logged in successfully.', 0, '{\"ip\":\"127.0.0.1\",\"user_agent\":\"Thunder Client (https:\\/\\/www.thunderclient.com)\",\"time\":\"2026-09-27T11:09:14.764405Z\"}', '2026-09-27 05:09:14', '2026-09-27 05:09:14'),
 (6, 1, 'LOGIN', 'New Admin Login', 'Your admin account was logged in successfully.', 0, '{\"ip\":\"127.0.0.1\",\"user_agent\":\"Thunder Client (https:\\/\\/www.thunderclient.com)\",\"time\":\"2026-09-29T10:12:46.125937Z\"}', '2026-09-29 04:12:46', '2026-09-29 04:12:46'),
-(7, 1, 'LOGIN', 'New Admin Login', 'Your admin account was logged in successfully.', 0, '{\"ip\":\"127.0.0.1\",\"user_agent\":\"Thunder Client (https:\\/\\/www.thunderclient.com)\",\"time\":\"2026-09-29T14:32:11.071882Z\"}', '2026-09-29 08:32:11', '2026-09-29 08:32:11');
+(7, 1, 'LOGIN', 'New Admin Login', 'Your admin account was logged in successfully.', 0, '{\"ip\":\"127.0.0.1\",\"user_agent\":\"Thunder Client (https:\\/\\/www.thunderclient.com)\",\"time\":\"2026-09-29T14:32:11.071882Z\"}', '2026-09-29 08:32:11', '2026-09-29 08:32:11'),
+(8, 1, 'LOGIN', 'New Admin Login', 'Your admin account was logged in successfully.', 0, '{\"ip\":\"127.0.0.1\",\"user_agent\":\"Thunder Client (https:\\/\\/www.thunderclient.com)\",\"time\":\"2026-09-30T08:07:55.170752Z\"}', '2026-09-30 02:07:55', '2026-09-30 02:07:55');
 
 -- --------------------------------------------------------
 
@@ -290,7 +292,8 @@ INSERT INTO `admin_sessions` (`id`, `admin_id`, `token_hash`, `ip_address`, `use
 (6, 2, '$2y$12$uoivJ5mn00iu7ai/h2cD2OW/pUjBavSbM9OLOBbbUkWrIrfqUgkwG', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-26 07:25:19', '2026-09-26 08:25:19', '2026-09-26 07:25:19', '2026-09-26 07:25:19'),
 (7, 1, '$2y$12$u64JohZt28EDZw.LCdh0/OKBpsEqfkl1XMv1M83QtyaOLN9ADEuK.', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-27 05:09:14', '2026-09-27 06:09:14', '2026-09-27 05:09:14', '2026-09-27 05:09:14'),
 (8, 1, '$2y$12$JxwLsDewelQY0/Tgo45s3.Z3eLetB2HkgNKHxivynLMKvbMIGn4aq', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 04:12:46', '2026-09-29 05:12:46', '2026-09-29 04:12:46', '2026-09-29 04:12:46'),
-(9, 1, '$2y$12$Um2RyKpbe9Gal2SRu0tkIuiZR3UORqpcPRUMEEeeUbjJtCRxwcMii', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 08:32:11', '2026-09-29 09:32:11', '2026-09-29 08:32:11', '2026-09-29 08:32:11');
+(9, 1, '$2y$12$Um2RyKpbe9Gal2SRu0tkIuiZR3UORqpcPRUMEEeeUbjJtCRxwcMii', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 08:32:11', '2026-09-29 09:32:11', '2026-09-29 08:32:11', '2026-09-29 08:32:11'),
+(10, 1, '$2y$12$Jr6co15XljyFyV5VC9eFy.q1TbVpTX1VUhEv7EAF0PEfEBoX0WnWm', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-30 02:07:55', '2026-09-30 03:07:55', '2026-09-30 02:07:55', '2026-09-30 02:07:55');
 
 -- --------------------------------------------------------
 
@@ -309,7 +312,13 @@ CREATE TABLE `cache` (
 --
 
 INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
-('next-guard-api-cache-Ovl9TymbrIRbWqnU', 'a:1:{s:11:\"valid_until\";i:1790696458;}', 1791906118);
+('next-guard-api-cache-a78214c3ccb35f2db67cfd99e85e4f58', 'i:1;', 1790755749),
+('next-guard-api-cache-a78214c3ccb35f2db67cfd99e85e4f58:timer', 'i:1790755749;', 1790755749),
+('next-guard-api-cache-c6be2cf7c13d9a527ee2fe401bbae3c7', 'i:1;', 1790755734),
+('next-guard-api-cache-c6be2cf7c13d9a527ee2fe401bbae3c7:timer', 'i:1790755734;', 1790755734),
+('next-guard-api-cache-e9b6cc1432541b9ceebf113eee05eeba', 'i:2;', 1790755765),
+('next-guard-api-cache-e9b6cc1432541b9ceebf113eee05eeba:timer', 'i:1790755765;', 1790755765),
+('next-guard-api-cache-kK2yuM0L6Cbw05of', 'a:1:{s:11:\"valid_until\";i:1790755689;}', 1791965349);
 
 -- --------------------------------------------------------
 
@@ -360,7 +369,7 @@ CREATE TABLE `devices` (
 INSERT INTO `devices` (`id`, `user_id`, `name`, `device_uuid_hash`, `platform`, `model`, `manufacturer`, `android_version`, `app_version`, `management_mode`, `status`, `last_seen_at`, `created_at`, `updated_at`) VALUES
 (1, 1, NULL, '9a99afcdb6c372ef38297f86cb266b5553f8e96839ab190fd599cef9ae2dce91', 'android', 'Test Phone', 'Test Manufacturer', '16', '1.0.0', 'standard', 'offline', '2026-09-24 02:41:36', '2026-09-24 02:39:43', '2026-09-28 08:05:29'),
 (2, 1, NULL, 'a1ddee54421b782cfba548d4ff4efd63fbca9c01503da23908dccaa34eca2a1d', 'android', 'Test Phone 2', 'Test Manufacturer', '16', '1.0.0', 'standard', 'offline', '2026-09-24 03:40:36', '2026-09-24 03:40:36', '2026-09-28 08:05:29'),
-(3, 2, 'My Android Phone', '2fab4650568803abb681c779d88f0c8b4807ef852bd2268690e832fdafd176c5', 'android', 'Samsung S24', 'Samsung', '14', '1.0.2', 'standard', 'active', '2026-09-29 09:40:58', '2026-09-27 03:20:49', '2026-09-29 09:40:58');
+(3, 2, 'My Android Phone', '2fab4650568803abb681c779d88f0c8b4807ef852bd2268690e832fdafd176c5', 'android', 'Samsung S24', 'Samsung', '14', '1.0.2', 'standard', 'active', '2026-09-30 02:08:09', '2026-09-27 03:20:49', '2026-09-30 02:08:09');
 
 -- --------------------------------------------------------
 
@@ -388,7 +397,8 @@ INSERT INTO `device_events` (`id`, `device_id`, `event`, `created_at`) VALUES
 (6, 3, 'offline', '2026-09-29 05:55:26'),
 (7, 3, 'offline', '2026-09-29 07:55:51'),
 (8, 3, 'offline', '2026-09-29 11:55:02'),
-(9, 3, 'offline', '2026-09-29 13:00:02');
+(9, 3, 'offline', '2026-09-29 13:00:02'),
+(10, 3, 'protection_sync_failed', '2026-09-29 15:53:03');
 
 -- --------------------------------------------------------
 
@@ -468,7 +478,9 @@ INSERT INTO `device_sessions` (`id`, `user_id`, `device_id`, `refresh_token_hash
 (29, 2, 3, '9705a4c0d1c6dba7ec30d7f0850b670c1cee6a639b1f2b30a06b41dcce82179f', 'active', '2026-10-29 07:28:00', '2026-09-29 07:28:00', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 07:28:00', '2026-09-29 07:28:00'),
 (30, 2, 3, '005ed9e74e449218ef2009377b79e80fac30b9bc63cc533836623f0ab2e4580a', 'active', '2026-10-29 08:35:28', '2026-09-29 08:35:28', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 08:35:28', '2026-09-29 08:35:28'),
 (31, 2, 3, 'fbeeeb284ca53fe0dd0e12c1aca3ed876c156020aaecaf6bb1e9d37b6f9704c3', 'active', '2026-10-29 08:40:35', '2026-09-29 08:40:35', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 08:40:35', '2026-09-29 08:40:35'),
-(32, 2, 3, '556e7b1e470899506405ba16d693d00710c34f1c8a971d74eb31ac800298b24c', 'active', '2026-10-29 09:40:58', '2026-09-29 09:40:58', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 09:40:58', '2026-09-29 09:40:58');
+(32, 2, 3, '556e7b1e470899506405ba16d693d00710c34f1c8a971d74eb31ac800298b24c', 'active', '2026-10-29 09:40:58', '2026-09-29 09:40:58', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 09:40:58', '2026-09-29 09:40:58'),
+(33, 2, 3, '91178de76b6ebe9a2f00a6abafc5076bc78c33f983e40d0693f81778e3a96ad0', 'active', '2026-10-29 22:58:31', '2026-09-29 22:58:31', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 22:58:31', '2026-09-29 22:58:31'),
+(34, 2, 3, 'b4848c94e23abde3356ed94cb2f60091fd0a631da57c03b1bdcc42840ca747fe', 'active', '2026-10-30 02:08:09', '2026-09-30 02:08:09', NULL, '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-30 02:08:09', '2026-09-30 02:08:09');
 
 -- --------------------------------------------------------
 
@@ -627,7 +639,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (41, '2026_09_29_082249_add_auto_renew_to_subscriptions_table', 34),
 (42, '2026_09_29_142026_add_indexes_to_protection_sync_logs_table', 35),
 (43, '2026_09_29_150646_add_indexes_to_protection_violation_logs_table', 36),
-(44, '2026_09_29_153027_create_protection_notifications_table', 37);
+(44, '2026_09_29_153027_create_protection_notifications_table', 37),
+(45, '2026_09_30_095829_add_gateway_fields_to_payments_table', 38);
 
 -- --------------------------------------------------------
 
@@ -640,21 +653,25 @@ CREATE TABLE `payments` (
   `user_id` bigint(20) UNSIGNED NOT NULL,
   `subscription_id` bigint(20) UNSIGNED DEFAULT NULL,
   `gateway` varchar(255) DEFAULT NULL,
+  `provider` varchar(255) DEFAULT NULL,
   `transaction_id` varchar(255) NOT NULL,
+  `provider_transaction_id` varchar(255) DEFAULT NULL,
   `amount` decimal(10,2) NOT NULL,
   `currency` varchar(255) NOT NULL DEFAULT 'USD',
   `status` enum('pending','paid','failed','refunded') NOT NULL DEFAULT 'pending',
   `paid_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `gateway_response` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`gateway_response`)),
+  `verified_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `payments`
 --
 
-INSERT INTO `payments` (`id`, `user_id`, `subscription_id`, `gateway`, `transaction_id`, `amount`, `currency`, `status`, `paid_at`, `created_at`, `updated_at`) VALUES
-(1, 2, 3, 'manual', 'TXN-10001', 99.00, 'USD', 'paid', '2026-09-27 09:25:00', '2026-09-27 09:25:00', '2026-09-27 09:25:00');
+INSERT INTO `payments` (`id`, `user_id`, `subscription_id`, `gateway`, `provider`, `transaction_id`, `provider_transaction_id`, `amount`, `currency`, `status`, `paid_at`, `created_at`, `updated_at`, `gateway_response`, `verified_at`) VALUES
+(1, 2, 3, 'manual', NULL, 'TXN-10001', NULL, 99.00, 'USD', 'paid', '2026-09-27 09:25:00', '2026-09-27 09:25:00', '2026-09-27 09:25:00', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -709,7 +726,8 @@ CREATE TABLE `protection_notifications` (
 --
 
 INSERT INTO `protection_notifications` (`id`, `device_id`, `user_id`, `type`, `title`, `message`, `domain`, `category`, `read_at`, `created_at`, `updated_at`) VALUES
-(1, 3, 2, 'protection_alert', 'Blocked website detected', 'bet365.com was blocked by protection.', 'bet365.com', 'betting', '2026-09-29 09:42:48', '2026-09-29 09:33:34', '2026-09-29 09:42:48');
+(1, 3, 2, 'protection_alert', 'Blocked website detected', 'bet365.com was blocked by protection.', 'bet365.com', 'betting', '2026-09-29 09:42:48', '2026-09-29 09:33:34', '2026-09-29 09:42:48'),
+(2, 3, 2, 'protection_alert', 'Blocked website detected', 'bet365.com was blocked by protection.', 'bet365.com', 'betting', NULL, '2026-09-30 02:08:57', '2026-09-30 02:08:57');
 
 -- --------------------------------------------------------
 
@@ -787,7 +805,8 @@ INSERT INTO `protection_sync_logs` (`id`, `device_id`, `sync_version`, `rules_ha
 (20, 3, 12, 'a3c17cb4e2f11a6fa1392a8b18b1b5d5fbab4c4415d9eca1bfb3f688955e2004', 'applied', 0, 3, NULL, NULL, '2026-09-29 03:57:57', '1.0.2', NULL, NULL, '2026-09-29 03:57:57', '2026-09-29 03:53:59', '2026-09-29 03:57:57'),
 (21, 3, 13, 'a3c17cb4e2f11a6fa1392a8b18b1b5d5fbab4c4415d9eca1bfb3f688955e2004', 'applied', 0, 3, NULL, NULL, '2026-09-29 04:23:27', '1.0.2', NULL, NULL, '2026-09-29 04:23:27', '2026-09-29 04:21:37', '2026-09-29 04:23:27'),
 (22, 3, 14, 'a3c17cb4e2f11a6fa1392a8b18b1b5d5fbab4c4415d9eca1bfb3f688955e2004', 'applied', 2, 3, NULL, '2026-09-29 07:43:30', '2026-09-29 07:46:11', '1.0.2', NULL, NULL, '2026-09-29 07:46:11', '2026-09-29 04:29:09', '2026-09-29 07:46:11'),
-(23, 3, 15, '0bb0ede3671c67864d167a767e487698c7356799d975f847135223e831835068', 'applied', 0, 3, NULL, NULL, '2026-09-29 08:37:03', '1.0.2', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 08:37:03', '2026-09-29 08:35:42', '2026-09-29 08:37:03');
+(23, 3, 15, '0bb0ede3671c67864d167a767e487698c7356799d975f847135223e831835068', 'applied', 0, 3, NULL, NULL, '2026-09-29 08:37:03', '1.0.2', '127.0.0.1', 'Thunder Client (https://www.thunderclient.com)', '2026-09-29 08:37:03', '2026-09-29 08:35:42', '2026-09-29 08:37:03'),
+(24, 3, 16, 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'failed', 1, 3, 'Device ACK timeout.', '2026-09-29 09:53:03', NULL, '1.0.2', NULL, NULL, NULL, '2026-09-29 09:52:53', '2026-09-29 09:53:03');
 
 -- --------------------------------------------------------
 
@@ -813,7 +832,8 @@ CREATE TABLE `protection_violation_logs` (
 INSERT INTO `protection_violation_logs` (`id`, `device_id`, `rule_id`, `domain`, `category`, `action`, `created_at`, `updated_at`) VALUES
 (1, 3, 1, 'bet365.com', 'betting', 'blocked', '2026-09-28 06:18:29', '2026-09-28 06:18:29'),
 (2, 3, 1, 'bet365.com', 'betting', 'blocked', '2026-09-29 08:59:06', '2026-09-29 08:59:06'),
-(3, 3, 1, 'bet365.com', 'betting', 'blocked', '2026-09-29 09:33:34', '2026-09-29 09:33:34');
+(3, 3, 1, 'bet365.com', 'betting', 'blocked', '2026-09-29 09:33:34', '2026-09-29 09:33:34'),
+(4, 3, 1, 'bet365.com', 'betting', 'blocked', '2026-09-30 02:08:57', '2026-09-30 02:08:57');
 
 -- --------------------------------------------------------
 
@@ -1274,13 +1294,13 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `admin_activity_logs`
 --
 ALTER TABLE `admin_activity_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=116;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=117;
 
 --
 -- AUTO_INCREMENT for table `admin_notifications`
 --
 ALTER TABLE `admin_notifications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `admin_permissions`
@@ -1292,7 +1312,7 @@ ALTER TABLE `admin_permissions`
 -- AUTO_INCREMENT for table `admin_sessions`
 --
 ALTER TABLE `admin_sessions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `devices`
@@ -1304,7 +1324,7 @@ ALTER TABLE `devices`
 -- AUTO_INCREMENT for table `device_events`
 --
 ALTER TABLE `device_events`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `device_protection_settings`
@@ -1316,7 +1336,7 @@ ALTER TABLE `device_protection_settings`
 -- AUTO_INCREMENT for table `device_sessions`
 --
 ALTER TABLE `device_sessions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT for table `failed_jobs`
@@ -1340,7 +1360,7 @@ ALTER TABLE `license_codes`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -1358,7 +1378,7 @@ ALTER TABLE `permissions`
 -- AUTO_INCREMENT for table `protection_notifications`
 --
 ALTER TABLE `protection_notifications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `protection_rules`
@@ -1370,13 +1390,13 @@ ALTER TABLE `protection_rules`
 -- AUTO_INCREMENT for table `protection_sync_logs`
 --
 ALTER TABLE `protection_sync_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `protection_violation_logs`
 --
 ALTER TABLE `protection_violation_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `subscriptions`
