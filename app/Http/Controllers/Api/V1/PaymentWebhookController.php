@@ -9,10 +9,10 @@ use App\Models\PaymentWebhook;
 use App\Models\Payment;
 
 use App\Services\Payment\PaymentGatewayManager;
+use App\Services\PaymentService;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 
 
 
@@ -56,6 +56,7 @@ class PaymentWebhookController extends Controller
 
 
 
+
         /*
         |--------------------------------------------------------------------------
         | Duplicate webhook protection
@@ -91,6 +92,14 @@ class PaymentWebhookController extends Controller
 
 
         try {
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Gateway verification
+            |--------------------------------------------------------------------------
+            */
 
 
             $gateway =
@@ -131,42 +140,14 @@ class PaymentWebhookController extends Controller
 
 
 
-            DB::transaction(function() use($request){
+            /*
+            |--------------------------------------------------------------------------
+            | Find Payment
+            |--------------------------------------------------------------------------
+            */
 
 
-
-                PaymentWebhook::create([
-
-
-                    'gateway'=>
-                        $request->gateway,
-
-
-                    'event_id'=>
-                        $request->event_id,
-
-
-                    'transaction_id'=>
-                        $request->transaction_id,
-
-
-                    'payload'=>
-                        $request->all(),
-
-
-                    'status'=>
-                        'processed',
-
-
-                    'processed_at'=>
-                        now(),
-
-
-                ]);
-
-
-
-
+            $payment =
                 Payment::where(
 
                     'transaction_id',
@@ -174,17 +155,86 @@ class PaymentWebhookController extends Controller
                     $request->transaction_id
 
                 )
-                ->update([
-
-                    'status'=>'paid',
-
-                    'paid_at'=>now(),
-
-                ]);
+                ->first();
 
 
 
-            });
+            if(!$payment){
+
+
+                return response()->json([
+
+                    'success'=>false,
+
+                    'message'=>'Payment not found.'
+
+                ],404);
+
+
+            }
+
+
+
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Complete Payment Business Flow
+            |--------------------------------------------------------------------------
+            */
+
+
+            PaymentService::completePayment(
+                $payment
+            );
+
+
+
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Store Webhook Event
+            |--------------------------------------------------------------------------
+            */
+
+
+            PaymentWebhook::create([
+
+
+                'gateway'=>
+                    $request->gateway,
+
+
+                'event_id'=>
+                    $request->event_id,
+
+
+                'transaction_id'=>
+                    $request->transaction_id,
+
+
+                'payload'=>
+                    $request->all(),
+
+
+                'status'=>
+                    'processed',
+
+
+                'processed_at'=>
+                    now(),
+
+
+            ]);
+
+
 
 
 
@@ -201,6 +251,7 @@ class PaymentWebhookController extends Controller
 
 
             ]);
+
 
 
 

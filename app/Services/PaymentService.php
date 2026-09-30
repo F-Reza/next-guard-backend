@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Payment;
 use App\Models\Subscription;
 use App\Models\SubscriptionInvoice;
+
 use App\Services\ProtectionActivationService;
 
 use Illuminate\Support\Facades\DB;
@@ -18,8 +19,201 @@ class PaymentService
 {
 
 
+
     /**
-     * Confirm payment and activate subscription
+     * Complete Payment
+     *
+     * Used by:
+     * - Manual payment confirmation
+     * - Gateway webhook
+     */
+    public static function completePayment(
+        Payment $payment
+    ): array
+    {
+
+
+        return DB::transaction(function() use($payment){
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Prevent duplicate completion
+            |--------------------------------------------------------------------------
+            */
+
+
+            if($payment->status === 'paid'){
+
+
+                return [
+
+                    'payment'=>$payment,
+
+                    'invoice'=>
+                        SubscriptionInvoice::where(
+                            'subscription_id',
+                            $payment->subscription_id
+                        )
+                        ->first(),
+
+                    'subscription'=>
+                        $payment->subscription
+
+                ];
+
+
+            }
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Mark payment paid
+            |--------------------------------------------------------------------------
+            */
+
+
+            $payment->update([
+
+                'status'=>'paid',
+
+                'paid_at'=>now()
+
+            ]);
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Activate Subscription
+            |--------------------------------------------------------------------------
+            */
+
+
+            $subscription =
+                $payment
+                ->load('subscription')
+                ->subscription;
+
+
+
+            $subscription->update([
+
+                'status'=>'active',
+
+                'payment_reference'=>
+                    $payment->transaction_id
+
+            ]);
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Enable Protection
+            |--------------------------------------------------------------------------
+            */
+
+
+            ProtectionActivationService::activate(
+                $subscription
+            );
+
+
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Create Invoice
+            |--------------------------------------------------------------------------
+            */
+
+
+            $invoice =
+                SubscriptionInvoice::firstOrCreate(
+
+
+                    [
+
+                        'subscription_id'=>
+                            $subscription->id,
+
+                        'status'=>'paid'
+
+                    ],
+
+
+                    [
+
+                        'user_id'=>
+                            $payment->user_id,
+
+
+                        'invoice_no'=>
+                            self::invoiceNumber(),
+
+
+                        'amount'=>
+                            $payment->amount,
+
+
+                        'currency'=>
+                            $payment->currency,
+
+
+                    ]
+
+                );
+
+
+
+
+
+
+            return [
+
+
+                'payment'=>
+                    $payment->fresh(),
+
+
+                'invoice'=>
+                    $invoice,
+
+
+                'subscription'=>
+                    $subscription->fresh(),
+
+
+            ];
+
+
+
+        });
+
+
+    }
+
+
+
+
+
+
+
+
+    /**
+     * Confirm manual payment
      */
     public static function confirmPayment(
         User $user,
@@ -30,9 +224,13 @@ class PaymentService
 
 
         return DB::transaction(function() use(
+
             $user,
+
             $subscription,
+
             $data
+
         ){
 
 
@@ -47,10 +245,12 @@ class PaymentService
             $payment = Payment::create([
 
 
-                'user_id'=>$user->id,
+                'user_id'=>
+                    $user->id,
 
 
-                'subscription_id'=>$subscription->id,
+                'subscription_id'=>
+                    $subscription->id,
 
 
                 'gateway'=>
@@ -69,10 +269,8 @@ class PaymentService
                     $data['currency'] ?? 'USD',
 
 
-                'status'=>'paid',
-
-
-                'paid_at'=>now(),
+                'status'=>
+                    'pending',
 
 
             ]);
@@ -85,84 +283,14 @@ class PaymentService
 
             /*
             |--------------------------------------------------------------------------
-            | Activate Subscription
+            | Complete Payment Flow
             |--------------------------------------------------------------------------
             */
 
 
-            $subscription->update([
-
-
-                'status'=>'active',
-
-
-                'payment_reference'=>
-                    $payment->transaction_id,
-
-
-            ]);
-
-
-            ProtectionActivationService::activate(
-                $subscription
+            return self::completePayment(
+                $payment
             );
-
-
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Generate Invoice
-            |--------------------------------------------------------------------------
-            */
-
-
-            $invoice = SubscriptionInvoice::create([
-
-
-                'user_id'=>$user->id,
-
-
-                'subscription_id'=>$subscription->id,
-
-
-                'invoice_no'=>
-                    self::invoiceNumber(),
-
-
-                'amount'=>
-                    $payment->amount,
-
-
-                'currency'=>
-                    $payment->currency,
-
-
-                'status'=>'paid',
-
-
-            ]);
-
-
-
-
-
-
-
-
-            return [
-
-
-                'payment'=>$payment,
-
-
-                'invoice'=>$invoice,
-
-
-                'subscription'=>$subscription,
-
-
-            ];
 
 
 
