@@ -6,6 +6,519 @@
         "version": "1.0.0"
     },
     "paths": {
+        "/admin/login": {
+            "post": {
+                "tags": [
+                    "Admin System"
+                ],
+                "summary": "Admin login",
+                "operationId": "57ac181f2b04d80c2be4a8f0f2facce2",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "admin@test.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Admin login success"
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    }
+                }
+            }
+        },
+        "/admin/profile": {
+            "get": {
+                "tags": [
+                    "Admin System"
+                ],
+                "summary": "Get admin profile",
+                "operationId": "dfbbdbf469b76433fc08eb14eeca8980",
+                "responses": {
+                    "200": {
+                        "description": "Admin profile"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/dashboard": {
+            "get": {
+                "tags": [
+                    "Admin System"
+                ],
+                "summary": "Admin dashboard",
+                "operationId": "8751bca7bc58694964ba6005ec7f4b01",
+                "responses": {
+                    "200": {
+                        "description": "Dashboard data"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/statistics": {
+            "get": {
+                "tags": [
+                    "Admin System"
+                ],
+                "summary": "Admin statistics",
+                "operationId": "ddf266c11080f2e41686294df93290e0",
+                "responses": {
+                    "200": {
+                        "description": "Statistics data"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/users": {
+            "get": {
+                "tags": [
+                    "Admin System"
+                ],
+                "summary": "Get users",
+                "operationId": "018e8c8b444f9a624981b2e1be2cde4c",
+                "responses": {
+                    "200": {
+                        "description": "User list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/activity-logs": {
+            "get": {
+                "tags": [
+                    "Admin System"
+                ],
+                "summary": "Get activity logs",
+                "operationId": "6677e589e58c0a6272443a1a99ce65d3",
+                "responses": {
+                    "200": {
+                        "description": "Activity logs"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/security": {
+            "get": {
+                "tags": [
+                    "Admin System"
+                ],
+                "summary": "Security dashboard",
+                "operationId": "bac6f1ded3141ab37740668d9e28e297",
+                "responses": {
+                    "200": {
+                        "description": "Security information"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/logout": {
+            "post": {
+                "tags": [
+                    "Admin System"
+                ],
+                "summary": "Admin logout",
+                "operationId": "b4d55a1362e9b0e8c3f8493545b66566",
+                "responses": {
+                    "200": {
+                        "description": "Logout successful"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/admins": {
+            "get": {
+                "tags": [
+                    "Admin Management"
+                ],
+                "summary": "Get admin list",
+                "operationId": "05feabd0cb0260727fbe5a59b33c8237",
+                "responses": {
+                    "200": {
+                        "description": "Admin list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin Management"
+                ],
+                "summary": "Create admin",
+                "operationId": "4cb1f3f10e09835a36d30b0a961c99f9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Admin User"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "admin@test.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Admin created"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/admins/{id}": {
+            "get": {
+                "tags": [
+                    "Admin Management"
+                ],
+                "summary": "Get admin details",
+                "operationId": "ea7d62b6db4d278bb82122ce05fc44a2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Admin details"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Admin Management"
+                ],
+                "summary": "Update admin",
+                "operationId": "641eec8c9bffe28be55af5dc23bf2b41",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Admin updated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin Management"
+                ],
+                "summary": "Delete admin",
+                "operationId": "b64f20c9cfae8dce4a18b7ddce697e9d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Admin deleted"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/admins/{id}/permissions": {
+            "post": {
+                "tags": [
+                    "Admin Management"
+                ],
+                "summary": "Assign permission to admin",
+                "operationId": "9dcdb32231626585213eb2ae449f0b71",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Permission assigned"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/admins/{id}/permissions/{permission}": {
+            "delete": {
+                "tags": [
+                    "Admin Management"
+                ],
+                "summary": "Remove admin permission",
+                "operationId": "dd64c9a90cd420ac1cd29de665f5fce6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "permission",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "manage_users"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Permission removed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/permissions": {
+            "get": {
+                "tags": [
+                    "Admin Management"
+                ],
+                "summary": "Get permissions",
+                "operationId": "621a8e4a4cd676fb7a38487245d2a825",
+                "responses": {
+                    "200": {
+                        "description": "Permission list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/plans": {
+            "get": {
+                "tags": [
+                    "Admin Management"
+                ],
+                "summary": "Get subscription plans",
+                "operationId": "a0160dc2320607217393a2dcb732cf59",
+                "responses": {
+                    "200": {
+                        "description": "Plans list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin Management"
+                ],
+                "summary": "Create subscription plan",
+                "operationId": "76ee6bc812e144a9b6bb6cefc877308d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Premium"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "example": 9.99
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Plan created"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/subscriptions": {
+            "get": {
+                "tags": [
+                    "Admin Management"
+                ],
+                "summary": "Get all subscriptions",
+                "operationId": "ee68aa16ff919d1fd643c657dfaf5283",
+                "responses": {
+                    "200": {
+                        "description": "Subscription list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/subscriptions/{id}/cancel": {
+            "post": {
+                "tags": [
+                    "Admin Management"
+                ],
+                "summary": "Cancel subscription",
+                "operationId": "183bec59d971d8f8604f25b28afbc4f7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Subscription cancelled"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/auth/register": {
             "post": {
                 "tags": [
@@ -45,10 +558,24 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "User registered successfully"
+                        "description": "User registered successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
                     },
                     "422": {
-                        "description": "Validation error"
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -86,10 +613,37 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Login success"
+                        "description": "Login success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "eyJ0eXAiOiJKV1QiLCJhbGc..."
+                                        },
+                                        "user": {
+                                            "$ref": "#/components/schemas/User"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Invalid credentials"
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -103,10 +657,24 @@
                 "operationId": "d29e2a07053891a5e2e3bc0de153de05",
                 "responses": {
                     "200": {
-                        "description": "User profile"
+                        "description": "User profile",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Unauthenticated"
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -125,7 +693,34 @@
                 "operationId": "256d4db256255f0069adc4311e7d3709",
                 "responses": {
                     "200": {
-                        "description": "Logout successful"
+                        "description": "Logout successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logged out successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -168,13 +763,34 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Device enrolled successfully"
+                        "description": "Device enrolled successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Device"
+                                }
+                            }
+                        }
                     },
                     "422": {
-                        "description": "Validation error"
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Unauthenticated"
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -193,10 +809,27 @@
                 "operationId": "6a8c46f7cde690263ac463ff600ffbe5",
                 "responses": {
                     "200": {
-                        "description": "Device list"
+                        "description": "Device list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Device"
+                                    }
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Unauthenticated"
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -217,7 +850,6 @@
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Device ID",
                         "required": true,
                         "schema": {
                             "type": "integer",
@@ -227,10 +859,24 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Device details"
+                        "description": "Device details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Device"
+                                }
+                            }
+                        }
                     },
                     "404": {
-                        "description": "Device not found"
+                        "description": "Device not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -259,10 +905,24 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Heartbeat updated"
+                        "description": "Heartbeat updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Device"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Unauthenticated"
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -310,7 +970,14 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Device renamed"
+                        "description": "Device renamed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Device"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -339,7 +1006,14 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Device revoked"
+                        "description": "Device revoked",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Device"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -384,7 +1058,154 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Device transferred"
+                        "description": "Device transferred",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Device"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/license-codes/redeem": {
+            "post": {
+                "tags": [
+                    "License System"
+                ],
+                "summary": "Redeem license code",
+                "operationId": "b641026438b94b94cb2c1f1a4b0a55f9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "code"
+                                ],
+                                "properties": {
+                                    "code": {
+                                        "type": "string",
+                                        "example": "NG-PRO-ABC123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "License redeemed successfully"
+                    },
+                    "422": {
+                        "description": "Invalid license code"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/licenses/redeem": {
+            "post": {
+                "tags": [
+                    "License System"
+                ],
+                "summary": "Redeem license",
+                "operationId": "1e0c1860a370ba7d3f863af38b2e4525",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "license_code"
+                                ],
+                                "properties": {
+                                    "license_code": {
+                                        "type": "string",
+                                        "example": "NG-LICENSE-001"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "License activated"
+                    },
+                    "409": {
+                        "description": "License already used"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/licenses": {
+            "get": {
+                "tags": [
+                    "License System"
+                ],
+                "summary": "Get licenses",
+                "operationId": "feaa34e5c08eb46916a2f9378cb24a6e",
+                "responses": {
+                    "200": {
+                        "description": "License list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/licenses/generate": {
+            "post": {
+                "tags": [
+                    "License System"
+                ],
+                "summary": "Generate license",
+                "operationId": "918750ba3242ec94c8b1728a0099035c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "quantity": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "plan_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "License generated"
                     }
                 },
                 "security": [
@@ -531,36 +1352,26 @@
                 ],
                 "summary": "Create payment",
                 "operationId": "2acb7e163a8c7d5ebfb15427791558c5",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "subscription_id",
-                                    "gateway"
-                                ],
-                                "properties": {
-                                    "subscription_id": {
-                                        "type": "integer",
-                                        "example": 1
-                                    },
-                                    "gateway": {
-                                        "type": "string",
-                                        "example": "stripe"
-                                    }
-                                },
-                                "type": "object"
+                "responses": {
+                    "201": {
+                        "description": "Payment created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Payment"
+                                }
                             }
                         }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Payment created successfully"
                     },
-                    "422": {
-                        "description": "Payment creation failed"
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -588,11 +1399,7 @@
                                 "properties": {
                                     "transaction_id": {
                                         "type": "string",
-                                        "example": "STRIPE-ABC123"
-                                    },
-                                    "gateway": {
-                                        "type": "string",
-                                        "example": "stripe"
+                                        "example": "STRIPE-TEST123"
                                     }
                                 },
                                 "type": "object"
@@ -602,10 +1409,24 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Payment confirmed"
+                        "description": "Payment confirmed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Payment"
+                                }
+                            }
+                        }
                     },
-                    "409": {
-                        "description": "Duplicate transaction"
+                    "422": {
+                        "description": "Payment confirmation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -639,11 +1460,11 @@
                                     },
                                     "event_id": {
                                         "type": "string",
-                                        "example": "evt_12345"
+                                        "example": "evt_test_001"
                                     },
                                     "transaction_id": {
                                         "type": "string",
-                                        "example": "STRIPE-ABC123"
+                                        "example": "STRIPE-TEST123"
                                     }
                                 },
                                 "type": "object"
@@ -653,13 +1474,34 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Webhook processed successfully"
+                        "description": "Webhook processed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Webhook processed successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Invalid webhook signature"
-                    },
-                    "409": {
-                        "description": "Duplicate webhook"
+                        "description": "Invalid signature",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -673,7 +1515,17 @@
                 "operationId": "d9f2661d2e7d9a9f0263639447c4ec39",
                 "responses": {
                     "200": {
-                        "description": "Payment history"
+                        "description": "Payment history",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Payment"
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -692,7 +1544,17 @@
                 "operationId": "fc0f7126aa33eaef23b8125473335fbd",
                 "responses": {
                     "200": {
-                        "description": "Invoice list"
+                        "description": "Invoice list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Payment"
+                                    }
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1463,6 +2325,164 @@
         }
     },
     "components": {
+        "schemas": {
+            "ApiResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Operation completed successfully"
+                    },
+                    "data": {
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "Device": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "device_uuid_hash": {
+                        "type": "string",
+                        "example": "a83bd92..."
+                    },
+                    "platform": {
+                        "type": "string",
+                        "example": "android"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "active"
+                    }
+                },
+                "type": "object"
+            },
+            "ErrorResponse": {
+                "properties": {
+                    "success": {
+                        "type": "boolean",
+                        "example": false
+                    },
+                    "message": {
+                        "type": "string",
+                        "example": "Validation error"
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Pagination": {
+                "properties": {
+                    "current_page": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "per_page": {
+                        "type": "integer",
+                        "example": 15
+                    },
+                    "total": {
+                        "type": "integer",
+                        "example": 100
+                    }
+                },
+                "type": "object"
+            },
+            "Payment": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "transaction_id": {
+                        "type": "string",
+                        "example": "STRIPE-TEST123"
+                    },
+                    "gateway": {
+                        "type": "string",
+                        "example": "stripe"
+                    },
+                    "amount": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 10
+                    },
+                    "currency": {
+                        "type": "string",
+                        "example": "USD"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "paid"
+                    },
+                    "paid_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            },
+            "Subscription": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "user_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "device_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "active"
+                    },
+                    "starts_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "expires_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "John Doe"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "user@test.com"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        },
         "securitySchemes": {
             "bearerAuth": {
                 "type": "http",
@@ -1473,12 +2493,24 @@
     },
     "tags": [
         {
+            "name": "Admin System",
+            "description": "Admin System"
+        },
+        {
+            "name": "Admin Management",
+            "description": "Admin Management"
+        },
+        {
             "name": "Authentication",
             "description": "Authentication"
         },
         {
             "name": "Device Management",
             "description": "Device Management"
+        },
+        {
+            "name": "License System",
+            "description": "License System"
         },
         {
             "name": "Notification System",

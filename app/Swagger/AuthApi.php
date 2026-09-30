@@ -17,7 +17,9 @@ use OpenApi\Attributes as OA;
 
     requestBody: new OA\RequestBody(
         required: true,
+
         content: new OA\JsonContent(
+
             required: [
                 "name",
                 "email",
@@ -45,42 +47,57 @@ use OpenApi\Attributes as OA;
                 ),
 
             ]
+
         )
     ),
+
 
     responses: [
 
         new OA\Response(
-            response: 201,
-            description: "User registered successfully"
+            response:201,
+            description:"User registered successfully",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/User"
+            )
         ),
 
+
         new OA\Response(
-            response: 422,
-            description: "Validation error"
+            response:422,
+            description:"Validation error",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
         )
 
     ]
+
 )]
 
 
 
 #[OA\Post(
     path: "/auth/login",
-    tags: ["Authentication"],
-    summary: "User Login",
+    tags:["Authentication"],
+    summary:"User Login",
 
-    requestBody: new OA\RequestBody(
-        required: true,
 
-        content: new OA\JsonContent(
+    requestBody:new OA\RequestBody(
+        required:true,
+
+        content:new OA\JsonContent(
 
             required:[
                 "login",
                 "password"
             ],
 
+
             properties:[
+
 
                 new OA\Property(
                     property:"login",
@@ -88,11 +105,13 @@ use OpenApi\Attributes as OA;
                     example:"user@test.com"
                 ),
 
+
                 new OA\Property(
                     property:"password",
                     type:"string",
                     example:"password"
-                ),
+                )
+
 
             ]
 
@@ -100,28 +119,70 @@ use OpenApi\Attributes as OA;
     ),
 
 
+
     responses:[
+
 
         new OA\Response(
             response:200,
-            description:"Login success"
+            description:"Login success",
+
+            content:new OA\JsonContent(
+
+                properties:[
+
+
+                    new OA\Property(
+                        property:"success",
+                        type:"boolean",
+                        example:true
+                    ),
+
+
+                    new OA\Property(
+                        property:"token",
+                        type:"string",
+                        example:"eyJ0eXAiOiJKV1QiLCJhbGc..."
+                    ),
+
+
+                    new OA\Property(
+                        property:"user",
+                        ref:"#/components/schemas/User"
+                    )
+
+
+                ]
+
+            )
         ),
+
+
 
         new OA\Response(
             response:401,
-            description:"Invalid credentials"
+            description:"Invalid credentials",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
         )
+
 
     ]
 
 )]
+
 
 
 
 #[OA\Get(
     path:"/auth/me",
+
     tags:["Authentication"],
+
     summary:"Get authenticated user",
+
 
     security:[
         [
@@ -129,28 +190,49 @@ use OpenApi\Attributes as OA;
         ]
     ],
 
+
+
     responses:[
+
 
         new OA\Response(
             response:200,
-            description:"User profile"
+
+            description:"User profile",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/User"
+            )
         ),
+
+
 
         new OA\Response(
             response:401,
-            description:"Unauthenticated"
+
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
         )
+
 
     ]
 
 )]
+
+
 
 
 
 #[OA\Post(
     path:"/auth/logout",
+
     tags:["Authentication"],
+
     summary:"Logout user",
+
 
     security:[
         [
@@ -158,16 +240,55 @@ use OpenApi\Attributes as OA;
         ]
     ],
 
+
+
     responses:[
+
 
         new OA\Response(
             response:200,
-            description:"Logout successful"
+
+            description:"Logout successful",
+
+            content:new OA\JsonContent(
+
+                properties:[
+
+                    new OA\Property(
+                        property:"success",
+                        type:"boolean",
+                        example:true
+                    ),
+
+
+                    new OA\Property(
+                        property:"message",
+                        type:"string",
+                        example:"Logged out successfully"
+                    )
+
+                ]
+
+            )
+        ),
+
+
+
+        new OA\Response(
+            response:401,
+
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
         )
+
 
     ]
 
 )]
+
 
 
 

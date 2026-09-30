@@ -5,10 +5,11 @@ namespace App\Swagger;
 use OpenApi\Attributes as OA;
 
 
+
 #[OA\Post(
-    path: "/devices/enroll",
-    tags: ["Device Management"],
-    summary: "Enroll new device",
+    path:"/devices/enroll",
+    tags:["Device Management"],
+    summary:"Enroll new device",
 
     security:[
         [
@@ -16,7 +17,8 @@ use OpenApi\Attributes as OA;
         ]
     ],
 
-    requestBody: new OA\RequestBody(
+
+    requestBody:new OA\RequestBody(
 
         required:true,
 
@@ -27,7 +29,9 @@ use OpenApi\Attributes as OA;
                 "platform"
             ],
 
+
             properties:[
+
 
                 new OA\Property(
                     property:"device_uuid_hash",
@@ -35,44 +39,72 @@ use OpenApi\Attributes as OA;
                     example:"a8f7c91d83..."
                 ),
 
+
                 new OA\Property(
                     property:"platform",
                     type:"string",
                     example:"android"
                 )
 
+
             ]
 
         )
+
     ),
+
+
 
     responses:[
 
+
         new OA\Response(
             response:201,
-            description:"Device enrolled successfully"
+            description:"Device enrolled successfully",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/Device"
+            )
         ),
+
+
 
         new OA\Response(
             response:422,
-            description:"Validation error"
+            description:"Validation error",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
         ),
+
+
 
         new OA\Response(
             response:401,
-            description:"Unauthenticated"
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
         )
+
 
     ]
 
 )]
+
+
 
 
 
 #[OA\Get(
     path:"/devices",
+
     tags:["Device Management"],
+
     summary:"Get user devices",
+
 
     security:[
         [
@@ -80,17 +112,37 @@ use OpenApi\Attributes as OA;
         ]
     ],
 
+
+
     responses:[
+
 
         new OA\Response(
             response:200,
-            description:"Device list"
+            description:"Device list",
+
+            content:new OA\JsonContent(
+
+                type:"array",
+
+                items:new OA\Items(
+                    ref:"#/components/schemas/Device"
+                )
+
+            )
         ),
+
+
 
         new OA\Response(
             response:401,
-            description:"Unauthenticated"
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
         )
+
 
     ]
 
@@ -98,10 +150,16 @@ use OpenApi\Attributes as OA;
 
 
 
+
+
+
 #[OA\Get(
     path:"/devices/{id}",
+
     tags:["Device Management"],
+
     summary:"Get device details",
+
 
     security:[
         [
@@ -109,43 +167,68 @@ use OpenApi\Attributes as OA;
         ]
     ],
 
+
     parameters:[
+
 
         new OA\Parameter(
             name:"id",
             in:"path",
             required:true,
-            description:"Device ID",
+
             schema:new OA\Schema(
                 type:"integer",
                 example:1
             )
         )
 
+
     ],
+
+
 
     responses:[
 
+
         new OA\Response(
             response:200,
-            description:"Device details"
+
+            description:"Device details",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/Device"
+            )
         ),
+
+
 
         new OA\Response(
             response:404,
-            description:"Device not found"
+
+            description:"Device not found",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
         )
+
 
     ]
 
 )]
+
+
+
 
 
 
 #[OA\Post(
     path:"/devices/{id}/heartbeat",
+
     tags:["Device Management"],
+
     summary:"Send device heartbeat",
+
 
     security:[
         [
@@ -153,30 +236,51 @@ use OpenApi\Attributes as OA;
         ]
     ],
 
+
+
     parameters:[
+
 
         new OA\Parameter(
             name:"id",
             in:"path",
             required:true,
+
             schema:new OA\Schema(
                 type:"integer"
             )
         )
 
+
     ],
+
+
 
     responses:[
 
+
         new OA\Response(
             response:200,
-            description:"Heartbeat updated"
+
+            description:"Heartbeat updated",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/Device"
+            )
         ),
+
+
 
         new OA\Response(
             response:401,
-            description:"Unauthenticated"
+
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
         )
+
 
     ]
 
@@ -184,10 +288,17 @@ use OpenApi\Attributes as OA;
 
 
 
+
+
+
+
 #[OA\Patch(
     path:"/devices/{id}/rename",
+
     tags:["Device Management"],
+
     summary:"Rename device",
+
 
     security:[
         [
@@ -195,18 +306,25 @@ use OpenApi\Attributes as OA;
         ]
     ],
 
+
+
     parameters:[
+
 
         new OA\Parameter(
             name:"id",
             in:"path",
             required:true,
+
             schema:new OA\Schema(
                 type:"integer"
             )
         )
 
+
     ],
+
+
 
     requestBody:new OA\RequestBody(
 
@@ -218,7 +336,9 @@ use OpenApi\Attributes as OA;
                 "name"
             ],
 
+
             properties:[
+
 
                 new OA\Property(
                     property:"name",
@@ -226,29 +346,46 @@ use OpenApi\Attributes as OA;
                     example:"My Android Phone"
                 )
 
+
             ]
 
         )
 
     ),
 
+
+
     responses:[
+
 
         new OA\Response(
             response:200,
-            description:"Device renamed"
+
+            description:"Device renamed",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/Device"
+            )
         )
+
 
     ]
 
 )]
+
+
+
+
 
 
 
 #[OA\Post(
     path:"/devices/{id}/revoke",
+
     tags:["Device Management"],
+
     summary:"Revoke device",
+
 
     security:[
         [
@@ -256,25 +393,39 @@ use OpenApi\Attributes as OA;
         ]
     ],
 
+
+
     parameters:[
+
 
         new OA\Parameter(
             name:"id",
             in:"path",
             required:true,
+
             schema:new OA\Schema(
                 type:"integer"
             )
         )
 
+
     ],
+
+
 
     responses:[
 
+
         new OA\Response(
             response:200,
-            description:"Device revoked"
+
+            description:"Device revoked",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/Device"
+            )
         )
+
 
     ]
 
@@ -282,10 +433,18 @@ use OpenApi\Attributes as OA;
 
 
 
+
+
+
+
+
 #[OA\Post(
     path:"/devices/{id}/transfer",
+
     tags:["Device Management"],
+
     summary:"Transfer device",
+
 
     security:[
         [
@@ -293,18 +452,25 @@ use OpenApi\Attributes as OA;
         ]
     ],
 
+
+
     parameters:[
+
 
         new OA\Parameter(
             name:"id",
             in:"path",
             required:true,
+
             schema:new OA\Schema(
                 type:"integer"
             )
         )
 
+
     ],
+
+
 
     requestBody:new OA\RequestBody(
 
@@ -314,11 +480,13 @@ use OpenApi\Attributes as OA;
 
             properties:[
 
+
                 new OA\Property(
                     property:"user_id",
                     type:"integer",
                     example:5
                 )
+
 
             ]
 
@@ -326,16 +494,27 @@ use OpenApi\Attributes as OA;
 
     ),
 
+
+
     responses:[
+
 
         new OA\Response(
             response:200,
-            description:"Device transferred"
+
+            description:"Device transferred",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/Device"
+            )
         )
+
 
     ]
 
 )]
+
+
 
 
 
