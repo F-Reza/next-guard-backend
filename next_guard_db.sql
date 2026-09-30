@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 30, 2026 at 12:12 PM
+-- Generation Time: Sep 30, 2026 at 12:36 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -306,19 +306,6 @@ CREATE TABLE `cache` (
   `value` mediumtext NOT NULL,
   `expiration` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `cache`
---
-
-INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
-('next-guard-api-cache-a78214c3ccb35f2db67cfd99e85e4f58', 'i:1;', 1790755749),
-('next-guard-api-cache-a78214c3ccb35f2db67cfd99e85e4f58:timer', 'i:1790755749;', 1790755749),
-('next-guard-api-cache-c6be2cf7c13d9a527ee2fe401bbae3c7', 'i:1;', 1790755734),
-('next-guard-api-cache-c6be2cf7c13d9a527ee2fe401bbae3c7:timer', 'i:1790755734;', 1790755734),
-('next-guard-api-cache-e9b6cc1432541b9ceebf113eee05eeba', 'i:2;', 1790755765),
-('next-guard-api-cache-e9b6cc1432541b9ceebf113eee05eeba:timer', 'i:1790755765;', 1790755765),
-('next-guard-api-cache-kK2yuM0L6Cbw05of', 'a:1:{s:11:\"valid_until\";i:1790755689;}', 1791965349);
 
 -- --------------------------------------------------------
 
@@ -640,7 +627,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (42, '2026_09_29_142026_add_indexes_to_protection_sync_logs_table', 35),
 (43, '2026_09_29_150646_add_indexes_to_protection_violation_logs_table', 36),
 (44, '2026_09_29_153027_create_protection_notifications_table', 37),
-(45, '2026_09_30_095829_add_gateway_fields_to_payments_table', 38);
+(45, '2026_09_30_095829_add_gateway_fields_to_payments_table', 38),
+(46, '2026_09_30_103119_create_payment_webhooks_table', 39);
 
 -- --------------------------------------------------------
 
@@ -672,6 +660,24 @@ CREATE TABLE `payments` (
 
 INSERT INTO `payments` (`id`, `user_id`, `subscription_id`, `gateway`, `provider`, `transaction_id`, `provider_transaction_id`, `amount`, `currency`, `status`, `paid_at`, `created_at`, `updated_at`, `gateway_response`, `verified_at`) VALUES
 (1, 2, 3, 'manual', NULL, 'TXN-10001', NULL, 99.00, 'USD', 'paid', '2026-09-27 09:25:00', '2026-09-27 09:25:00', '2026-09-27 09:25:00', NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `payment_webhooks`
+--
+
+CREATE TABLE `payment_webhooks` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `gateway` varchar(255) NOT NULL,
+  `event_id` varchar(255) NOT NULL,
+  `transaction_id` varchar(255) DEFAULT NULL,
+  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`payload`)),
+  `status` varchar(255) NOT NULL DEFAULT 'pending',
+  `processed_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -1177,6 +1183,13 @@ ALTER TABLE `payments`
   ADD KEY `payments_subscription_id_foreign` (`subscription_id`);
 
 --
+-- Indexes for table `payment_webhooks`
+--
+ALTER TABLE `payment_webhooks`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `payment_webhooks_event_id_unique` (`event_id`);
+
+--
 -- Indexes for table `permissions`
 --
 ALTER TABLE `permissions`
@@ -1360,13 +1373,19 @@ ALTER TABLE `license_codes`
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `payment_webhooks`
+--
+ALTER TABLE `payment_webhooks`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `permissions`

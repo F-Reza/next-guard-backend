@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\V1\DeviceProtectionSyncController;
 use App\Http\Controllers\Api\V1\DeviceSummaryController;
 use App\Http\Controllers\Api\V1\TrialController;
 use App\Http\Controllers\Api\V1\PaymentController;
+use App\Http\Controllers\Api\V1\PaymentWebhookController;
 use App\Http\Controllers\Api\V1\SubscriptionController;
 use App\Http\Controllers\Api\V1\SubscriptionPlanController;
 use App\Http\Controllers\Api\V1\SubscriptionStatusController;
@@ -494,6 +495,15 @@ Route::prefix('v1')->group(function () {
                 ]
             )
             ->middleware('auth:api');
+
+
+            Route::post(
+                '/payments/webhook',
+                [
+                    PaymentWebhookController::class,
+                    'handle'
+                ]
+            );            
 
 
             Route::post(
