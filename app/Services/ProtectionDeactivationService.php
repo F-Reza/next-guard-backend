@@ -69,7 +69,6 @@ class ProtectionDeactivationService
 
 
 
-
             /*
             |--------------------------------------------------------------------------
             | Create Sync Request
