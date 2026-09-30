@@ -10,7 +10,7 @@ use App\Models\Payment;
 
 use App\Services\Payment\PaymentGatewayManager;
 use App\Services\PaymentService;
-
+use App\Services\Payment\WebhookSignatureService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -53,7 +53,54 @@ class PaymentWebhookController extends Controller
         ]);
 
 
+        $signature =
+            $request->header(
+                'X-Webhook-Signature'
+            );
 
+
+        if(!$signature){
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Webhook signature missing.'
+
+            ],401);
+
+        }
+
+
+
+        $isValid =
+            WebhookSignatureService::verify(
+
+                $request->getContent(),
+
+                $signature,
+
+                config(
+                    'services.payment.webhook_secret'
+                )
+
+            );
+
+
+
+        if(!$isValid){
+
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Invalid webhook signature.'
+
+            ],401);
+
+
+        }
 
 
 

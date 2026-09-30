@@ -14,6 +14,17 @@ return [
     |
     */
 
+
+    'payment'=>[
+
+        'webhook_secret'=>
+            env(
+                'PAYMENT_WEBHOOK_SECRET'
+            ),
+
+    ],
+
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],
