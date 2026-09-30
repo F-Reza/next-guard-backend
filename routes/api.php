@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Route;
 
 
 use App\Http\Controllers\Api\V1\AuthController;
-use App\Http\Controllers\Api\V1\DeviceHeartbeatController;
 use App\Http\Controllers\Api\V1\DeviceController;
 use App\Http\Controllers\Api\V1\DeviceEventController;
 use App\Http\Controllers\Api\V1\DeviceProtectionController;
@@ -74,519 +73,75 @@ use App\Http\Controllers\Api\V1\AdminPermissionController;
 
 
 
-Route::prefix('v1')->group(function(){
-
-
-
-
-
-/*
-|--------------------------------------------------------------------------
-| HEALTH CHECK
-|--------------------------------------------------------------------------
-*/
-
-
-Route::get('/health',function(){
-
-
-    return response()->json([
-
-        'success'=>true,
-
-        'message'=>'Next Guard API running.',
-
-        'version'=>'v1'
-
-    ]);
-
-
-});
-
-
-
-
-
-
-
-
-/*
-|--------------------------------------------------------------------------
-| USER PUBLIC AUTH
-|--------------------------------------------------------------------------
-*/
-
-
-Route::post(
-    '/auth/register',
-    [AuthController::class,'register']
-);
-
-
-
-Route::post(
-    '/auth/login',
-    [AuthController::class,'login']
-);
-
-
-
-Route::post(
-    '/auth/refresh',
-    [AuthController::class,'refresh']
-);
-
-
-
-
-
-
-
-
-/*
-|--------------------------------------------------------------------------
-| ADMIN LOGIN
-|--------------------------------------------------------------------------
-*/
-
-
-Route::post(
-    '/admin/login',
-    [AdminAuthController::class,'login']
-);
-
-
-
-
-
-
-
-
-
-/*
-|--------------------------------------------------------------------------
-| USER AUTH PROTECTED
-|--------------------------------------------------------------------------
-*/
-
-
-Route::middleware('auth:api')
-->group(function(){
-
-
-
-    Route::get(
-        '/auth/me',
-        [AuthController::class,'me']
-    );
-
-
-
-    Route::post(
-        '/auth/logout',
-        [AuthController::class,'logout']
-    );
-
-
-
+Route::prefix('v1')->group(function () {
 
 
 
     /*
     |--------------------------------------------------------------------------
-    | Devices
+    | PRIORITY 1 : HEALTH CHECK + PUBLIC AUTH
     |--------------------------------------------------------------------------
     */
 
 
-    Route::post(
-        '/devices/enroll',
-        [DeviceController::class,'enroll']
-    );
+    Route::get('/health', function () {
 
+        return response()->json([
 
-    Route::get(
-        '/devices',
-        [DeviceController::class,'index']
-    );
+            'success' => true,
 
+            'message' => 'Next Guard API running.',
 
-    Route::get(
-        '/devices/{id}',
-        [DeviceController::class,'show']
-    );
+            'version' => 'v1'
 
-
-    Route::post(
-        '/devices/{id}/heartbeat',
-        [DeviceController::class,'heartbeat']
-    );
-
-
-
-    Route::patch(
-        '/devices/{id}/rename',
-        [
-            DeviceManagementController::class,
-            'rename'
-        ]
-    );
-
-
-
-    Route::post(
-        '/devices/{id}/revoke',
-        [
-            DeviceManagementController::class,
-            'revoke'
-        ]
-    );
-
-
-
-    Route::post(
-        '/devices/{id}/transfer',
-        [
-            DeviceManagementController::class,
-            'transfer'
-        ]
-    );
-
-
-    Route::get(
-        '/device-limit',
-        [DeviceLimitController::class, 'status']
-    );
-
-
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Protection
-    |--------------------------------------------------------------------------
-    */
-
-
-    Route::middleware('subscription')
-    ->group(function(){
-
-
-
-        Route::get(
-            '/devices/{id}/protection',
-            [DeviceProtectionController::class,'show']
-        );
-
-
-
-        Route::post(
-            '/devices/{id}/protection/update',
-            [DeviceProtectionController::class,'update']
-        );
-
-
-
-        Route::post(
-            '/devices/{id}/protection/sync',
-            [DeviceProtectionController::class,'sync']
-        );
-
-
+        ]);
 
     });
 
 
-
-    
-
-    Route::get(
-        '/devices/{id}/protection-rules',
-        [ProtectionRuleController::class,'deviceRules']
-    );
-
-
-    Route::get(
-        '/devices/{id}/protection/sync',
-        [ProtectionSyncController::class,'sync']
-    );
-
-
-    Route::get(
-        '/devices/{id}/protection/status',
-        [ProtectionStatusController::class,'status']
-    );
-
-
-    Route::get(
-        '/device/protection/sync',
-        [DeviceProtectionSyncController::class,'sync']
-    );
-
-
-    Route::post(
-        '/devices/{id}/protection/ack',
-        [ProtectionAckController::class,'acknowledge']
-    );
-       
-    
-    Route::get(
-        '/devices/{id}/protection/sync-history',
-        [ProtectionSyncHistoryController::class,'index']
-    );
-
-
-    Route::get(
-        '/devices/{id}/events',
-        [DeviceEventController::class,'index']
-    );
-
-
-    Route::get(
-        '/devices/{id}/summary',
-        [DeviceSummaryController::class,'summary']
-    );
-
-
-    Route::get(
-        '/devices/{id}/dashboard',
-        [DeviceDashboardController::class,'dashboard']
-    );
-
-
-    Route::post(
-        '/devices/{device}/protection/sync/{id}/retry',
-        [ProtectionRetryController::class,'retry']
-    );
-
-
-    Route::post(
-        '/devices/{id}/protection/check',
-        [ProtectionCheckController::class,'check']
-    );
-
-
-
-    Route::get(
-        '/devices/{id}/protection/violations',
-        [ProtectionViolationController::class,'index']
-    );
-
-
-    Route::get(
-        '/devices/{id}/protection/summary',
-        [ProtectionSummaryController::class,'summary']
-    );
-
-
-    Route::get(
-        '/devices/{id}/protection/analytics',
-        [ProtectionAnalyticsController::class,'analytics']
-    );
-
-
-    Route::get(
-        '/devices/{id}/protection/notifications',
-        [ProtectionNotificationController::class,'index']
-    );
-
-
-    Route::put(
-        '/devices/{device}/protection/notifications/{id}/read',
-        [ProtectionNotificationController::class,'read']
-    );
-
-
-
-    Route::get(
-        '/devices/{id}/security-events',
-        [DeviceSecurityEventController::class,'index']
-    );
-
-
-
-    
     /*
     |--------------------------------------------------------------------------
-    | Trial
-    |--------------------------------------------------------------------------
-    */
-
-
-    Route::get(
-        '/trial/eligibility',
-        [TrialController::class,'eligibility']
-    );
-
-
-    Route::post(
-        '/trial/start',
-        [TrialController::class,'start']
-    );
-
-
-    Route::get(
-        '/trial',
-        [TrialController::class,'show']
-    );
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Payments
+    | USER PUBLIC AUTH
     |--------------------------------------------------------------------------
     */
 
 
     Route::post(
-        '/payments/confirm',
-        [
-            PaymentController::class,
-            'confirm'
-        ]
+        '/auth/register',
+        [AuthController::class, 'register']
     );
 
 
 
-    Route::get(
-        '/payments',
-        [
-            PaymentController::class,
-            'history'
-        ]
+    Route::post(
+        '/auth/login',
+        [AuthController::class, 'login']
     );
 
 
 
-    Route::get(
-        '/invoices',
-        [
-            PaymentController::class,
-            'invoices'
-        ]
+    Route::post(
+        '/auth/refresh',
+        [AuthController::class, 'refresh']
     );
+
 
 
 
     /*
     |--------------------------------------------------------------------------
-    | Subscription
-    |--------------------------------------------------------------------------
-    */
-
-
-    Route::get(
-        '/subscription-plans',
-        [SubscriptionPlanController::class,'index']
-    );
-
-
-    Route::get(
-        '/subscriptions',
-        [SubscriptionController::class,'index']
-    );
-
-
-    Route::post(
-        '/subscriptions/activate',
-        [SubscriptionController::class,'activate']
-    );
-
-
-    Route::get(
-        '/subscriptions/current',
-        [SubscriptionController::class,'current']
-    );
-
-
-    Route::post(
-        '/subscriptions/change-plan',
-        [SubscriptionController::class,'changePlan']
-    );
-
-
-    Route::get(
-        '/subscriptions/history',
-        [SubscriptionController::class,'history']
-    );    
-
-
-    Route::get(
-        '/subscription/status',
-        [SubscriptionStatusController::class,'status']
-    );
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | License Redeem
+    | ADMIN LOGIN
     |--------------------------------------------------------------------------
     */
 
 
     Route::post(
-        '/license-codes/redeem',
-        [LicenseCodeController::class,'redeem']
-    );
-
-
-    Route::post(
-        '/licenses/redeem',
-        [LicenseController::class,'redeem']
+        '/admin/login',
+        [AdminAuthController::class, 'login']
     );
 
 
 
-});
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-|--------------------------------------------------------------------------
-| ADMIN PROTECTED
-|--------------------------------------------------------------------------
-*/
-
-
-Route::middleware('auth:admin')
-->prefix('admin')
-->group(function(){
-
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Admin Sessions
-    |--------------------------------------------------------------------------
-    */
-
-    Route::get(
-        '/sessions',
-        [AdminSessionController::class,'index']
-    );
-
-    Route::delete(
-        '/sessions/logout-all',
-        [AdminSessionController::class,'logoutAll']
-    );
-
-
-    Route::delete(
-        '/sessions/{id}',
-        [AdminSessionController::class,'destroy']
-    )->whereNumber('id');
 
 
 
@@ -594,444 +149,560 @@ Route::middleware('auth:admin')
 
     /*
     |--------------------------------------------------------------------------
-    | Admin Notifications
+    | PRIORITY 2 : USER AUTH PROTECTED
     |--------------------------------------------------------------------------
     */
 
 
-    Route::prefix('notifications')
-    ->group(function(){
+    Route::middleware('auth:api')
+        ->group(function () {
 
 
-        // All notifications
-        Route::get(
-            '/',
-            [AdminNotificationController::class,'index']
-        );
 
+            /*
+            |--------------------------------------------------------------------------
+            | Auth
+            |--------------------------------------------------------------------------
+            */
 
-        // Unread notifications
-        Route::get(
-            '/unread',
-            [AdminNotificationController::class,'unread']
-        );
 
+            Route::get(
+                '/auth/me',
+                [AuthController::class, 'me']
+            );
 
-        // Mark read
-        Route::put(
-            '/{id}/read',
-            [AdminNotificationController::class,'read']
-        )
-        ->whereNumber('id');
 
 
+            Route::post(
+                '/auth/logout',
+                [AuthController::class, 'logout']
+            );
 
-        // Delete notification
-        Route::delete(
-            '/{id}',
-            [AdminNotificationController::class,'destroy']
-        )
-        ->whereNumber('id');
 
 
-    });
 
+            /*
+            |--------------------------------------------------------------------------
+            | Device Limit
+            |--------------------------------------------------------------------------
+            */
 
 
+            Route::get(
+                '/device-limit',
+                [DeviceLimitController::class, 'status']
+            );
 
-/*
-|--------------------------------------------------------------------------
-| Admin Profile
-|--------------------------------------------------------------------------
-*/
 
 
-Route::get(
-    '/profile',
-    [AdminAuthController::class,'profile']
-);
 
+            /*
+            |--------------------------------------------------------------------------
+            | Devices
+            |--------------------------------------------------------------------------
+            */
 
 
+            Route::post(
+                '/devices/enroll',
+                [DeviceController::class, 'enroll']
+            );
 
-Route::post(
-    '/change-password',
-    [AdminAuthController::class,'changePassword']
-);
 
+            Route::get(
+                '/devices',
+                [DeviceController::class, 'index']
+            );
 
 
-Route::post(
-    '/logout',
-    [AdminAuthController::class,'logout']
-);
+            Route::get(
+                '/devices/{id}',
+                [DeviceController::class, 'show']
+            );
 
 
+            Route::post(
+                '/devices/{id}/heartbeat',
+                [DeviceController::class, 'heartbeat']
+            );
 
 
 
+            Route::patch(
+                '/devices/{id}/rename',
+                [
+                    DeviceManagementController::class,
+                    'rename'
+                ]
+            );
 
 
 
+            Route::post(
+                '/devices/{id}/revoke',
+                [
+                    DeviceManagementController::class,
+                    'revoke'
+                ]
+            );
 
 
-/*
-|--------------------------------------------------------------------------
-| Dashboard
-|--------------------------------------------------------------------------
-*/
 
+            Route::post(
+                '/devices/{id}/transfer',
+                [
+                    DeviceManagementController::class,
+                    'transfer'
+                ]
+            );
 
-Route::middleware('permission:view_dashboard')
-->group(function(){
 
 
 
-    Route::get(
-        '/dashboard',
-        [AdminDashboardController::class,'index']
-    );
+            /*
+            |--------------------------------------------------------------------------
+            | Protection (Subscription Protected)
+            |--------------------------------------------------------------------------
+            */
 
 
+            Route::middleware('subscription')
+                ->group(function () {
 
-    Route::get(
-        '/statistics',
-        [AdminStatisticsController::class,'index']
-    );
 
 
-});
+                    Route::get(
+                        '/devices/{id}/protection',
+                        [DeviceProtectionController::class, 'show']
+                    );
 
 
 
+                    Route::post(
+                        '/devices/{id}/protection/update',
+                        [DeviceProtectionController::class, 'update']
+                    );
 
 
 
+                    Route::post(
+                        '/devices/{id}/protection/sync',
+                        [DeviceProtectionController::class, 'sync']
+                    );
 
 
 
+                });
 
-/*
-|--------------------------------------------------------------------------
-| Permissions
-|--------------------------------------------------------------------------
-*/
 
 
-Route::middleware('permission:manage_admins')
-->get(
-    '/permissions',
-    [AdminPermissionController::class,'index']
-);
 
+            /*
+            |--------------------------------------------------------------------------
+            | Protection Rules
+            |--------------------------------------------------------------------------
+            */
 
 
-Route::middleware('permission:manage_admins')
-->get(
-    '/security',
-    [AdminSecurityController::class,'index']
-);
+            Route::get(
+                '/devices/{id}/protection-rules',
+                [ProtectionRuleController::class, 'deviceRules']
+            );
 
 
 
+            /*
+            |--------------------------------------------------------------------------
+            | Protection Sync / Status
+            |--------------------------------------------------------------------------
+            */
 
 
+            Route::get(
+                '/devices/{id}/protection/current-sync',
+                [ProtectionSyncController::class, 'current-sync']
+            );
 
-/*
-|--------------------------------------------------------------------------
-| Activity Logs
-|--------------------------------------------------------------------------
-*/
 
+            Route::get(
+                '/devices/{id}/protection/status',
+                [ProtectionStatusController::class, 'status']
+            );
 
-Route::middleware('permission:view_logs')
-->group(function(){
 
+            Route::get(
+                '/device/protection/sync',
+                [DeviceProtectionSyncController::class, 'sync']
+            );
 
-    Route::get(
 
-        '/activity-logs',
+            Route::post(
+                '/devices/{id}/protection/ack',
+                [ProtectionAckController::class, 'acknowledge']
+            );
 
-        [AdminActivityLogController::class,'index']
 
-    );
+            Route::get(
+                '/devices/{id}/protection/sync-history',
+                [ProtectionSyncHistoryController::class, 'index']
+            );
 
 
 
-    Route::get(
+            /*
+            |--------------------------------------------------------------------------
+            | Protection Retry / Check
+            |--------------------------------------------------------------------------
+            */
 
-        '/activity-logs/security',
 
-        [AdminActivityLogController::class,'security']
+            Route::post(
+                '/devices/{device}/protection/sync/{id}/retry',
+                [ProtectionRetryController::class, 'retry']
+            );
 
-    );
 
+            Route::post(
+                '/devices/{id}/protection/check',
+                [ProtectionCheckController::class, 'check']
+            );
 
-});
 
 
-Route::middleware('permission:view_logs')
-->get(
 
-    '/security/dashboard',
+            /*
+            |--------------------------------------------------------------------------
+            | Protection Violations / Summary / Analytics / Notifications
+            |--------------------------------------------------------------------------
+            */
 
-    [
-        AdminSecurityDashboardController::class,
-        'index'
-    ]
 
-);
+            Route::get(
+                '/devices/{id}/protection/violations',
+                [ProtectionViolationController::class, 'index']
+            );
 
 
+            Route::get(
+                '/devices/{id}/protection/summary',
+                [ProtectionSummaryController::class, 'summary']
+            );
 
 
+            Route::get(
+                '/devices/{id}/protection/analytics',
+                [ProtectionAnalyticsController::class, 'analytics']
+            );
 
-/*
-|--------------------------------------------------------------------------
-| Users Management
-|--------------------------------------------------------------------------
-*/
 
+            Route::get(
+                '/devices/{id}/protection/notifications',
+                [ProtectionNotificationController::class, 'index']
+            );
 
-Route::middleware('permission:manage_users')
-->group(function(){
 
+            Route::put(
+                '/devices/{device}/protection/notifications/{id}/read',
+                [ProtectionNotificationController::class, 'read']
+            );
 
 
-    Route::get(
-        '/users',
-        [AdminUserController::class,'index']
-    );
 
 
+            /*
+            |--------------------------------------------------------------------------
+            | Device Events / Summary / Dashboard / Security Events
+            |--------------------------------------------------------------------------
+            */
 
-    Route::get(
-        '/users/{id}',
-        [AdminUserController::class,'show']
-    );
 
+            Route::get(
+                '/devices/{id}/events',
+                [DeviceEventController::class, 'index']
+            );
 
-});
 
+            Route::get(
+                '/devices/{id}/summary',
+                [DeviceSummaryController::class, 'summary']
+            );
 
 
+            Route::get(
+                '/devices/{id}/dashboard',
+                [DeviceDashboardController::class, 'dashboard']
+            );
 
 
+            Route::get(
+                '/devices/{id}/security-events',
+                [DeviceSecurityEventController::class, 'index']
+            );
 
 
 
 
+            /*
+            |--------------------------------------------------------------------------
+            | Trial
+            |--------------------------------------------------------------------------
+            */
 
-/*
-|--------------------------------------------------------------------------
-| Admin Management
-|--------------------------------------------------------------------------
-*/
 
+            Route::get(
+                '/trial/eligibility',
+                [TrialController::class, 'eligibility']
+            );
 
-Route::middleware('permission:manage_admins')
-->group(function(){
 
+            Route::post(
+                '/trial/start',
+                [TrialController::class, 'start']
+            );
 
 
-    Route::get(
-        '/admins',
-        [AdminManagementController::class,'index']
-    );
+            Route::get(
+                '/trial',
+                [TrialController::class, 'show']
+            );
 
 
 
-    Route::get(
-        '/admins/deleted',
-        [AdminManagementController::class,'deleted']
-    );
 
+            /*
+            |--------------------------------------------------------------------------
+            | Payments
+            |--------------------------------------------------------------------------
+            */
 
 
-    Route::post(
-        '/admins',
-        [AdminManagementController::class,'store']
-    );
+            Route::post(
+                '/payments/confirm',
+                [
+                    PaymentController::class,
+                    'confirm'
+                ]
+            );
 
 
 
-    Route::put(
-        '/admins/{id}',
-        [AdminManagementController::class,'update']
-    );
+            Route::get(
+                '/payments',
+                [
+                    PaymentController::class,
+                    'history'
+                ]
+            );
 
 
 
-    Route::get(
-        '/admins/{id}',
-        [AdminManagementController::class,'show']
-    );
+            Route::get(
+                '/invoices',
+                [
+                    PaymentController::class,
+                    'invoices'
+                ]
+            );
 
 
 
-    Route::post(
-        '/admins/{id}/reset-password',
-        [AdminManagementController::class,'resetPassword']
-    );
 
+            /*
+            |--------------------------------------------------------------------------
+            | Subscription
+            |--------------------------------------------------------------------------
+            */
 
 
-    Route::delete(
-        '/admins/{id}',
-        [AdminManagementController::class,'destroy']
-    );
+            Route::get(
+                '/subscription-plans',
+                [SubscriptionPlanController::class, 'index']
+            );
 
 
+            Route::get(
+                '/subscriptions',
+                [SubscriptionController::class, 'index']
+            );
 
-    Route::post(
-        '/admins/{id}/restore',
-        [AdminManagementController::class,'restore']
-    );
 
+            Route::post(
+                '/subscriptions/activate',
+                [SubscriptionController::class, 'activate']
+            );
 
-    Route::middleware('permission:manage_admins')
-    ->post(
-        '/admins/{id}/unlock',
-        [AdminManagementController::class,'unlock']
-    );
 
+            Route::get(
+                '/subscriptions/current',
+                [SubscriptionController::class, 'current']
+            );
 
-    Route::delete(
-        '/admins/{id}/force-delete',
-        [AdminManagementController::class,'forceDelete']
-    );
 
+            Route::post(
+                '/subscriptions/change-plan',
+                [SubscriptionController::class, 'changePlan']
+            );
 
 
-});
+            Route::get(
+                '/subscriptions/history',
+                [SubscriptionController::class, 'history']
+            );
 
 
+            Route::get(
+                '/subscription/status',
+                [SubscriptionStatusController::class, 'status']
+            );
 
-/*
-|--------------------------------------------------------------------------
-| Permission Management
-|--------------------------------------------------------------------------
-| Only super admin
-|--------------------------------------------------------------------------
-*/
 
 
-Route::post(
-    '/admins/{id}/permissions',
-    [AdminManagementController::class,'permissions']
-);
 
+            /*
+            |--------------------------------------------------------------------------
+            | License Redeem
+            |--------------------------------------------------------------------------
+            */
 
-Route::delete(
-    '/admins/{id}/permissions/{permission}',
-    [AdminManagementController::class,'removePermission']
-);
 
+            Route::post(
+                '/license-codes/redeem',
+                [LicenseCodeController::class, 'redeem']
+            );
 
 
+            Route::post(
+                '/licenses/redeem',
+                [LicenseController::class, 'redeem']
+            );
 
 
 
-/*
-|--------------------------------------------------------------------------
-| Plans
-|--------------------------------------------------------------------------
-*/
+        });
 
 
-Route::middleware('permission:manage_plans')
-->group(function(){
 
 
 
-    Route::get(
-        '/plans',
-        [SubscriptionPlanController::class,'index']
-    );
 
 
 
-    Route::post(
-        '/plans',
-        [SubscriptionPlanController::class,'store']
-    );
+    /*
+    |--------------------------------------------------------------------------
+    | PRIORITY 3 : ADMIN PROTECTED
+    |--------------------------------------------------------------------------
+    */
 
 
+    Route::middleware('auth:admin')
+        ->prefix('admin')
+        ->group(function () {
 
-});
 
 
+            /*
+            |--------------------------------------------------------------------------
+            | Admin Sessions
+            |--------------------------------------------------------------------------
+            */
 
+            Route::get(
+                '/sessions',
+                [AdminSessionController::class, 'index']
+            );
 
+            Route::delete(
+                '/sessions/logout-all',
+                [AdminSessionController::class, 'logoutAll']
+            );
 
 
+            Route::delete(
+                '/sessions/{id}',
+                [AdminSessionController::class, 'destroy']
+            )->whereNumber('id');
 
 
 
 
-/*
-|--------------------------------------------------------------------------
-| License Management
-|--------------------------------------------------------------------------
-*/
 
 
-Route::middleware('permission:manage_licenses')
-->group(function(){
+            /*
+            |--------------------------------------------------------------------------
+            | Admin Notifications
+            |--------------------------------------------------------------------------
+            */
 
 
+            Route::prefix('notifications')
+                ->group(function () {
 
-    Route::get(
-        '/licenses',
-        [AdminLicenseController::class,'index']
-    );
 
+                    // All notifications
+                    Route::get(
+                        '/',
+                        [AdminNotificationController::class, 'index']
+                    );
 
 
-    Route::post(
-        '/licenses/generate',
-        [AdminLicenseController::class,'generate']
-    );
+                    // Unread notifications
+                    Route::get(
+                        '/unread',
+                        [AdminNotificationController::class, 'unread']
+                    );
 
 
+                    // Mark read
+                    Route::put(
+                        '/{id}/read',
+                        [AdminNotificationController::class, 'read']
+                    )
+                        ->whereNumber('id');
 
-});
 
 
+                    // Delete notification
+                    Route::delete(
+                        '/{id}',
+                        [AdminNotificationController::class, 'destroy']
+                    )
+                        ->whereNumber('id');
 
 
+                });
 
 
 
 
 
 
-/*
-|--------------------------------------------------------------------------
-| Subscription Management
-|--------------------------------------------------------------------------
-*/
+            /*
+            |--------------------------------------------------------------------------
+            | Admin Profile
+            |--------------------------------------------------------------------------
+            */
 
 
-Route::middleware('permission:manage_subscriptions')
-->group(function(){
+            Route::get(
+                '/profile',
+                [AdminAuthController::class, 'profile']
+            );
 
 
 
-    Route::get(
-        '/subscriptions',
-        [AdminSubscriptionController::class,'index']
-    );
 
+            Route::post(
+                '/change-password',
+                [AdminAuthController::class, 'changePassword']
+            );
 
 
-    Route::post(
-        '/subscriptions/{id}/cancel',
-        [AdminSubscriptionController::class,'cancel']
-    );
 
+            Route::post(
+                '/logout',
+                [AdminAuthController::class, 'logout']
+            );
 
-});
 
 
 
@@ -1040,47 +711,398 @@ Route::middleware('permission:manage_subscriptions')
 
 
 
+            /*
+            |--------------------------------------------------------------------------
+            | Dashboard
+            |--------------------------------------------------------------------------
+            */
 
 
-/*
-|--------------------------------------------------------------------------
-| Protection Rules
-|--------------------------------------------------------------------------
-*/
+            Route::middleware('permission:view_dashboard')
+                ->group(function () {
 
 
-Route::middleware('permission:manage_rules')
-->group(function(){
 
+                    Route::get(
+                        '/dashboard',
+                        [AdminDashboardController::class, 'index']
+                    );
 
 
-    Route::get(
-        '/protection-rules',
-        [ProtectionRuleController::class,'index']
-    );
 
+                    Route::get(
+                        '/statistics',
+                        [AdminStatisticsController::class, 'index']
+                    );
 
+                });
 
-    Route::post(
-        '/protection-rules',
-        [ProtectionRuleController::class,'store']
-    );
 
-    Route::delete(
-        '/protection-rules/{id}',
-        [ProtectionRuleController::class,'destroy']
-    );   
-    
 
 
-});
 
 
 
 
 
+            /*
+            |--------------------------------------------------------------------------
+            | Permissions
+            |--------------------------------------------------------------------------
+            */
 
-});
+
+            Route::middleware('permission:manage_admins')
+                ->get(
+                    '/permissions',
+                    [AdminPermissionController::class, 'index']
+                );
+
+
+
+            Route::middleware('permission:manage_admins')
+                ->get(
+                    '/security',
+                    [AdminSecurityController::class, 'index']
+                );
+
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Activity Logs
+            |--------------------------------------------------------------------------
+            */
+
+
+            Route::middleware('permission:view_logs')
+                ->group(function () {
+
+
+                    Route::get(
+
+                        '/activity-logs',
+
+                        [AdminActivityLogController::class, 'index']
+
+                    );
+
+
+
+                    Route::get(
+
+                        '/activity-logs/security',
+
+                        [AdminActivityLogController::class, 'security']
+
+                    );
+
+
+                });
+
+
+            Route::middleware('permission:view_logs')
+                ->get(
+
+                    '/security/dashboard',
+
+                    [
+                        AdminSecurityDashboardController::class,
+                        'index'
+                    ]
+
+                );
+
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Users Management
+            |--------------------------------------------------------------------------
+            */
+
+
+            Route::middleware('permission:manage_users')
+                ->group(function () {
+
+
+
+                    Route::get(
+                        '/users',
+                        [AdminUserController::class, 'index']
+                    );
+
+
+
+                    Route::get(
+                        '/users/{id}',
+                        [AdminUserController::class, 'show']
+                    );
+
+                });
+
+
+
+
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Admin Management
+            |--------------------------------------------------------------------------
+            */
+
+
+            Route::middleware('permission:manage_admins')
+                ->group(function () {
+
+
+
+                    Route::get(
+                        '/admins',
+                        [AdminManagementController::class, 'index']
+                    );
+
+
+
+                    Route::get(
+                        '/admins/deleted',
+                        [AdminManagementController::class, 'deleted']
+                    );
+
+
+
+                    Route::post(
+                        '/admins',
+                        [AdminManagementController::class, 'store']
+                    );
+
+
+
+                    Route::put(
+                        '/admins/{id}',
+                        [AdminManagementController::class, 'update']
+                    );
+
+
+
+                    Route::get(
+                        '/admins/{id}',
+                        [AdminManagementController::class, 'show']
+                    );
+
+
+
+                    Route::post(
+                        '/admins/{id}/reset-password',
+                        [AdminManagementController::class, 'resetPassword']
+                    );
+
+
+
+                    Route::delete(
+                        '/admins/{id}',
+                        [AdminManagementController::class, 'destroy']
+                    );
+
+
+
+                    Route::post(
+                        '/admins/{id}/restore',
+                        [AdminManagementController::class, 'restore']
+                    );
+
+
+                    Route::middleware('permission:manage_admins')
+                        ->post(
+                            '/admins/{id}/unlock',
+                            [AdminManagementController::class, 'unlock']
+                        );
+
+
+                    Route::delete(
+                        '/admins/{id}/force-delete',
+                        [AdminManagementController::class, 'forceDelete']
+                    );
+
+
+
+                });
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Permission Management
+            |--------------------------------------------------------------------------
+            | Only super admin
+            |--------------------------------------------------------------------------
+            */
+
+
+            Route::post(
+                '/admins/{id}/permissions',
+                [AdminManagementController::class, 'permissions']
+            );
+
+
+            Route::delete(
+                '/admins/{id}/permissions/{permission}',
+                [AdminManagementController::class, 'removePermission']
+            );
+
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Plans
+            |--------------------------------------------------------------------------
+            */
+
+
+            Route::middleware('permission:manage_plans')
+                ->group(function () {
+
+
+
+                    Route::get(
+                        '/plans',
+                        [SubscriptionPlanController::class, 'index']
+                    );
+
+
+
+                    Route::post(
+                        '/plans',
+                        [SubscriptionPlanController::class, 'store']
+                    );
+
+                });
+
+
+
+
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | License Management
+            |--------------------------------------------------------------------------
+            */
+
+
+            Route::middleware('permission:manage_licenses')
+                ->group(function () {
+
+
+
+                    Route::get(
+                        '/licenses',
+                        [AdminLicenseController::class, 'index']
+                    );
+
+
+
+                    Route::post(
+                        '/licenses/generate',
+                        [AdminLicenseController::class, 'generate']
+                    );
+
+                });
+
+
+
+
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Subscription Management
+            |--------------------------------------------------------------------------
+            */
+
+
+            Route::middleware('permission:manage_subscriptions')
+                ->group(function () {
+
+
+
+                    Route::get(
+                        '/subscriptions',
+                        [AdminSubscriptionController::class, 'index']
+                    );
+
+
+
+                    Route::post(
+                        '/subscriptions/{id}/cancel',
+                        [AdminSubscriptionController::class, 'cancel']
+                    );
+
+                });
+
+
+
+
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Protection Rules
+            |--------------------------------------------------------------------------
+            */
+
+
+            Route::middleware('permission:manage_rules')
+                ->group(function () {
+
+
+
+                    Route::get(
+                        '/protection-rules',
+                        [ProtectionRuleController::class, 'index']
+                    );
+
+
+
+                    Route::post(
+                        '/protection-rules',
+                        [ProtectionRuleController::class, 'store']
+                    );
+
+                    Route::delete(
+                        '/protection-rules/{id}',
+                        [ProtectionRuleController::class, 'destroy']
+                    );
+
+
+
+                });
+
+
+
+        });
 
 
 
