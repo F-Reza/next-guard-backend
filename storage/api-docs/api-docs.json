@@ -394,6 +394,116 @@
                 ]
             }
         },
+        "/admin/notifications": {
+            "get": {
+                "tags": [
+                    "Notification System"
+                ],
+                "summary": "Get admin notifications",
+                "operationId": "4e92fc7fe934360154c99b1846d15f24",
+                "responses": {
+                    "200": {
+                        "description": "Admin notification list"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/notifications/unread": {
+            "get": {
+                "tags": [
+                    "Notification System"
+                ],
+                "summary": "Get unread admin notifications",
+                "operationId": "0921b34ec9fdae444d7fa327bcb18e25",
+                "responses": {
+                    "200": {
+                        "description": "Unread notification list"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/notifications/{id}/read": {
+            "put": {
+                "tags": [
+                    "Notification System"
+                ],
+                "summary": "Mark admin notification as read",
+                "operationId": "addf0d3727bb36c5d55ab7309959db23",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notification marked as read"
+                    },
+                    "404": {
+                        "description": "Notification not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/admin/notifications/{id}": {
+            "delete": {
+                "tags": [
+                    "Notification System"
+                ],
+                "summary": "Delete admin notification",
+                "operationId": "ef5123f144ba4dd37c4b1cf0f49d065f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notification deleted successfully"
+                    },
+                    "404": {
+                        "description": "Notification not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/health": {
             "get": {
                 "tags": [
@@ -561,35 +671,6 @@
                 ]
             }
         },
-        "/devices/{id}/protection/violations": {
-            "get": {
-                "tags": [
-                    "Protection Engine"
-                ],
-                "summary": "Get protection violations",
-                "operationId": "fddf745d67770afbd4b793014dfd03f2",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Violation history"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
         "/devices/{id}/protection/summary": {
             "get": {
                 "tags": [
@@ -713,6 +794,494 @@
                     }
                 ]
             }
+        },
+        "/subscription-plans": {
+            "get": {
+                "tags": [
+                    "Subscription System"
+                ],
+                "summary": "Get subscription plans",
+                "operationId": "78f07328136a439cf41d733350d737f3",
+                "responses": {
+                    "200": {
+                        "description": "Subscription plans list"
+                    }
+                }
+            }
+        },
+        "/subscriptions": {
+            "get": {
+                "tags": [
+                    "Subscription System"
+                ],
+                "summary": "Get user subscriptions",
+                "operationId": "58c674f6c2a69c031b48bf51f94c87bd",
+                "responses": {
+                    "200": {
+                        "description": "User subscription list"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/subscriptions/activate": {
+            "post": {
+                "tags": [
+                    "Subscription System"
+                ],
+                "summary": "Activate subscription",
+                "operationId": "00dd19d630281a602148abb13975e6f3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "subscription_id"
+                                ],
+                                "properties": {
+                                    "subscription_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Subscription activated"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/subscriptions/current": {
+            "get": {
+                "tags": [
+                    "Subscription System"
+                ],
+                "summary": "Get current subscription",
+                "operationId": "a76900e7145d0e387c3ed979e0a76a5d",
+                "responses": {
+                    "200": {
+                        "description": "Current subscription"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/subscriptions/change-plan": {
+            "post": {
+                "tags": [
+                    "Subscription System"
+                ],
+                "summary": "Change subscription plan",
+                "operationId": "31a09b81eb361b2d0b8bc4ab5ec7992e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "plan_id"
+                                ],
+                                "properties": {
+                                    "plan_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Plan changed successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/subscriptions/history": {
+            "get": {
+                "tags": [
+                    "Subscription System"
+                ],
+                "summary": "Get subscription history",
+                "operationId": "a705bc3edfb606ff5a4b1e2bfee76184",
+                "responses": {
+                    "200": {
+                        "description": "Subscription history"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/subscription/status": {
+            "get": {
+                "tags": [
+                    "Subscription System"
+                ],
+                "summary": "Get subscription status",
+                "operationId": "da453d1db1f32f03598f67b9f03155c0",
+                "responses": {
+                    "200": {
+                        "description": "Subscription status"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/device/protection/sync": {
+            "get": {
+                "tags": [
+                    "Sync System"
+                ],
+                "summary": "Get protection sync data",
+                "operationId": "c0c3614a34453cb71839ecaaf282c995",
+                "responses": {
+                    "200": {
+                        "description": "Current protection sync data"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}/protection/current-sync": {
+            "get": {
+                "tags": [
+                    "Sync System"
+                ],
+                "summary": "Get device current sync status",
+                "operationId": "e39418345ab9c88b2a7b6306ec3f8bdb",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Device ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Current sync information"
+                    },
+                    "404": {
+                        "description": "Device not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}/protection/sync-history": {
+            "get": {
+                "tags": [
+                    "Sync System"
+                ],
+                "summary": "Get protection sync history",
+                "operationId": "3ae517acf2360fc5890c427ce8911060",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sync history list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}/protection/ack": {
+            "post": {
+                "tags": [
+                    "Sync System"
+                ],
+                "summary": "Acknowledge protection sync",
+                "operationId": "bdab37fc3afdc841c1ed283327744e27",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "sync_id": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "example": "completed"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Sync acknowledged"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{device}/protection/sync/{id}/retry": {
+            "post": {
+                "tags": [
+                    "Sync System"
+                ],
+                "summary": "Retry failed protection sync",
+                "operationId": "0c4645152ee9e9e31745be8d97d0ef78",
+                "parameters": [
+                    {
+                        "name": "device",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sync retry started"
+                    },
+                    "422": {
+                        "description": "Retry failed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}/events": {
+            "get": {
+                "tags": [
+                    "Sync System"
+                ],
+                "summary": "Get device events",
+                "operationId": "5cae2041273884fec2c46be7f0dc21d8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Device event list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}/security-events": {
+            "get": {
+                "tags": [
+                    "Sync System"
+                ],
+                "summary": "Get device security events",
+                "operationId": "abfef7c9339a0bcd67683771e8c435b9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Security event list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}/protection/violations": {
+            "get": {
+                "tags": [
+                    "Violation System"
+                ],
+                "summary": "Get protection violations",
+                "operationId": "39908a13fe1ca8187f8f5a2bf29344c1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Violation list"
+                    },
+                    "404": {
+                        "description": "Device not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}/protection/check": {
+            "post": {
+                "tags": [
+                    "Violation System"
+                ],
+                "summary": "Check domain protection status",
+                "operationId": "857b5728a6d7bc0f69850e18e47c31ea",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "domain"
+                                ],
+                                "properties": {
+                                    "domain": {
+                                        "type": "string",
+                                        "example": "example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Protection check result"
+                    },
+                    "403": {
+                        "description": "Domain blocked"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -734,12 +1303,28 @@
             "description": "Device Management"
         },
         {
+            "name": "Notification System",
+            "description": "Notification System"
+        },
+        {
             "name": "Health",
             "description": "Health"
         },
         {
             "name": "Protection Engine",
             "description": "Protection Engine"
+        },
+        {
+            "name": "Subscription System",
+            "description": "Subscription System"
+        },
+        {
+            "name": "Sync System",
+            "description": "Sync System"
+        },
+        {
+            "name": "Violation System",
+            "description": "Violation System"
         }
     ]
 }

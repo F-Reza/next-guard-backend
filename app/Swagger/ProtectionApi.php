@@ -214,43 +214,6 @@ use OpenApi\Attributes as OA;
 
 
 
-#[OA\Get(
-    path:"/devices/{id}/protection/violations",
-    tags:["Protection Engine"],
-    summary:"Get protection violations",
-
-    security:[
-        [
-            "bearerAuth"=>[]
-        ]
-    ],
-
-    parameters:[
-
-        new OA\Parameter(
-            name:"id",
-            in:"path",
-            required:true,
-            schema:new OA\Schema(
-                type:"integer"
-            )
-        )
-
-    ],
-
-    responses:[
-
-        new OA\Response(
-            response:200,
-            description:"Violation history"
-        )
-
-    ]
-
-)]
-
-
-
 
 #[OA\Get(
     path:"/devices/{id}/protection/summary",
