@@ -11,8 +11,10 @@ use App\Models\Payment;
 use App\Services\Payment\PaymentGatewayManager;
 use App\Services\PaymentService;
 use App\Services\Payment\WebhookSignatureService;
+
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 
 
@@ -27,6 +29,13 @@ class PaymentWebhookController extends Controller
         Request $request
     ): JsonResponse
     {
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Payload
+        |--------------------------------------------------------------------------
+        */
 
 
         $request->validate([
@@ -53,13 +62,26 @@ class PaymentWebhookController extends Controller
         ]);
 
 
+
+
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Verify Webhook Signature
+        |--------------------------------------------------------------------------
+        */
+
+
         $signature =
             $request->header(
                 'X-Webhook-Signature'
             );
 
 
+
         if(!$signature){
+
 
             return response()->json([
 
@@ -69,22 +91,31 @@ class PaymentWebhookController extends Controller
 
             ],401);
 
+
         }
+
+
 
 
 
         $isValid =
             WebhookSignatureService::verify(
 
+
                 $request->getContent(),
 
+
                 $signature,
+
 
                 config(
                     'services.payment.webhook_secret'
                 )
 
+
             );
+
+
 
 
 
@@ -104,17 +135,28 @@ class PaymentWebhookController extends Controller
 
 
 
+
+
+
+
+
         /*
         |--------------------------------------------------------------------------
-        | Duplicate webhook protection
+        | Duplicate Event Protection
         |--------------------------------------------------------------------------
         */
 
 
-        $exists = PaymentWebhook::where(
-            'event_id',
-            $request->event_id
-        )->exists();
+        $exists =
+            PaymentWebhook::where(
+
+                'event_id',
+
+                $request->event_id
+
+            )
+            ->exists();
+
 
 
 
@@ -138,13 +180,14 @@ class PaymentWebhookController extends Controller
 
 
 
+
         try {
 
 
 
             /*
             |--------------------------------------------------------------------------
-            | Gateway verification
+            | Gateway Verification
             |--------------------------------------------------------------------------
             */
 
@@ -156,10 +199,15 @@ class PaymentWebhookController extends Controller
 
 
 
+
+
             $verification =
                 $gateway->verifyPayment(
+
                     $request->transaction_id
+
                 );
+
 
 
 
@@ -187,6 +235,8 @@ class PaymentWebhookController extends Controller
 
 
 
+
+
             /*
             |--------------------------------------------------------------------------
             | Find Payment
@@ -203,6 +253,9 @@ class PaymentWebhookController extends Controller
 
                 )
                 ->first();
+
+
+
 
 
 
@@ -227,9 +280,51 @@ class PaymentWebhookController extends Controller
 
 
 
+
             /*
             |--------------------------------------------------------------------------
-            | Complete Payment Business Flow
+            | Create Webhook Record
+            |--------------------------------------------------------------------------
+            */
+
+
+            $webhook =
+                PaymentWebhook::create([
+
+
+                    'gateway'=>
+                        $request->gateway,
+
+
+                    'event_id'=>
+                        $request->event_id,
+
+
+                    'transaction_id'=>
+                        $request->transaction_id,
+
+
+                    'payload'=>
+                        $request->all(),
+
+
+                    'status'=>
+                        'processing',
+
+
+                ]);
+
+
+
+
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Complete Payment
             |--------------------------------------------------------------------------
             */
 
@@ -245,30 +340,15 @@ class PaymentWebhookController extends Controller
 
 
 
+
             /*
             |--------------------------------------------------------------------------
-            | Store Webhook Event
+            | Mark Webhook Completed
             |--------------------------------------------------------------------------
             */
 
 
-            PaymentWebhook::create([
-
-
-                'gateway'=>
-                    $request->gateway,
-
-
-                'event_id'=>
-                    $request->event_id,
-
-
-                'transaction_id'=>
-                    $request->transaction_id,
-
-
-                'payload'=>
-                    $request->all(),
+            $webhook->update([
 
 
                 'status'=>
@@ -287,6 +367,8 @@ class PaymentWebhookController extends Controller
 
 
 
+
+
             return response()->json([
 
 
@@ -297,13 +379,49 @@ class PaymentWebhookController extends Controller
                     'Webhook processed successfully.'
 
 
+
             ]);
 
 
 
 
+
         }
-        catch(\Exception $e){
+        catch(\Throwable $e){
+
+
+
+
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Mark Failed Webhook
+            |--------------------------------------------------------------------------
+            */
+
+
+            if(isset($webhook)){
+
+
+                $webhook->update([
+
+
+                    'status'=>
+                        'failed',
+
+
+                    'processed_at'=>
+                        now(),
+
+
+                ]);
+
+
+            }
+
+
+
 
 
 
@@ -313,10 +431,13 @@ class PaymentWebhookController extends Controller
                 'success'=>false,
 
 
-                'message'=>$e->getMessage()
+                'message'=>
+                    $e->getMessage()
+
 
 
             ],422);
+
 
 
 
