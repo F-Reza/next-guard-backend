@@ -12,10 +12,11 @@ use OpenApi\Attributes as OA;
 */
 
 
-
 #[OA\Post(
     path:"/admin/login",
+
     tags:["Admin System"],
+
     summary:"Admin login",
 
 
@@ -23,11 +24,14 @@ use OpenApi\Attributes as OA;
 
         required:true,
 
+
         content:new OA\JsonContent(
 
             required:[
+
                 "email",
                 "password"
+
             ],
 
 
@@ -47,7 +51,6 @@ use OpenApi\Attributes as OA;
                     example:"password"
                 )
 
-
             ]
 
         )
@@ -55,25 +58,30 @@ use OpenApi\Attributes as OA;
     ),
 
 
-
     responses:[
 
 
         new OA\Response(
+
             response:200,
-            description:"Admin login success"
+
+            description:"Admin login successful"
+
         ),
 
 
         new OA\Response(
-            response:401,
-            description:"Invalid credentials"
-        )
 
+            response:401,
+
+            description:"Invalid credentials"
+
+        )
 
     ]
 
 )]
+
 
 
 
@@ -83,13 +91,20 @@ use OpenApi\Attributes as OA;
 
 #[OA\Get(
     path:"/admin/profile",
+
     tags:["Admin System"],
+
     summary:"Get admin profile",
 
+
     security:[
+
         [
+
             "bearerAuth"=>[]
+
         ]
+
     ],
 
 
@@ -97,10 +112,21 @@ use OpenApi\Attributes as OA;
 
 
         new OA\Response(
-            response:200,
-            description:"Admin profile"
-        )
 
+            response:200,
+
+            description:"Admin profile"
+
+        ),
+
+
+        new OA\Response(
+
+            response:401,
+
+            description:"Unauthenticated"
+
+        )
 
     ]
 
@@ -112,15 +138,24 @@ use OpenApi\Attributes as OA;
 
 
 
+
+
 #[OA\Get(
     path:"/admin/dashboard",
+
     tags:["Admin System"],
+
     summary:"Admin dashboard",
 
+
     security:[
+
         [
+
             "bearerAuth"=>[]
+
         ]
+
     ],
 
 
@@ -128,10 +163,12 @@ use OpenApi\Attributes as OA;
 
 
         new OA\Response(
-            response:200,
-            description:"Dashboard data"
-        )
 
+            response:200,
+
+            description:"Dashboard statistics"
+
+        )
 
     ]
 
@@ -146,13 +183,20 @@ use OpenApi\Attributes as OA;
 
 #[OA\Get(
     path:"/admin/statistics",
+
     tags:["Admin System"],
+
     summary:"Admin statistics",
 
+
     security:[
+
         [
+
             "bearerAuth"=>[]
+
         ]
+
     ],
 
 
@@ -160,14 +204,17 @@ use OpenApi\Attributes as OA;
 
 
         new OA\Response(
-            response:200,
-            description:"Statistics data"
-        )
 
+            response:200,
+
+            description:"System statistics"
+
+        )
 
     ]
 
 )]
+
 
 
 
@@ -177,13 +224,20 @@ use OpenApi\Attributes as OA;
 
 #[OA\Get(
     path:"/admin/users",
+
     tags:["Admin System"],
+
     summary:"Get users",
 
+
     security:[
+
         [
+
             "bearerAuth"=>[]
+
         ]
+
     ],
 
 
@@ -191,14 +245,18 @@ use OpenApi\Attributes as OA;
 
 
         new OA\Response(
-            response:200,
-            description:"User list"
-        )
 
+            response:200,
+
+            description:"User list"
+
+        )
 
     ]
 
 )]
+
+
 
 
 
@@ -208,13 +266,20 @@ use OpenApi\Attributes as OA;
 
 #[OA\Get(
     path:"/admin/activity-logs",
+
     tags:["Admin System"],
+
     summary:"Get activity logs",
 
+
     security:[
+
         [
+
             "bearerAuth"=>[]
+
         ]
+
     ],
 
 
@@ -222,14 +287,17 @@ use OpenApi\Attributes as OA;
 
 
         new OA\Response(
-            response:200,
-            description:"Activity logs"
-        )
 
+            response:200,
+
+            description:"Activity logs"
+
+        )
 
     ]
 
 )]
+
 
 
 
@@ -240,13 +308,20 @@ use OpenApi\Attributes as OA;
 
 #[OA\Get(
     path:"/admin/security",
+
     tags:["Admin System"],
+
     summary:"Security dashboard",
 
+
     security:[
+
         [
+
             "bearerAuth"=>[]
+
         ]
+
     ],
 
 
@@ -254,10 +329,12 @@ use OpenApi\Attributes as OA;
 
 
         new OA\Response(
-            response:200,
-            description:"Security information"
-        )
 
+            response:200,
+
+            description:"Security information"
+
+        )
 
     ]
 
@@ -272,13 +349,20 @@ use OpenApi\Attributes as OA;
 
 #[OA\Post(
     path:"/admin/logout",
+
     tags:["Admin System"],
+
     summary:"Admin logout",
 
+
     security:[
+
         [
+
             "bearerAuth"=>[]
+
         ]
+
     ],
 
 
@@ -286,17 +370,16 @@ use OpenApi\Attributes as OA;
 
 
         new OA\Response(
-            response:200,
-            description:"Logout successful"
-        )
 
+            response:200,
+
+            description:"Logout successful"
+
+        )
 
     ]
 
 )]
-
-
-
 
 
 

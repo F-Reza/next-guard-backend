@@ -12,10 +12,14 @@ use OpenApi\Attributes as OA;
 */
 
 
+
 #[OA\Get(
-    path:"/admin/notifications",
+    path:"/devices/{id}/protection/notifications",
+
     tags:["Notification System"],
-    summary:"Get admin notifications",
+
+    summary:"Get protection notifications",
+
 
     security:[
         [
@@ -23,21 +27,175 @@ use OpenApi\Attributes as OA;
         ]
     ],
 
+
+    parameters:[
+
+
+        new OA\Parameter(
+
+            name:"id",
+
+            in:"path",
+
+            required:true,
+
+
+            schema:new OA\Schema(
+
+                type:"integer",
+
+                example:1
+
+            )
+
+        )
+
+    ],
+
+
     responses:[
 
-        new OA\Response(
-            response:200,
-            description:"Admin notification list"
-        ),
 
         new OA\Response(
-            response:401,
-            description:"Unauthenticated"
+
+            response:200,
+
+            description:"Notification list"
+
         )
+
 
     ]
 
 )]
+
+
+
+
+
+
+
+
+
+#[OA\Put(
+    path:"/devices/{device}/protection/notifications/{id}/read",
+
+    tags:["Notification System"],
+
+    summary:"Mark protection notification as read",
+
+
+    security:[
+        [
+            "bearerAuth"=>[]
+        ]
+    ],
+
+
+
+    parameters:[
+
+
+        new OA\Parameter(
+
+            name:"device",
+
+            in:"path",
+
+            required:true,
+
+
+            schema:new OA\Schema(
+
+                type:"integer"
+
+            )
+
+        ),
+
+
+
+        new OA\Parameter(
+
+            name:"id",
+
+            in:"path",
+
+            required:true,
+
+
+            schema:new OA\Schema(
+
+                type:"integer"
+
+            )
+
+        )
+
+
+    ],
+
+
+
+    responses:[
+
+
+        new OA\Response(
+
+            response:200,
+
+            description:"Notification marked as read"
+
+        )
+
+
+    ]
+
+)]
+
+
+
+
+
+
+
+
+
+#[OA\Get(
+    path:"/admin/notifications",
+
+    tags:["Notification System"],
+
+    summary:"Admin notifications",
+
+
+    security:[
+        [
+            "bearerAuth"=>[]
+        ]
+    ],
+
+
+
+    responses:[
+
+
+        new OA\Response(
+
+            response:200,
+
+            description:"Admin notification list"
+
+        )
+
+
+    ]
+
+)]
+
+
+
+
 
 
 
@@ -45,8 +203,11 @@ use OpenApi\Attributes as OA;
 
 #[OA\Get(
     path:"/admin/notifications/unread",
+
     tags:["Notification System"],
-    summary:"Get unread admin notifications",
+
+    summary:"Unread admin notifications",
+
 
     security:[
         [
@@ -54,21 +215,27 @@ use OpenApi\Attributes as OA;
         ]
     ],
 
+
+
     responses:[
 
-        new OA\Response(
-            response:200,
-            description:"Unread notification list"
-        ),
 
         new OA\Response(
-            response:401,
-            description:"Unauthenticated"
+
+            response:200,
+
+            description:"Unread notifications"
+
         )
+
 
     ]
 
 )]
+
+
+
+
 
 
 
@@ -76,8 +243,11 @@ use OpenApi\Attributes as OA;
 
 #[OA\Put(
     path:"/admin/notifications/{id}/read",
+
     tags:["Notification System"],
-    summary:"Mark admin notification as read",
+
+    summary:"Mark admin notification read",
+
 
     security:[
         [
@@ -86,33 +256,42 @@ use OpenApi\Attributes as OA;
     ],
 
 
+
     parameters:[
 
+
         new OA\Parameter(
+
             name:"id",
+
             in:"path",
+
             required:true,
 
+
             schema:new OA\Schema(
-                type:"integer",
-                example:1
+
+                type:"integer"
+
             )
+
         )
 
     ],
 
 
+
     responses:[
 
-        new OA\Response(
-            response:200,
-            description:"Notification marked as read"
-        ),
 
         new OA\Response(
-            response:404,
-            description:"Notification not found"
+
+            response:200,
+
+            description:"Notification read"
+
         )
+
 
     ]
 
@@ -120,51 +299,6 @@ use OpenApi\Attributes as OA;
 
 
 
-
-
-#[OA\Delete(
-    path:"/admin/notifications/{id}",
-    tags:["Notification System"],
-    summary:"Delete admin notification",
-
-    security:[
-        [
-            "bearerAuth"=>[]
-        ]
-    ],
-
-
-    parameters:[
-
-        new OA\Parameter(
-            name:"id",
-            in:"path",
-            required:true,
-
-            schema:new OA\Schema(
-                type:"integer",
-                example:1
-            )
-        )
-
-    ],
-
-
-    responses:[
-
-        new OA\Response(
-            response:200,
-            description:"Notification deleted successfully"
-        ),
-
-        new OA\Response(
-            response:404,
-            description:"Notification not found"
-        )
-
-    ]
-
-)]
 
 
 

@@ -15,8 +15,11 @@ use OpenApi\Attributes as OA;
 
 #[OA\Post(
     path:"/license-codes/redeem",
+
     tags:["License System"],
+
     summary:"Redeem license code",
+
 
     security:[
         [
@@ -29,19 +32,27 @@ use OpenApi\Attributes as OA;
 
         required:true,
 
+
         content:new OA\JsonContent(
 
             required:[
+
                 "code"
+
             ],
+
 
             properties:[
 
 
                 new OA\Property(
+
                     property:"code",
+
                     type:"string",
-                    example:"NG-PRO-ABC123"
+
+                    example:"NG-XXXX-XXXX"
+
                 )
 
 
@@ -52,23 +63,33 @@ use OpenApi\Attributes as OA;
     ),
 
 
+
     responses:[
 
 
         new OA\Response(
+
             response:200,
-            description:"License redeemed successfully"
+
+            description:"License code redeemed"
+
         ),
 
 
         new OA\Response(
+
             response:422,
+
             description:"Invalid license code"
+
         )
 
     ]
 
 )]
+
+
+
 
 
 
@@ -78,8 +99,11 @@ use OpenApi\Attributes as OA;
 
 #[OA\Post(
     path:"/licenses/redeem",
+
     tags:["License System"],
+
     summary:"Redeem license",
+
 
     security:[
         [
@@ -92,10 +116,13 @@ use OpenApi\Attributes as OA;
 
         required:true,
 
+
         content:new OA\JsonContent(
 
             required:[
-                "license_code"
+
+                "license_key"
+
             ],
 
 
@@ -103,9 +130,13 @@ use OpenApi\Attributes as OA;
 
 
                 new OA\Property(
-                    property:"license_code",
+
+                    property:"license_key",
+
                     type:"string",
-                    example:"NG-LICENSE-001"
+
+                    example:"NG-PRO-2026-XXXX"
+
                 )
 
 
@@ -121,19 +152,27 @@ use OpenApi\Attributes as OA;
 
 
         new OA\Response(
+
             response:200,
+
             description:"License activated"
+
         ),
 
 
         new OA\Response(
-            response:409,
-            description:"License already used"
+
+            response:404,
+
+            description:"License not found"
+
         )
 
     ]
 
 )]
+
+
 
 
 
@@ -143,8 +182,11 @@ use OpenApi\Attributes as OA;
 
 #[OA\Get(
     path:"/admin/licenses",
+
     tags:["License System"],
+
     summary:"Get licenses",
+
 
     security:[
         [
@@ -157,8 +199,11 @@ use OpenApi\Attributes as OA;
 
 
         new OA\Response(
+
             response:200,
+
             description:"License list"
+
         )
 
     ]
@@ -171,10 +216,15 @@ use OpenApi\Attributes as OA;
 
 
 
+
+
 #[OA\Post(
     path:"/admin/licenses/generate",
+
     tags:["License System"],
+
     summary:"Generate license",
+
 
     security:[
         [
@@ -183,9 +233,11 @@ use OpenApi\Attributes as OA;
     ],
 
 
+
     requestBody:new OA\RequestBody(
 
         required:true,
+
 
         content:new OA\JsonContent(
 
@@ -193,16 +245,24 @@ use OpenApi\Attributes as OA;
 
 
                 new OA\Property(
-                    property:"quantity",
+
+                    property:"plan_id",
+
                     type:"integer",
-                    example:10
+
+                    example:1
+
                 ),
 
 
                 new OA\Property(
-                    property:"plan_id",
+
+                    property:"quantity",
+
                     type:"integer",
-                    example:1
+
+                    example:10
+
                 )
 
 
@@ -218,10 +278,12 @@ use OpenApi\Attributes as OA;
 
 
         new OA\Response(
-            response:201,
-            description:"License generated"
-        )
 
+            response:201,
+
+            description:"License generated"
+
+        )
 
     ]
 

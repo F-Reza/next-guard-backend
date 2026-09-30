@@ -39,7 +39,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Admin login success"
+                        "description": "Admin login successful"
                     },
                     "401": {
                         "description": "Invalid credentials"
@@ -57,6 +57,9 @@
                 "responses": {
                     "200": {
                         "description": "Admin profile"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
                     }
                 },
                 "security": [
@@ -75,7 +78,7 @@
                 "operationId": "8751bca7bc58694964ba6005ec7f4b01",
                 "responses": {
                     "200": {
-                        "description": "Dashboard data"
+                        "description": "Dashboard statistics"
                     }
                 },
                 "security": [
@@ -94,7 +97,7 @@
                 "operationId": "ddf266c11080f2e41686294df93290e0",
                 "responses": {
                     "200": {
-                        "description": "Statistics data"
+                        "description": "System statistics"
                     }
                 },
                 "security": [
@@ -290,6 +293,26 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Updated Admin"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "newadmin@test.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Admin updated"
@@ -346,6 +369,25 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "permission"
+                                ],
+                                "properties": {
+                                    "permission": {
+                                        "type": "string",
+                                        "example": "manage_users"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Permission assigned"
@@ -379,8 +421,7 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "string",
-                            "example": "manage_users"
+                            "type": "string"
                         }
                     }
                 ],
@@ -424,7 +465,7 @@
                 "operationId": "a0160dc2320607217393a2dcb732cf59",
                 "responses": {
                     "200": {
-                        "description": "Plans list"
+                        "description": "Subscription plans"
                     }
                 },
                 "security": [
@@ -439,26 +480,6 @@
                 ],
                 "summary": "Create subscription plan",
                 "operationId": "76ee6bc812e144a9b6bb6cefc877308d",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "Premium"
-                                    },
-                                    "price": {
-                                        "type": "number",
-                                        "example": 9.99
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
                 "responses": {
                     "201": {
                         "description": "Plan created"
@@ -1093,7 +1114,7 @@
                                 "properties": {
                                     "code": {
                                         "type": "string",
-                                        "example": "NG-PRO-ABC123"
+                                        "example": "NG-XXXX-XXXX"
                                     }
                                 },
                                 "type": "object"
@@ -1103,7 +1124,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "License redeemed successfully"
+                        "description": "License code redeemed"
                     },
                     "422": {
                         "description": "Invalid license code"
@@ -1129,12 +1150,12 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "license_code"
+                                    "license_key"
                                 ],
                                 "properties": {
-                                    "license_code": {
+                                    "license_key": {
                                         "type": "string",
-                                        "example": "NG-LICENSE-001"
+                                        "example": "NG-PRO-2026-XXXX"
                                     }
                                 },
                                 "type": "object"
@@ -1146,8 +1167,8 @@
                     "200": {
                         "description": "License activated"
                     },
-                    "409": {
-                        "description": "License already used"
+                    "404": {
+                        "description": "License not found"
                     }
                 },
                 "security": [
@@ -1189,13 +1210,13 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "quantity": {
-                                        "type": "integer",
-                                        "example": 10
-                                    },
                                     "plan_id": {
                                         "type": "integer",
                                         "example": 1
+                                    },
+                                    "quantity": {
+                                        "type": "integer",
+                                        "example": 10
                                     }
                                 },
                                 "type": "object"
@@ -1215,19 +1236,83 @@
                 ]
             }
         },
+        "/devices/{id}/protection/notifications": {
+            "get": {
+                "tags": [
+                    "Notification System"
+                ],
+                "summary": "Get protection notifications",
+                "operationId": "b0eefe0a503f2c28ca4a33f9f31e3ba2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notification list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{device}/protection/notifications/{id}/read": {
+            "put": {
+                "tags": [
+                    "Notification System"
+                ],
+                "summary": "Mark protection notification as read",
+                "operationId": "ef791b378bcd2d35c8b33e5e2acfa14d",
+                "parameters": [
+                    {
+                        "name": "device",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notification marked as read"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/admin/notifications": {
             "get": {
                 "tags": [
                     "Notification System"
                 ],
-                "summary": "Get admin notifications",
+                "summary": "Admin notifications",
                 "operationId": "4e92fc7fe934360154c99b1846d15f24",
                 "responses": {
                     "200": {
                         "description": "Admin notification list"
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
                     }
                 },
                 "security": [
@@ -1242,14 +1327,11 @@
                 "tags": [
                     "Notification System"
                 ],
-                "summary": "Get unread admin notifications",
+                "summary": "Unread admin notifications",
                 "operationId": "0921b34ec9fdae444d7fa327bcb18e25",
                 "responses": {
                     "200": {
-                        "description": "Unread notification list"
-                    },
-                    "401": {
-                        "description": "Unauthenticated"
+                        "description": "Unread notifications"
                     }
                 },
                 "security": [
@@ -1264,7 +1346,7 @@
                 "tags": [
                     "Notification System"
                 ],
-                "summary": "Mark admin notification as read",
+                "summary": "Mark admin notification read",
                 "operationId": "addf0d3727bb36c5d55ab7309959db23",
                 "parameters": [
                     {
@@ -1272,50 +1354,13 @@
                         "in": "path",
                         "required": true,
                         "schema": {
-                            "type": "integer",
-                            "example": 1
+                            "type": "integer"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Notification marked as read"
-                    },
-                    "404": {
-                        "description": "Notification not found"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/admin/notifications/{id}": {
-            "delete": {
-                "tags": [
-                    "Notification System"
-                ],
-                "summary": "Delete admin notification",
-                "operationId": "ef5123f144ba4dd37c4b1cf0f49d065f",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer",
-                            "example": 1
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Notification deleted successfully"
-                    },
-                    "404": {
-                        "description": "Notification not found"
+                        "description": "Notification read"
                     }
                 },
                 "security": [
@@ -1352,26 +1397,36 @@
                 ],
                 "summary": "Create payment",
                 "operationId": "2acb7e163a8c7d5ebfb15427791558c5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "subscription_id",
+                                    "gateway"
+                                ],
+                                "properties": {
+                                    "subscription_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "gateway": {
+                                        "type": "string",
+                                        "example": "stripe"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "201": {
-                        "description": "Payment created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Payment"
-                                }
-                            }
-                        }
+                        "description": "Payment created"
                     },
-                    "401": {
-                        "description": "Unauthenticated",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                }
-                            }
-                        }
+                    "422": {
+                        "description": "Validation error"
                     }
                 },
                 "security": [
@@ -1409,24 +1464,10 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Payment confirmed",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Payment"
-                                }
-                            }
-                        }
+                        "description": "Payment confirmed"
                     },
-                    "422": {
-                        "description": "Payment confirmation failed",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                }
-                            }
-                        }
+                    "404": {
+                        "description": "Payment not found"
                     }
                 },
                 "security": [
@@ -1443,6 +1484,17 @@
                 ],
                 "summary": "Payment gateway webhook",
                 "operationId": "fdc559cb1838b0f80544132136c09c20",
+                "parameters": [
+                    {
+                        "name": "X-Webhook-Signature",
+                        "in": "header",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "a83f9d82..."
+                        }
+                    }
+                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1474,34 +1526,10 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Webhook processed",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Webhook processed successfully."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
+                        "description": "Webhook processed"
                     },
                     "401": {
-                        "description": "Invalid signature",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                }
-                            }
-                        }
+                        "description": "Invalid webhook signature"
                     }
                 }
             }
@@ -1515,17 +1543,7 @@
                 "operationId": "d9f2661d2e7d9a9f0263639447c4ec39",
                 "responses": {
                     "200": {
-                        "description": "Payment history",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Payment"
-                                    }
-                                }
-                            }
-                        }
+                        "description": "Payment history"
                     }
                 },
                 "security": [
@@ -1544,17 +1562,7 @@
                 "operationId": "fc0f7126aa33eaef23b8125473335fbd",
                 "responses": {
                     "200": {
-                        "description": "Invoice list",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Payment"
-                                    }
-                                }
-                            }
-                        }
+                        "description": "Invoice list"
                     }
                 },
                 "security": [
@@ -1769,86 +1777,6 @@
                 ]
             }
         },
-        "/devices/{id}/protection/notifications": {
-            "get": {
-                "tags": [
-                    "Protection Engine"
-                ],
-                "summary": "Get protection notifications",
-                "operationId": "88fc72dbbf5164a9d88e7e5cf0bfc764",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Protection notifications"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/devices/{device}/protection/notifications/{id}/read": {
-            "put": {
-                "tags": [
-                    "Protection Engine"
-                ],
-                "summary": "Mark protection notification as read",
-                "operationId": "a9adc88d42fae73faefe28441087e92e",
-                "parameters": [
-                    {
-                        "name": "device",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Notification marked as read"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/subscription-plans": {
-            "get": {
-                "tags": [
-                    "Subscription System"
-                ],
-                "summary": "Get subscription plans",
-                "operationId": "78f07328136a439cf41d733350d737f3",
-                "responses": {
-                    "200": {
-                        "description": "Subscription plans list"
-                    }
-                }
-            }
-        },
         "/subscriptions": {
             "get": {
                 "tags": [
@@ -1858,10 +1786,27 @@
                 "operationId": "58c674f6c2a69c031b48bf51f94c87bd",
                 "responses": {
                     "200": {
-                        "description": "User subscription list"
+                        "description": "Subscription list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Subscription"
+                                    }
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Unauthenticated"
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1871,25 +1816,30 @@
                 ]
             }
         },
-        "/subscriptions/activate": {
+        "/subscriptions/create": {
             "post": {
                 "tags": [
                     "Subscription System"
                 ],
-                "summary": "Activate subscription",
-                "operationId": "00dd19d630281a602148abb13975e6f3",
+                "summary": "Create subscription",
+                "operationId": "492bdbee0df86d24a52b5009d1b7b125",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "subscription_id"
+                                    "subscription_plan_id",
+                                    "device_id"
                                 ],
                                 "properties": {
-                                    "subscription_id": {
+                                    "subscription_plan_id": {
                                         "type": "integer",
                                         "example": 1
+                                    },
+                                    "device_id": {
+                                        "type": "integer",
+                                        "example": 5
                                     }
                                 },
                                 "type": "object"
@@ -1898,11 +1848,25 @@
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "Subscription activated"
+                    "201": {
+                        "description": "Subscription created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Subscription"
+                                }
+                            }
+                        }
                     },
                     "422": {
-                        "description": "Validation error"
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1912,16 +1876,37 @@
                 ]
             }
         },
-        "/subscriptions/current": {
+        "/subscriptions/{id}": {
             "get": {
                 "tags": [
                     "Subscription System"
                 ],
-                "summary": "Get current subscription",
-                "operationId": "a76900e7145d0e387c3ed979e0a76a5d",
+                "summary": "Get subscription details",
+                "operationId": "c70ba6861403ce01eec148940c800036",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Current subscription"
+                        "description": "Subscription details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Subscription"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Subscription not found"
                     }
                 },
                 "security": [
@@ -1931,73 +1916,33 @@
                 ]
             }
         },
-        "/subscriptions/change-plan": {
+        "/subscriptions/{id}/cancel": {
             "post": {
                 "tags": [
                     "Subscription System"
                 ],
-                "summary": "Change subscription plan",
-                "operationId": "31a09b81eb361b2d0b8bc4ab5ec7992e",
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "plan_id"
-                                ],
-                                "properties": {
-                                    "plan_id": {
-                                        "type": "integer",
-                                        "example": 2
-                                    }
-                                },
-                                "type": "object"
-                            }
+                "summary": "Cancel subscription",
+                "operationId": "5ca276bc5bf51ad90a978af1a799ba81",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
                         }
                     }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Plan changed successfully"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/subscriptions/history": {
-            "get": {
-                "tags": [
-                    "Subscription System"
                 ],
-                "summary": "Get subscription history",
-                "operationId": "a705bc3edfb606ff5a4b1e2bfee76184",
                 "responses": {
                     "200": {
-                        "description": "Subscription history"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/subscription/status": {
-            "get": {
-                "tags": [
-                    "Subscription System"
-                ],
-                "summary": "Get subscription status",
-                "operationId": "da453d1db1f32f03598f67b9f03155c0",
-                "responses": {
-                    "200": {
-                        "description": "Subscription status"
+                        "description": "Subscription cancelled",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Subscription"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [

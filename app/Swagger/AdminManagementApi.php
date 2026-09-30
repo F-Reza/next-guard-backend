@@ -15,8 +15,11 @@ use OpenApi\Attributes as OA;
 
 #[OA\Get(
     path:"/admin/admins",
+
     tags:["Admin Management"],
+
     summary:"Get admin list",
+
 
     security:[
         [
@@ -43,8 +46,11 @@ use OpenApi\Attributes as OA;
 
 #[OA\Post(
     path:"/admin/admins",
+
     tags:["Admin Management"],
+
     summary:"Create admin",
+
 
     security:[
         [
@@ -53,17 +59,22 @@ use OpenApi\Attributes as OA;
     ],
 
 
+
     requestBody:new OA\RequestBody(
 
         required:true,
 
+
         content:new OA\JsonContent(
 
             required:[
+
                 "name",
                 "email",
                 "password"
+
             ],
+
 
             properties:[
 
@@ -88,7 +99,6 @@ use OpenApi\Attributes as OA;
                     example:"password"
                 )
 
-
             ]
 
         )
@@ -96,8 +106,8 @@ use OpenApi\Attributes as OA;
     ),
 
 
-
     responses:[
+
 
         new OA\Response(
             response:201,
@@ -114,10 +124,14 @@ use OpenApi\Attributes as OA;
 
 
 
+
 #[OA\Get(
     path:"/admin/admins/{id}",
+
     tags:["Admin Management"],
+
     summary:"Get admin details",
+
 
     security:[
         [
@@ -129,13 +143,20 @@ use OpenApi\Attributes as OA;
     parameters:[
 
         new OA\Parameter(
+
             name:"id",
+
             in:"path",
+
             required:true,
 
+
             schema:new OA\Schema(
+
                 type:"integer",
+
                 example:1
+
             )
 
         )
@@ -143,13 +164,14 @@ use OpenApi\Attributes as OA;
     ],
 
 
-
     responses:[
+
 
         new OA\Response(
             response:200,
             description:"Admin details"
         )
+
 
     ]
 
@@ -161,10 +183,15 @@ use OpenApi\Attributes as OA;
 
 
 
+
+
 #[OA\Put(
     path:"/admin/admins/{id}",
+
     tags:["Admin Management"],
+
     summary:"Update admin",
+
 
     security:[
         [
@@ -173,24 +200,72 @@ use OpenApi\Attributes as OA;
     ],
 
 
+
     parameters:[
 
+
         new OA\Parameter(
+
             name:"id",
+
             in:"path",
+
             required:true,
 
+
             schema:new OA\Schema(
+
                 type:"integer"
+
             )
 
         )
+
 
     ],
 
 
 
+    requestBody:new OA\RequestBody(
+
+        required:true,
+
+
+        content:new OA\JsonContent(
+
+            properties:[
+
+
+                new OA\Property(
+
+                    property:"name",
+
+                    type:"string",
+
+                    example:"Updated Admin"
+
+                ),
+
+
+                new OA\Property(
+
+                    property:"email",
+
+                    type:"string",
+
+                    example:"newadmin@test.com"
+
+                )
+
+            ]
+
+        )
+
+    ),
+
+
     responses:[
+
 
         new OA\Response(
             response:200,
@@ -207,10 +282,14 @@ use OpenApi\Attributes as OA;
 
 
 
+
 #[OA\Delete(
     path:"/admin/admins/{id}",
+
     tags:["Admin Management"],
+
     summary:"Delete admin",
+
 
     security:[
         [
@@ -221,31 +300,44 @@ use OpenApi\Attributes as OA;
 
     parameters:[
 
+
         new OA\Parameter(
+
             name:"id",
+
             in:"path",
+
             required:true,
 
+
             schema:new OA\Schema(
+
                 type:"integer"
+
             )
 
         )
 
-    ],
 
+    ],
 
 
     responses:[
 
+
         new OA\Response(
+
             response:200,
+
             description:"Admin deleted"
+
         )
 
     ]
 
 )]
+
+
 
 
 
@@ -255,8 +347,11 @@ use OpenApi\Attributes as OA;
 
 #[OA\Post(
     path:"/admin/admins/{id}/permissions",
+
     tags:["Admin Management"],
+
     summary:"Assign permission to admin",
+
 
     security:[
         [
@@ -267,30 +362,79 @@ use OpenApi\Attributes as OA;
 
     parameters:[
 
+
         new OA\Parameter(
+
             name:"id",
+
             in:"path",
+
             required:true,
 
+
             schema:new OA\Schema(
+
                 type:"integer"
+
             )
 
         )
 
+
     ],
+
+
+
+    requestBody:new OA\RequestBody(
+
+        required:true,
+
+
+        content:new OA\JsonContent(
+
+            required:[
+
+                "permission"
+
+            ],
+
+
+            properties:[
+
+
+                new OA\Property(
+
+                    property:"permission",
+
+                    type:"string",
+
+                    example:"manage_users"
+
+                )
+
+            ]
+
+        )
+
+    ),
+
 
 
     responses:[
 
+
         new OA\Response(
+
             response:200,
+
             description:"Permission assigned"
+
         )
 
     ]
 
 )]
+
 
 
 
@@ -300,8 +444,11 @@ use OpenApi\Attributes as OA;
 
 #[OA\Delete(
     path:"/admin/admins/{id}/permissions/{permission}",
+
     tags:["Admin Management"],
+
     summary:"Remove admin permission",
+
 
     security:[
         [
@@ -314,25 +461,34 @@ use OpenApi\Attributes as OA;
 
 
         new OA\Parameter(
+
             name:"id",
+
             in:"path",
+
             required:true,
 
             schema:new OA\Schema(
+
                 type:"integer"
+
             )
 
         ),
 
 
         new OA\Parameter(
+
             name:"permission",
+
             in:"path",
+
             required:true,
 
             schema:new OA\Schema(
-                type:"string",
-                example:"manage_users"
+
+                type:"string"
+
             )
 
         )
@@ -341,11 +497,16 @@ use OpenApi\Attributes as OA;
     ],
 
 
+
     responses:[
 
+
         new OA\Response(
+
             response:200,
+
             description:"Permission removed"
+
         )
 
     ]
@@ -358,10 +519,15 @@ use OpenApi\Attributes as OA;
 
 
 
+
+
 #[OA\Get(
     path:"/admin/permissions",
+
     tags:["Admin Management"],
+
     summary:"Get permissions",
+
 
     security:[
         [
@@ -372,9 +538,13 @@ use OpenApi\Attributes as OA;
 
     responses:[
 
+
         new OA\Response(
+
             response:200,
+
             description:"Permission list"
+
         )
 
     ]
@@ -390,8 +560,11 @@ use OpenApi\Attributes as OA;
 
 #[OA\Get(
     path:"/admin/plans",
+
     tags:["Admin Management"],
+
     summary:"Get subscription plans",
+
 
     security:[
         [
@@ -402,9 +575,13 @@ use OpenApi\Attributes as OA;
 
     responses:[
 
+
         new OA\Response(
+
             response:200,
-            description:"Plans list"
+
+            description:"Subscription plans"
+
         )
 
     ]
@@ -420,8 +597,11 @@ use OpenApi\Attributes as OA;
 
 #[OA\Post(
     path:"/admin/plans",
+
     tags:["Admin Management"],
+
     summary:"Create subscription plan",
+
 
     security:[
         [
@@ -430,46 +610,21 @@ use OpenApi\Attributes as OA;
     ],
 
 
-    requestBody:new OA\RequestBody(
-
-        required:true,
-
-        content:new OA\JsonContent(
-
-            properties:[
-
-
-                new OA\Property(
-                    property:"name",
-                    type:"string",
-                    example:"Premium"
-                ),
-
-
-                new OA\Property(
-                    property:"price",
-                    type:"number",
-                    example:9.99
-                )
-
-
-            ]
-
-        )
-
-    ),
-
-
     responses:[
 
+
         new OA\Response(
+
             response:201,
+
             description:"Plan created"
+
         )
 
     ]
 
 )]
+
 
 
 
@@ -480,8 +635,11 @@ use OpenApi\Attributes as OA;
 
 #[OA\Get(
     path:"/admin/subscriptions",
+
     tags:["Admin Management"],
+
     summary:"Get all subscriptions",
+
 
     security:[
         [
@@ -492,9 +650,13 @@ use OpenApi\Attributes as OA;
 
     responses:[
 
+
         new OA\Response(
+
             response:200,
+
             description:"Subscription list"
+
         )
 
     ]
@@ -508,10 +670,14 @@ use OpenApi\Attributes as OA;
 
 
 
+
 #[OA\Post(
     path:"/admin/subscriptions/{id}/cancel",
+
     tags:["Admin Management"],
+
     summary:"Cancel subscription",
+
 
     security:[
         [
@@ -524,12 +690,18 @@ use OpenApi\Attributes as OA;
 
 
         new OA\Parameter(
+
             name:"id",
+
             in:"path",
+
             required:true,
 
+
             schema:new OA\Schema(
+
                 type:"integer"
+
             )
 
         )
@@ -541,16 +713,18 @@ use OpenApi\Attributes as OA;
 
     responses:[
 
+
         new OA\Response(
+
             response:200,
+
             description:"Subscription cancelled"
+
         )
 
     ]
 
 )]
-
-
 
 
 

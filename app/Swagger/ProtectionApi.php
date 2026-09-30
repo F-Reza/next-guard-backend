@@ -30,6 +30,7 @@ use OpenApi\Attributes as OA;
             in:"path",
             required:true,
             description:"Device ID",
+
             schema:new OA\Schema(
                 type:"integer",
                 example:1
@@ -61,6 +62,7 @@ use OpenApi\Attributes as OA;
 
 
 
+
 #[OA\Post(
     path:"/devices/{id}/protection/update",
     tags:["Protection Engine"],
@@ -72,12 +74,14 @@ use OpenApi\Attributes as OA;
         ]
     ],
 
+
     parameters:[
 
         new OA\Parameter(
             name:"id",
             in:"path",
             required:true,
+
             schema:new OA\Schema(
                 type:"integer"
             )
@@ -94,20 +98,17 @@ use OpenApi\Attributes as OA;
 
             properties:[
 
-
                 new OA\Property(
                     property:"protection_enabled",
                     type:"boolean",
                     example:true
                 ),
 
-
                 new OA\Property(
                     property:"mode",
                     type:"string",
                     example:"strict"
                 )
-
 
             ]
 
@@ -118,12 +119,10 @@ use OpenApi\Attributes as OA;
 
     responses:[
 
-
         new OA\Response(
             response:200,
             description:"Protection updated"
         ),
-
 
         new OA\Response(
             response:422,
@@ -148,18 +147,21 @@ use OpenApi\Attributes as OA;
         ]
     ],
 
+
     parameters:[
 
         new OA\Parameter(
             name:"id",
             in:"path",
             required:true,
+
             schema:new OA\Schema(
                 type:"integer"
             )
         )
 
     ],
+
 
     responses:[
 
@@ -186,12 +188,14 @@ use OpenApi\Attributes as OA;
         ]
     ],
 
+
     parameters:[
 
         new OA\Parameter(
             name:"id",
             in:"path",
             required:true,
+
             schema:new OA\Schema(
                 type:"integer"
             )
@@ -214,7 +218,6 @@ use OpenApi\Attributes as OA;
 
 
 
-
 #[OA\Get(
     path:"/devices/{id}/protection/summary",
     tags:["Protection Engine"],
@@ -226,12 +229,14 @@ use OpenApi\Attributes as OA;
         ]
     ],
 
+
     parameters:[
 
         new OA\Parameter(
             name:"id",
             in:"path",
             required:true,
+
             schema:new OA\Schema(
                 type:"integer"
             )
@@ -265,12 +270,14 @@ use OpenApi\Attributes as OA;
         ]
     ],
 
+
     parameters:[
 
         new OA\Parameter(
             name:"id",
             in:"path",
             required:true,
+
             schema:new OA\Schema(
                 type:"integer"
             )
@@ -291,94 +298,6 @@ use OpenApi\Attributes as OA;
 )]
 
 
-
-
-#[OA\Get(
-    path:"/devices/{id}/protection/notifications",
-    tags:["Protection Engine"],
-    summary:"Get protection notifications",
-
-    security:[
-        [
-            "bearerAuth"=>[]
-        ]
-    ],
-
-    parameters:[
-
-        new OA\Parameter(
-            name:"id",
-            in:"path",
-            required:true,
-            schema:new OA\Schema(
-                type:"integer"
-            )
-        )
-
-    ],
-
-    responses:[
-
-        new OA\Response(
-            response:200,
-            description:"Protection notifications"
-        )
-
-    ]
-
-)]
-
-
-
-
-#[OA\Put(
-    path:"/devices/{device}/protection/notifications/{id}/read",
-    tags:["Protection Engine"],
-    summary:"Mark protection notification as read",
-
-    security:[
-        [
-            "bearerAuth"=>[]
-        ]
-    ],
-
-
-    parameters:[
-
-
-        new OA\Parameter(
-            name:"device",
-            in:"path",
-            required:true,
-            schema:new OA\Schema(
-                type:"integer"
-            )
-        ),
-
-
-        new OA\Parameter(
-            name:"id",
-            in:"path",
-            required:true,
-            schema:new OA\Schema(
-                type:"integer"
-            )
-        )
-
-
-    ],
-
-
-    responses:[
-
-        new OA\Response(
-            response:200,
-            description:"Notification marked as read"
-        )
-
-    ]
-
-)]
 
 
 

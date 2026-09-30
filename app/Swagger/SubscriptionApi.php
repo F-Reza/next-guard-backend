@@ -12,31 +12,13 @@ use OpenApi\Attributes as OA;
 */
 
 
-
-#[OA\Get(
-    path:"/subscription-plans",
-    tags:["Subscription System"],
-    summary:"Get subscription plans",
-
-    responses:[
-
-        new OA\Response(
-            response:200,
-            description:"Subscription plans list"
-        )
-
-    ]
-
-)]
-
-
-
-
-
 #[OA\Get(
     path:"/subscriptions",
+
     tags:["Subscription System"],
+
     summary:"Get user subscriptions",
+
 
     security:[
         [
@@ -49,12 +31,29 @@ use OpenApi\Attributes as OA;
 
         new OA\Response(
             response:200,
-            description:"User subscription list"
+
+            description:"Subscription list",
+
+            content:new OA\JsonContent(
+
+                type:"array",
+
+                items:new OA\Items(
+                    ref:"#/components/schemas/Subscription"
+                )
+
+            )
         ),
+
 
         new OA\Response(
             response:401,
-            description:"Unauthenticated"
+
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
         )
 
     ]
@@ -67,9 +66,12 @@ use OpenApi\Attributes as OA;
 
 
 #[OA\Post(
-    path:"/subscriptions/activate",
+    path:"/subscriptions/create",
+
     tags:["Subscription System"],
-    summary:"Activate subscription",
+
+    summary:"Create subscription",
+
 
     security:[
         [
@@ -82,19 +84,33 @@ use OpenApi\Attributes as OA;
 
         required:true,
 
+
         content:new OA\JsonContent(
 
             required:[
-                "subscription_id"
+
+                "subscription_plan_id",
+                "device_id"
+
             ],
+
 
             properties:[
 
+
                 new OA\Property(
-                    property:"subscription_id",
+                    property:"subscription_plan_id",
                     type:"integer",
                     example:1
+                ),
+
+
+                new OA\Property(
+                    property:"device_id",
+                    type:"integer",
+                    example:5
                 )
+
 
             ]
 
@@ -103,18 +119,30 @@ use OpenApi\Attributes as OA;
     ),
 
 
-
     responses:[
 
+
         new OA\Response(
-            response:200,
-            description:"Subscription activated"
+            response:201,
+
+            description:"Subscription created",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/Subscription"
+            )
         ),
+
 
         new OA\Response(
             response:422,
-            description:"Validation error"
+
+            description:"Validation error",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
         )
+
 
     ]
 
@@ -125,10 +153,15 @@ use OpenApi\Attributes as OA;
 
 
 
+
+
 #[OA\Get(
-    path:"/subscriptions/current",
+    path:"/subscriptions/{id}",
+
     tags:["Subscription System"],
-    summary:"Get current subscription",
+
+    summary:"Get subscription details",
+
 
     security:[
         [
@@ -137,16 +170,62 @@ use OpenApi\Attributes as OA;
     ],
 
 
+
+    parameters:[
+
+
+        new OA\Parameter(
+
+            name:"id",
+
+            in:"path",
+
+            required:true,
+
+
+            schema:new OA\Schema(
+
+                type:"integer",
+
+                example:1
+
+            )
+
+        )
+
+    ],
+
+
+
     responses:[
 
+
         new OA\Response(
+
             response:200,
-            description:"Current subscription"
+
+            description:"Subscription details",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/Subscription"
+            )
+
+        ),
+
+
+        new OA\Response(
+
+            response:404,
+
+            description:"Subscription not found"
+
         )
 
     ]
 
 )]
+
+
 
 
 
@@ -155,9 +234,12 @@ use OpenApi\Attributes as OA;
 
 
 #[OA\Post(
-    path:"/subscriptions/change-plan",
+    path:"/subscriptions/{id}/cancel",
+
     tags:["Subscription System"],
-    summary:"Change subscription plan",
+
+    summary:"Cancel subscription",
+
 
     security:[
         [
@@ -166,102 +248,53 @@ use OpenApi\Attributes as OA;
     ],
 
 
-    requestBody:new OA\RequestBody(
 
-        required:true,
-
-        content:new OA\JsonContent(
-
-            required:[
-                "plan_id"
-            ],
-
-            properties:[
+    parameters:[
 
 
-                new OA\Property(
-                    property:"plan_id",
-                    type:"integer",
-                    example:2
-                )
+        new OA\Parameter(
+
+            name:"id",
+
+            in:"path",
+
+            required:true,
 
 
-            ]
+            schema:new OA\Schema(
+
+                type:"integer"
+
+            )
 
         )
 
-    ),
 
-
-
-    responses:[
-
-        new OA\Response(
-            response:200,
-            description:"Plan changed successfully"
-        )
-
-    ]
-
-)]
-
-
-
-
-
-
-
-#[OA\Get(
-    path:"/subscriptions/history",
-    tags:["Subscription System"],
-    summary:"Get subscription history",
-
-    security:[
-        [
-            "bearerAuth"=>[]
-        ]
     ],
 
 
+
     responses:[
 
+
         new OA\Response(
+
             response:200,
-            description:"Subscription history"
+
+            description:"Subscription cancelled",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/Subscription"
+            )
+
         )
+
 
     ]
 
 )]
 
 
-
-
-
-
-
-#[OA\Get(
-    path:"/subscription/status",
-    tags:["Subscription System"],
-    summary:"Get subscription status",
-
-    security:[
-        [
-            "bearerAuth"=>[]
-        ]
-    ],
-
-
-    responses:[
-
-        new OA\Response(
-            response:200,
-            description:"Subscription status"
-        )
-
-    ]
-
-)]
 
 
 
