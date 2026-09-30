@@ -7,7 +7,7 @@ use App\Models\Device;
 use App\Models\ProtectionRule;
 use App\Models\DeviceProtectionSetting;
 use App\Services\SubscriptionService;
-
+use Illuminate\Support\Facades\DB;
 
 class ProtectionEngineService
 {
@@ -330,15 +330,30 @@ class ProtectionEngineService
         )
         ->where(function($query) use($domain){
 
-            $query
-                ->where(
-                    'domain',
-                    $domain
-                )
-                ->orWhereRaw(
-                    "? LIKE CONCAT('%.' , domain)",
-                    [$domain]
-                );
+            $driver = DB::connection()->getDriverName();
+
+
+            if($driver === 'sqlite'){
+
+                $query
+                    ->where('domain',$domain)
+                    ->orWhereRaw(
+                        "? LIKE '%.' || domain",
+                        [$domain]
+                    );
+
+            }
+            else{
+
+                $query
+                    ->where('domain',$domain)
+                    ->orWhereRaw(
+                        "? LIKE CONCAT('%.', domain)",
+                        [$domain]
+                    );
+
+            }
+
 
         })
         ->first();
