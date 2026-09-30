@@ -6,6 +6,394 @@
         "version": "1.0.0"
     },
     "paths": {
+        "/auth/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "User Registration",
+                "description": "Authentication API Documentation",
+                "operationId": "2737ae43991d86e6292c3f6894ddc72e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "user@test.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User registered successfully"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "User Login",
+                "operationId": "2fd667260bbc7592fe0a08835fd5b6df",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "login",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "login": {
+                                        "type": "string",
+                                        "example": "user@test.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login success"
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    }
+                }
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Get authenticated user",
+                "operationId": "d29e2a07053891a5e2e3bc0de153de05",
+                "responses": {
+                    "200": {
+                        "description": "User profile"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Logout user",
+                "operationId": "256d4db256255f0069adc4311e7d3709",
+                "responses": {
+                    "200": {
+                        "description": "Logout successful"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/enroll": {
+            "post": {
+                "tags": [
+                    "Device Management"
+                ],
+                "summary": "Enroll new device",
+                "operationId": "0dea680eb536872966d8dce6f2dcec2b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "device_uuid_hash",
+                                    "platform"
+                                ],
+                                "properties": {
+                                    "device_uuid_hash": {
+                                        "type": "string",
+                                        "example": "a8f7c91d83..."
+                                    },
+                                    "platform": {
+                                        "type": "string",
+                                        "example": "android"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Device enrolled successfully"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices": {
+            "get": {
+                "tags": [
+                    "Device Management"
+                ],
+                "summary": "Get user devices",
+                "operationId": "6a8c46f7cde690263ac463ff600ffbe5",
+                "responses": {
+                    "200": {
+                        "description": "Device list"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}": {
+            "get": {
+                "tags": [
+                    "Device Management"
+                ],
+                "summary": "Get device details",
+                "operationId": "7716cdc3cca41292e5ddd30591436479",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Device ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Device details"
+                    },
+                    "404": {
+                        "description": "Device not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}/heartbeat": {
+            "post": {
+                "tags": [
+                    "Device Management"
+                ],
+                "summary": "Send device heartbeat",
+                "operationId": "0b897eb4134beacc2e09ae2eea2d9e42",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Heartbeat updated"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}/rename": {
+            "patch": {
+                "tags": [
+                    "Device Management"
+                ],
+                "summary": "Rename device",
+                "operationId": "f803162663933b203097d244a8b14962",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "My Android Phone"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Device renamed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}/revoke": {
+            "post": {
+                "tags": [
+                    "Device Management"
+                ],
+                "summary": "Revoke device",
+                "operationId": "5cfef622cfd9844cea91ada82a409740",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Device revoked"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}/transfer": {
+            "post": {
+                "tags": [
+                    "Device Management"
+                ],
+                "summary": "Transfer device",
+                "operationId": "2fa9cecb5826811cc9e9999201c2e8d0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Device transferred"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/health": {
             "get": {
                 "tags": [
@@ -25,12 +413,333 @@
                     }
                 ]
             }
+        },
+        "/devices/{id}/protection/status": {
+            "get": {
+                "tags": [
+                    "Protection Engine"
+                ],
+                "summary": "Get device protection status",
+                "operationId": "38df6b3ad35697af2fc21107dcbe3d05",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Device ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Protection status"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Device not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}/protection/update": {
+            "post": {
+                "tags": [
+                    "Protection Engine"
+                ],
+                "summary": "Update device protection settings",
+                "operationId": "d9fd2c74aea93b7530d4b552ccf1bbe9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "protection_enabled": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "mode": {
+                                        "type": "string",
+                                        "example": "strict"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Protection updated"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}/protection/sync": {
+            "post": {
+                "tags": [
+                    "Protection Engine"
+                ],
+                "summary": "Sync protection rules",
+                "operationId": "d0cab48d4eab3c0b45f12aeb6721c236",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Protection sync completed"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}/protection-rules": {
+            "get": {
+                "tags": [
+                    "Protection Engine"
+                ],
+                "summary": "Get device protection rules",
+                "operationId": "23fa4b085f1bb0727d1ebaabd130fea1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Protection rules list"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}/protection/violations": {
+            "get": {
+                "tags": [
+                    "Protection Engine"
+                ],
+                "summary": "Get protection violations",
+                "operationId": "fddf745d67770afbd4b793014dfd03f2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Violation history"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}/protection/summary": {
+            "get": {
+                "tags": [
+                    "Protection Engine"
+                ],
+                "summary": "Protection summary",
+                "operationId": "27fd527e100a68f3c9784b472dedb80d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Protection summary data"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}/protection/analytics": {
+            "get": {
+                "tags": [
+                    "Protection Engine"
+                ],
+                "summary": "Protection analytics",
+                "operationId": "f68c4a2f29beafec61ea7105269848a1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Analytics data"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{id}/protection/notifications": {
+            "get": {
+                "tags": [
+                    "Protection Engine"
+                ],
+                "summary": "Get protection notifications",
+                "operationId": "88fc72dbbf5164a9d88e7e5cf0bfc764",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Protection notifications"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/devices/{device}/protection/notifications/{id}/read": {
+            "put": {
+                "tags": [
+                    "Protection Engine"
+                ],
+                "summary": "Mark protection notification as read",
+                "operationId": "a9adc88d42fae73faefe28441087e92e",
+                "parameters": [
+                    {
+                        "name": "device",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Notification marked as read"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
         }
     },
     "tags": [
         {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
+            "name": "Device Management",
+            "description": "Device Management"
+        },
+        {
             "name": "Health",
             "description": "Health"
+        },
+        {
+            "name": "Protection Engine",
+            "description": "Protection Engine"
         }
     ]
 }
