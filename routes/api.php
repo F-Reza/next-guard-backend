@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\V1\ProtectionSummaryController;
 use App\Http\Controllers\Api\V1\ProtectionAnalyticsController;
 use App\Http\Controllers\Api\V1\ProtectionNotificationController;
 use App\Http\Controllers\Api\V1\DeviceSecurityEventController;
+use App\Http\Controllers\Api\V1\DeviceDashboardController;
 
 use App\Http\Controllers\Api\V1\DeviceManagementController;
 use App\Http\Controllers\Api\V1\DeviceLimitController;
@@ -345,6 +346,12 @@ Route::middleware('auth:api')
     Route::get(
         '/devices/{id}/summary',
         [DeviceSummaryController::class,'summary']
+    );
+
+
+    Route::get(
+        '/devices/{id}/dashboard',
+        [DeviceDashboardController::class,'dashboard']
     );
 
 
