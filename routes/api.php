@@ -487,6 +487,16 @@ Route::prefix('v1')->group(function () {
 
 
             Route::post(
+                '/payments/create',
+                [
+                    PaymentController::class,
+                    'create'
+                ]
+            )
+            ->middleware('auth:api');
+
+
+            Route::post(
                 '/payments/confirm',
                 [
                     PaymentController::class,

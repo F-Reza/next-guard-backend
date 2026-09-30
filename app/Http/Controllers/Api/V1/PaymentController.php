@@ -6,13 +6,10 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 
 use App\Models\Payment;
-
 use App\Models\Subscription;
-
 use App\Models\SubscriptionInvoice;
-
 use App\Services\PaymentService;
-
+use App\Services\Payment\PaymentGatewayManager;
 use Illuminate\Http\Request;
 
 use Illuminate\Http\JsonResponse;
@@ -21,6 +18,142 @@ use Illuminate\Http\JsonResponse;
 
 class PaymentController extends Controller
 {
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Create Payment Request
+    |--------------------------------------------------------------------------
+    */
+
+
+    public function create(Request $request): JsonResponse
+    {
+
+        $request->validate([
+
+            'subscription_id'=>[
+                'required',
+                'exists:subscriptions,id'
+            ],
+
+            'gateway'=>[
+                'required',
+                'string'
+            ]
+
+        ]);
+
+
+
+        $user = auth('api')->user();
+
+
+
+        $subscription =
+            $user->subscriptions()
+            ->where(
+                'id',
+                $request->subscription_id
+            )
+            ->first();
+
+
+
+        if(!$subscription){
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>'Subscription not found.'
+
+            ],404);
+
+        }
+
+
+
+        try {
+
+
+            $gateway =
+                PaymentGatewayManager::driver(
+                    $request->gateway
+                );
+
+
+
+            $payment =
+                $gateway->createPayment([
+
+                    'amount'=>
+                        $subscription->plan->price,
+
+                    'currency'=>'USD',
+
+                    'subscription_id'=>
+                        $subscription->id
+
+                ]);
+
+
+
+            return response()->json([
+
+                'success'=>true,
+
+                'message'=>'Payment created successfully.',
+
+                'data'=>$payment
+
+            ]);
+
+
+
+        }
+        catch(\Exception $e){
+
+
+            return response()->json([
+
+                'success'=>false,
+
+                'message'=>$e->getMessage()
+
+            ],422);
+
+
+        }
+
+
+
+        $payment =
+            $gateway->createPayment([
+
+                'amount'=>
+                    $subscription->plan->price,
+
+
+                'currency'=>'USD'
+
+            ]);
+
+
+
+        return response()->json([
+
+            'success'=>true,
+
+            'message'=>'Payment created.',
+
+            'data'=>$payment
+
+        ]);
+
+    }
+
+
 
 
     /*
