@@ -22,6 +22,7 @@ class PaymentWebhookTest extends TestCase
 
 
 
+
     private function createPayment()
     {
 
@@ -31,6 +32,7 @@ class PaymentWebhookTest extends TestCase
 
         $token = auth('api')
             ->login($user);
+
 
 
 
@@ -52,6 +54,7 @@ class PaymentWebhookTest extends TestCase
 
 
 
+
         $plan = SubscriptionPlan::create([
 
             'name'=>'Monthly',
@@ -63,6 +66,7 @@ class PaymentWebhookTest extends TestCase
             'status'=>'active',
 
         ]);
+
 
 
 
@@ -82,6 +86,7 @@ class PaymentWebhookTest extends TestCase
             'expires_at'=>now()->addDays(30),
 
         ]);
+
 
 
 
@@ -107,6 +112,7 @@ class PaymentWebhookTest extends TestCase
 
 
 
+
         return [
 
             $user,
@@ -127,6 +133,35 @@ class PaymentWebhookTest extends TestCase
 
 
 
+    private function signature(
+        array $payload
+    ): string
+    {
+
+
+        return hash_hmac(
+
+            'sha256',
+
+            json_encode($payload),
+
+            config(
+                'services.payment.webhook_secret'
+            )
+
+        );
+
+
+    }
+
+
+
+
+
+
+
+
+
     /**
      * Valid webhook processed
      */
@@ -135,9 +170,13 @@ class PaymentWebhookTest extends TestCase
 
 
         [
+
             $user,
+
             $subscription,
+
             $payment,
+
             $token
 
         ] = $this->createPayment();
@@ -146,22 +185,39 @@ class PaymentWebhookTest extends TestCase
 
 
 
-        $response = $this->postJson(
+        $payload = [
 
-            '/api/v1/payments/webhook',
+            'gateway'=>'stripe',
 
-            [
+            'event_id'=>'evt_test_001',
 
-                'gateway'=>'stripe',
+            'transaction_id'=>
+                $payment->transaction_id
 
-                'event_id'=>'evt_test_001',
+        ];
 
-                'transaction_id'=>
-                    $payment->transaction_id
 
-            ]
 
-        );
+
+
+        $response = $this
+
+            ->withHeader(
+
+                'X-Webhook-Signature',
+
+                $this->signature($payload)
+
+            )
+
+            ->postJson(
+
+                '/api/v1/payments/webhook',
+
+                $payload
+
+            );
+
 
 
 
@@ -176,6 +232,7 @@ class PaymentWebhookTest extends TestCase
                 'success'=>true
 
             ]);
+
 
 
 
@@ -205,6 +262,9 @@ class PaymentWebhookTest extends TestCase
 
 
 
+
+
+
     /**
      * Duplicate webhook rejected
      */
@@ -213,9 +273,13 @@ class PaymentWebhookTest extends TestCase
 
 
         [
+
             $user,
+
             $subscription,
+
             $payment,
+
             $token
 
         ] = $this->createPayment();
@@ -223,14 +287,19 @@ class PaymentWebhookTest extends TestCase
 
 
 
+
         $payload=[
+
 
             'gateway'=>'stripe',
 
+
             'event_id'=>'evt_duplicate',
+
 
             'transaction_id'=>
                 $payment->transaction_id
+
 
         ];
 
@@ -238,25 +307,52 @@ class PaymentWebhookTest extends TestCase
 
 
 
-        $this->postJson(
-
-            '/api/v1/payments/webhook',
-
-            $payload
-
-        );
 
 
+        $this
+
+            ->withHeader(
+
+                'X-Webhook-Signature',
+
+                $this->signature($payload)
+
+            )
+
+            ->postJson(
+
+                '/api/v1/payments/webhook',
+
+                $payload
+
+            );
 
 
 
-        $response = $this->postJson(
 
-            '/api/v1/payments/webhook',
 
-            $payload
 
-        );
+
+
+        $response = $this
+
+            ->withHeader(
+
+                'X-Webhook-Signature',
+
+                $this->signature($payload)
+
+            )
+
+            ->postJson(
+
+                '/api/v1/payments/webhook',
+
+                $payload
+
+            );
+
+
 
 
 
@@ -282,6 +378,8 @@ class PaymentWebhookTest extends TestCase
 
 
 
+
+
     /**
      * Invalid gateway rejected
      */
@@ -290,9 +388,13 @@ class PaymentWebhookTest extends TestCase
 
 
         [
+
             $user,
+
             $subscription,
+
             $payment,
+
             $token
 
         ] = $this->createPayment();
@@ -301,22 +403,44 @@ class PaymentWebhookTest extends TestCase
 
 
 
-        $response = $this->postJson(
 
-            '/api/v1/payments/webhook',
 
-            [
+        $payload = [
 
-                'gateway'=>'unknown',
+            'gateway'=>'unknown',
 
-                'event_id'=>'evt_invalid',
+            'event_id'=>'evt_invalid',
 
-                'transaction_id'=>
-                    $payment->transaction_id
+            'transaction_id'=>
+                $payment->transaction_id
 
-            ]
+        ];
 
-        );
+
+
+
+
+
+
+        $response = $this
+
+            ->withHeader(
+
+                'X-Webhook-Signature',
+
+                $this->signature($payload)
+
+            )
+
+            ->postJson(
+
+                '/api/v1/payments/webhook',
+
+                $payload
+
+            );
+
+
 
 
 
@@ -335,6 +459,7 @@ class PaymentWebhookTest extends TestCase
 
 
     }
+
 
 
 
