@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\V1\ProtectionViolationController;
 use App\Http\Controllers\Api\V1\ProtectionSummaryController;
 use App\Http\Controllers\Api\V1\ProtectionAnalyticsController;
 use App\Http\Controllers\Api\V1\ProtectionNotificationController;
+use App\Http\Controllers\Api\V1\DeviceSecurityEventController;
 
 use App\Http\Controllers\Api\V1\DeviceManagementController;
 use App\Http\Controllers\Api\V1\DeviceLimitController;
@@ -390,6 +391,11 @@ Route::middleware('auth:api')
     );
 
 
+
+    Route::get(
+        '/devices/{id}/security-events',
+        [DeviceSecurityEventController::class,'index']
+    );
 
 
 
