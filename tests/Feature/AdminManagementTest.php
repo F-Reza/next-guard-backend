@@ -18,7 +18,7 @@ class AdminManagementTest extends TestCase
 
 
 
-    private function createSuperAdmin()
+    private function createAdmin()
     {
 
 
@@ -58,11 +58,16 @@ class AdminManagementTest extends TestCase
 
 
         return [
+
             $admin,
+
             $token
+
         ];
 
     }
+
+
 
 
 
@@ -76,7 +81,7 @@ class AdminManagementTest extends TestCase
 
 
         [$admin,$token] =
-            $this->createSuperAdmin();
+            $this->createAdmin();
 
 
 
@@ -96,7 +101,6 @@ class AdminManagementTest extends TestCase
 
 
 
-
         $response = $this
 
             ->withHeader(
@@ -107,7 +111,6 @@ class AdminManagementTest extends TestCase
             ->getJson(
                 '/api/v1/admin/admins'
             );
-
 
 
 
@@ -137,8 +140,7 @@ class AdminManagementTest extends TestCase
 
 
         [$admin,$token] =
-            $this->createSuperAdmin();
-
+            $this->createAdmin();
 
 
 
@@ -150,7 +152,9 @@ class AdminManagementTest extends TestCase
             )
 
             ->postJson(
+
                 '/api/v1/admin/admins',
+
                 [
 
                     'name'=>'New Admin',
@@ -162,8 +166,8 @@ class AdminManagementTest extends TestCase
                     'role'=>'admin'
 
                 ]
-            );
 
+            );
 
 
 
@@ -179,15 +183,20 @@ class AdminManagementTest extends TestCase
 
 
 
-
         $this->assertDatabaseHas(
+
             'admins',
+
             [
+
                 'email'=>'newadmin@test.com'
+
             ]
+
         );
 
     }
+
 
 
 
@@ -202,7 +211,7 @@ class AdminManagementTest extends TestCase
 
 
         [$admin,$token] =
-            $this->createSuperAdmin();
+            $this->createAdmin();
 
 
 
@@ -222,18 +231,21 @@ class AdminManagementTest extends TestCase
 
 
 
-
         $response = $this
 
             ->withHeader(
+
                 'Authorization',
+
                 'Bearer '.$token
+
             )
 
             ->getJson(
-                '/api/v1/admin/admins/'.$target->id
-            );
 
+                '/api/v1/admin/admins/'.$target->id
+
+            );
 
 
 
@@ -249,6 +261,247 @@ class AdminManagementTest extends TestCase
 
     }
 
+
+
+
+
+
+
+    /**
+     * Update admin
+     */
+    public function test_super_admin_can_update_admin()
+    {
+
+
+        [$admin,$token] =
+            $this->createAdmin();
+
+
+
+        $target = Admin::create([
+
+            'name'=>'Old Admin',
+
+            'email'=>'old@test.com',
+
+            'password'=>'password',
+
+            'role'=>'admin',
+
+            'status'=>'active'
+
+        ]);
+
+
+
+        $response = $this
+
+            ->withHeader(
+
+                'Authorization',
+
+                'Bearer '.$token
+
+            )
+
+            ->putJson(
+
+                '/api/v1/admin/admins/'.$target->id,
+
+                [
+
+                    'name'=>'Updated Admin',
+
+                    'email'=>'updated@example.com',
+
+                    'role'=>'admin',
+
+                ]
+
+            );
+
+
+
+        $response
+
+            ->assertStatus(200)
+
+            ->assertJson([
+
+                'success'=>true
+
+            ]);
+
+
+
+        $this->assertDatabaseHas(
+
+            'admins',
+
+            [
+
+                'id'=>$target->id,
+
+                'name'=>'Updated Admin'
+
+            ]
+
+        );
+
+    }
+
+
+
+
+
+
+
+
+
+    /**
+     * Reset password
+     */
+    public function test_super_admin_can_reset_admin_password()
+    {
+
+
+        [$admin,$token] =
+            $this->createAdmin();
+
+
+
+        $target = Admin::create([
+
+            'name'=>'Reset Admin',
+
+            'email'=>'reset@test.com',
+
+            'password'=>'password',
+
+            'role'=>'admin',
+
+            'status'=>'active'
+
+        ]);
+
+
+
+        $response = $this
+
+            ->withHeader(
+
+                'Authorization',
+
+                'Bearer '.$token
+
+            )
+
+            ->postJson(
+
+                '/api/v1/admin/admins/'.$target->id.'/reset-password',
+
+                [
+
+                    'password'=>'newpassword123'
+
+                ]
+
+            );
+
+
+
+        $response
+
+            ->assertStatus(200)
+
+            ->assertJson([
+
+                'success'=>true
+
+            ]);
+
+    }
+
+
+
+
+
+
+
+
+
+    /**
+     * Delete admin
+     */
+    public function test_super_admin_can_delete_admin()
+    {
+
+
+        [$admin,$token] =
+            $this->createAdmin();
+
+
+
+        $target = Admin::create([
+
+            'name'=>'Delete Admin',
+
+            'email'=>'delete@test.com',
+
+            'password'=>'password',
+
+            'role'=>'admin',
+
+            'status'=>'active'
+
+        ]);
+
+
+
+        $response = $this
+
+            ->withHeader(
+
+                'Authorization',
+
+                'Bearer '.$token
+
+            )
+
+            ->deleteJson(
+
+                '/api/v1/admin/admins/'.$target->id
+
+            );
+
+
+
+        $response
+
+            ->assertStatus(200)
+
+            ->assertJson([
+
+                'success'=>true
+
+            ]);
+
+
+
+        $this->assertSoftDeleted(
+
+            'admins',
+
+            [
+
+                'id'=>$target->id
+
+            ]
+
+        );
+
+    }
 
 
 
