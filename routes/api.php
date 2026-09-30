@@ -116,7 +116,8 @@ Route::prefix('v1')->group(function () {
     Route::post(
         '/auth/login',
         [AuthController::class, 'login']
-    );
+    )
+    ->middleware('throttle:login');
 
 
 
@@ -138,7 +139,8 @@ Route::prefix('v1')->group(function () {
     Route::post(
         '/admin/login',
         [AdminAuthController::class, 'login']
-    );
+    )
+    ->middleware('throttle:login');
 
 
 
@@ -224,7 +226,11 @@ Route::prefix('v1')->group(function () {
             Route::post(
                 '/devices/{id}/heartbeat',
                 [DeviceController::class, 'heartbeat']
-            );
+            )
+            ->middleware([
+                'auth:api',
+                'throttle:heartbeat'
+            ]);
 
 
 
@@ -365,7 +371,11 @@ Route::prefix('v1')->group(function () {
             Route::post(
                 '/devices/{id}/protection/check',
                 [ProtectionCheckController::class, 'check']
-            );
+            )
+            ->middleware([
+                'auth:api',
+                'throttle:api'
+            ]);
 
 
 
@@ -482,7 +492,11 @@ Route::prefix('v1')->group(function () {
                     PaymentController::class,
                     'confirm'
                 ]
-            );
+            )
+            ->middleware([
+                'auth:api',
+                'throttle:payment'
+            ]);
 
 
 
@@ -568,13 +582,21 @@ Route::prefix('v1')->group(function () {
             Route::post(
                 '/license-codes/redeem',
                 [LicenseCodeController::class, 'redeem']
-            );
+            )
+            ->middleware([
+                'auth:api',
+                'throttle:api'
+            ]);
 
 
             Route::post(
                 '/licenses/redeem',
                 [LicenseController::class, 'redeem']
-            );
+            )
+            ->middleware([
+                'auth:api',
+                'throttle:api'
+            ]);
 
 
 
