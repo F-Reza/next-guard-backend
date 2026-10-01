@@ -197,6 +197,18 @@ Route::prefix('admin')
             )->name('subscriptions.extend.store');
 
 
+            Route::get(
+                '/subscriptions/{id}/reactivate',
+                [AdminWebController::class, 'subscriptionReactivate']
+            )->name('subscriptions.reactivate');
+
+
+            Route::post(
+                '/subscriptions/{id}/reactivate',
+                [AdminWebController::class, 'subscriptionReactivateStore']
+            )->name('subscriptions.reactivate.store');
+
+
             Route::post(
                 '/subscriptions/{id}/cancel',
                 [AdminWebController::class, 'subscriptionCancel']
@@ -206,7 +218,7 @@ Route::prefix('admin')
             Route::get(
                 '/subscriptions/{id}',
                 [AdminWebController::class, 'subscriptionShow']
-            )->name('subscriptions.show');      
+            )->name('subscriptions.show');   
 
 
 

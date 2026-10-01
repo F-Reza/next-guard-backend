@@ -14,6 +14,7 @@ use App\Services\AdminActivityLogger;
 use App\Services\AdminLoginSecurity;
 use App\Services\AdminNotificationService;
 use App\Services\SubscriptionChangeService;
+use App\Services\ProtectionActivationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -1293,368 +1294,402 @@ class AdminWebController extends Controller
 
 
 
-/**
- * Show change subscription plan form.
- */
-public function subscriptionChangePlan(int $id): View
-{
-    $admin = Auth::guard('admin_web')
-        ->user()
-        ->load('permissions');
+    /**
+     * Show change subscription plan form.
+     */
+    public function subscriptionChangePlan(int $id): View
+    {
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
 
-    $this->ensureSubscriptionPermission($admin);
+        $this->ensureSubscriptionPermission($admin);
 
-    $subscription = Subscription::with([
-        'user',
-        'plan',
-        'device',
-    ])
-    ->findOrFail($id);
+        $subscription = Subscription::with([
+            'user',
+            'plan',
+            'device',
+        ])
+        ->findOrFail($id);
 
-    if ($subscription->status !== 'active') {
-        abort(409, 'Only active subscriptions can change plan.');
+        if ($subscription->status !== 'active') {
+            abort(409, 'Only active subscriptions can change plan.');
+        }
+
+        $plans = SubscriptionPlan::query()
+            ->where('status', 'active')
+            ->where('id', '!=', $subscription->subscription_plan_id)
+            ->orderBy('price')
+            ->get();
+
+        return view(
+            'admin.subscriptions.change-plan',
+            compact(
+                'admin',
+                'subscription',
+                'plans'
+            )
+        );
     }
 
-    $plans = SubscriptionPlan::query()
-        ->where('status', 'active')
-        ->where('id', '!=', $subscription->subscription_plan_id)
-        ->orderBy('price')
-        ->get();
 
-    return view(
-        'admin.subscriptions.change-plan',
-        compact(
-            'admin',
-            'subscription',
-            'plans'
-        )
-    );
-}
+    /**
+     * Change subscription plan.
+     */
+    public function subscriptionChangePlanStore(
+        Request $request,
+        int $id
+    ): RedirectResponse {
 
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
 
-/**
- * Change subscription plan.
- */
-public function subscriptionChangePlanStore(
-    Request $request,
-    int $id
-): RedirectResponse {
+        $this->ensureSubscriptionPermission($admin);
 
-    $admin = Auth::guard('admin_web')
-        ->user()
-        ->load('permissions');
+        $subscription = Subscription::with([
+            'user',
+            'plan',
+        ])
+        ->findOrFail($id);
 
-    $this->ensureSubscriptionPermission($admin);
+        if ($subscription->status !== 'active') {
 
-    $subscription = Subscription::with([
-        'user',
-        'plan',
-    ])
-    ->findOrFail($id);
+            return redirect()
+                ->route(
+                    'admin.subscriptions.show',
+                    $subscription->id
+                )
+                ->withErrors([
+                    'subscription' =>
+                        'Only an active subscription can change plan.',
+                ]);
+        }
 
-    if ($subscription->status !== 'active') {
+        $validated = $request->validate([
+            'plan_id' => [
+                'required',
+                'integer',
+                'exists:subscription_plans,id',
+            ],
+        ]);
+
+        $newPlan = SubscriptionPlan::findOrFail(
+            $validated['plan_id']
+        );
+
+        if ($newPlan->status !== 'active') {
+
+            return back()
+                ->withErrors([
+                    'plan_id' =>
+                        'The selected plan is not active.',
+                ]);
+        }
+
+        if (
+            $newPlan->id ===
+            $subscription->subscription_plan_id
+        ) {
+
+            return back()
+                ->withErrors([
+                    'plan_id' =>
+                        'The selected plan is already active.',
+                ]);
+        }
+
+        try {
+
+            $newSubscription =
+                SubscriptionChangeService::changePlan(
+                    $subscription->user,
+                    $newPlan
+                );
+
+        } catch (\Throwable $e) {
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'plan_id' => $e->getMessage(),
+                ]);
+        }
+
+        AdminActivityLogger::log(
+            'ADMIN_SUBSCRIPTION_PLAN_CHANGED',
+            'Admin changed a subscription plan.',
+            $request,
+            $admin,
+            AdminActivityLogger::INFO,
+            [
+                'old_subscription_id' =>
+                    $subscription->id,
+
+                'new_subscription_id' =>
+                    $newSubscription->id,
+
+                'user_id' =>
+                    $subscription->user_id,
+
+                'old_plan_id' =>
+                    $subscription->subscription_plan_id,
+
+                'new_plan_id' =>
+                    $newPlan->id,
+            ]
+        );
 
         return redirect()
             ->route(
                 'admin.subscriptions.show',
-                $subscription->id
+                $newSubscription->id
             )
-            ->withErrors([
-                'subscription' =>
-                    'Only an active subscription can change plan.',
-            ]);
-    }
-
-    $validated = $request->validate([
-        'plan_id' => [
-            'required',
-            'integer',
-            'exists:subscription_plans,id',
-        ],
-    ]);
-
-    $newPlan = SubscriptionPlan::findOrFail(
-        $validated['plan_id']
-    );
-
-    if ($newPlan->status !== 'active') {
-
-        return back()
-            ->withErrors([
-                'plan_id' =>
-                    'The selected plan is not active.',
-            ]);
-    }
-
-    if (
-        $newPlan->id ===
-        $subscription->subscription_plan_id
-    ) {
-
-        return back()
-            ->withErrors([
-                'plan_id' =>
-                    'The selected plan is already active.',
-            ]);
-    }
-
-    try {
-
-        $newSubscription =
-            SubscriptionChangeService::changePlan(
-                $subscription->user,
-                $newPlan
+            ->with(
+                'success',
+                'Subscription plan changed successfully.'
             );
-
-    } catch (\Throwable $e) {
-
-        return back()
-            ->withInput()
-            ->withErrors([
-                'plan_id' => $e->getMessage(),
-            ]);
     }
 
-    AdminActivityLogger::log(
-        'ADMIN_SUBSCRIPTION_PLAN_CHANGED',
-        'Admin changed a subscription plan.',
-        $request,
-        $admin,
-        AdminActivityLogger::INFO,
-        [
-            'old_subscription_id' =>
-                $subscription->id,
 
-            'new_subscription_id' =>
-                $newSubscription->id,
 
-            'user_id' =>
-                $subscription->user_id,
 
-            'old_plan_id' =>
-                $subscription->subscription_plan_id,
+    /**
+     * Show extend subscription form.
+     */
+    public function subscriptionExtend(int $id): View
+    {
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
 
-            'new_plan_id' =>
-                $newPlan->id,
-        ]
-    );
+        $this->ensureSubscriptionPermission($admin);
 
-    return redirect()
-        ->route(
-            'admin.subscriptions.show',
-            $newSubscription->id
-        )
-        ->with(
-            'success',
-            'Subscription plan changed successfully.'
+        $subscription = Subscription::with([
+            'user',
+            'plan',
+            'device',
+        ])
+        ->findOrFail($id);
+
+        if ($subscription->status !== 'active') {
+            abort(409, 'Only active subscriptions can be extended.');
+        }
+
+        return view(
+            'admin.subscriptions.extend',
+            compact(
+                'admin',
+                'subscription'
+            )
         );
-}
-
-
-
-
-/**
- * Show extend subscription form.
- */
-public function subscriptionExtend(int $id): View
-{
-    $admin = Auth::guard('admin_web')
-        ->user()
-        ->load('permissions');
-
-    $this->ensureSubscriptionPermission($admin);
-
-    $subscription = Subscription::with([
-        'user',
-        'plan',
-        'device',
-    ])
-    ->findOrFail($id);
-
-    if ($subscription->status !== 'active') {
-        abort(409, 'Only active subscriptions can be extended.');
     }
 
-    return view(
-        'admin.subscriptions.extend',
-        compact(
-            'admin',
-            'subscription'
-        )
-    );
-}
 
+    /**
+     * Extend active subscription.
+     */
+    public function subscriptionExtendStore(
+        Request $request,
+        int $id
+    ): RedirectResponse {
 
-/**
- * Extend active subscription.
- */
-public function subscriptionExtendStore(
-    Request $request,
-    int $id
-): RedirectResponse {
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
 
-    $admin = Auth::guard('admin_web')
-        ->user()
-        ->load('permissions');
+        $this->ensureSubscriptionPermission($admin);
 
-    $this->ensureSubscriptionPermission($admin);
+        $subscription = Subscription::findOrFail($id);
 
-    $subscription = Subscription::findOrFail($id);
+        if ($subscription->status !== 'active') {
 
-    if ($subscription->status !== 'active') {
+            return redirect()
+                ->route(
+                    'admin.subscriptions.show',
+                    $subscription->id
+                )
+                ->withErrors([
+                    'subscription' =>
+                        'Only active subscriptions can be extended.',
+                ]);
+        }
+
+        $validated = $request->validate([
+            'preset_days' => [
+                'nullable',
+                'integer',
+                'in:7,30,90,365',
+            ],
+
+            'custom_days' => [
+                'nullable',
+                'integer',
+                'min:1',
+                'max:3650',
+            ],
+
+            'reason' => [
+                'required',
+                'string',
+                'max:500',
+            ],
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Determine Extension Days
+        |--------------------------------------------------------------------------
+        */
+
+        $days = null;
+
+        if (!empty($validated['custom_days'])) {
+
+            $days = (int) $validated['custom_days'];
+
+        } elseif (!empty($validated['preset_days'])) {
+
+            $days = (int) $validated['preset_days'];
+
+        }
+
+        if (!$days) {
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'preset_days' =>
+                        'Select preset days or enter custom days.',
+                ]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Current Expiry
+        |--------------------------------------------------------------------------
+        */
+
+        $oldExpiry = $subscription->expires_at;
+
+        $baseDate =
+            $subscription->expires_at
+            && $subscription->expires_at->isFuture()
+                ? $subscription->expires_at->copy()
+                : now();
+
+        $newExpiry = $baseDate->copy()->addDays($days);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update + Event
+        |--------------------------------------------------------------------------
+        */
+
+        DB::transaction(function () use (
+            $subscription,
+            $oldExpiry,
+            $newExpiry,
+            $days,
+            $validated
+        ) {
+
+            $subscription->update([
+                'expires_at' => $newExpiry,
+            ]);
+
+            $subscription->events()->create([
+                'event' => 'extended',
+                'old_status' => $subscription->status,
+                'new_status' => $subscription->status,
+                'description' =>
+                    'Subscription extended by '
+                    .$days
+                    .' day(s). Reason: '
+                    .$validated['reason'],
+            ]);
+
+        });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Audit Log
+        |--------------------------------------------------------------------------
+        */
+
+        AdminActivityLogger::log(
+            'ADMIN_SUBSCRIPTION_EXTENDED',
+            'Admin extended a subscription.',
+            $request,
+            $admin,
+            AdminActivityLogger::INFO,
+            [
+                'subscription_id' =>
+                    $subscription->id,
+
+                'user_id' =>
+                    $subscription->user_id,
+
+                'days_added' =>
+                    $days,
+
+                'old_expires_at' =>
+                    $oldExpiry?->toDateTimeString(),
+
+                'new_expires_at' =>
+                    $newExpiry->toDateTimeString(),
+
+                'reason' =>
+                    $validated['reason'],
+            ]
+        );
 
         return redirect()
             ->route(
                 'admin.subscriptions.show',
                 $subscription->id
             )
-            ->withErrors([
-                'subscription' =>
-                    'Only active subscriptions can be extended.',
-            ]);
+            ->with(
+                'success',
+                'Subscription extended successfully.'
+            );
     }
 
-    $validated = $request->validate([
-        'preset_days' => [
-            'nullable',
-            'integer',
-            'in:7,30,90,365',
-        ],
 
-        'custom_days' => [
-            'nullable',
-            'integer',
-            'min:1',
-            'max:3650',
-        ],
 
-        'reason' => [
-            'required',
-            'string',
-            'max:500',
-        ],
-    ]);
+    /**
+     * Show subscription reactivation form.
+     */
+    public function subscriptionReactivate(int $id): View
+    {
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Determine Extension Days
-    |--------------------------------------------------------------------------
-    */
+        $this->ensureSubscriptionPermission($admin);
 
-    $days = null;
+        $subscription = Subscription::with([
+            'user',
+            'plan',
+            'device',
+        ])
+        ->findOrFail($id);
 
-    if (!empty($validated['custom_days'])) {
+        if ($subscription->status !== 'cancelled') {
+            abort(
+                409,
+                'Only cancelled subscriptions can be reactivated.'
+            );
+        }
 
-        $days = (int) $validated['custom_days'];
-
-    } elseif (!empty($validated['preset_days'])) {
-
-        $days = (int) $validated['preset_days'];
-
-    }
-
-    if (!$days) {
-
-        return back()
-            ->withInput()
-            ->withErrors([
-                'preset_days' =>
-                    'Select preset days or enter custom days.',
-            ]);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Current Expiry
-    |--------------------------------------------------------------------------
-    */
-
-    $oldExpiry = $subscription->expires_at;
-
-    $baseDate =
-        $subscription->expires_at
-        && $subscription->expires_at->isFuture()
-            ? $subscription->expires_at->copy()
-            : now();
-
-    $newExpiry = $baseDate->copy()->addDays($days);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Update + Event
-    |--------------------------------------------------------------------------
-    */
-
-    DB::transaction(function () use (
-        $subscription,
-        $oldExpiry,
-        $newExpiry,
-        $days,
-        $validated
-    ) {
-
-        $subscription->update([
-            'expires_at' => $newExpiry,
-        ]);
-
-        $subscription->events()->create([
-            'event' => 'extended',
-            'old_status' => $subscription->status,
-            'new_status' => $subscription->status,
-            'description' =>
-                'Subscription extended by '
-                .$days
-                .' day(s). Reason: '
-                .$validated['reason'],
-        ]);
-
-    });
-
-    /*
-    |--------------------------------------------------------------------------
-    | Audit Log
-    |--------------------------------------------------------------------------
-    */
-
-    AdminActivityLogger::log(
-        'ADMIN_SUBSCRIPTION_EXTENDED',
-        'Admin extended a subscription.',
-        $request,
-        $admin,
-        AdminActivityLogger::INFO,
-        [
-            'subscription_id' =>
-                $subscription->id,
-
-            'user_id' =>
-                $subscription->user_id,
-
-            'days_added' =>
-                $days,
-
-            'old_expires_at' =>
-                $oldExpiry?->toDateTimeString(),
-
-            'new_expires_at' =>
-                $newExpiry->toDateTimeString(),
-
-            'reason' =>
-                $validated['reason'],
-        ]
-    );
-
-    return redirect()
-        ->route(
-            'admin.subscriptions.show',
-            $subscription->id
-        )
-        ->with(
-            'success',
-            'Subscription extended successfully.'
+        return view(
+            'admin.subscriptions.reactivate',
+            compact(
+                'admin',
+                'subscription'
+            )
         );
-}
-
-
+    }
 
 
 

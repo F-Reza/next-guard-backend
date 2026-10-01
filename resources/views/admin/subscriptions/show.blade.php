@@ -27,7 +27,7 @@
     </div>
 
 
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
 
         @if($subscription->status === 'active')
 
@@ -67,13 +67,26 @@
                 @csrf
 
                 <button
-                    class="btn btn-danger"
                     type="submit"
+                    class="btn btn-danger"
                 >
                     Cancel Subscription
                 </button>
 
             </form>
+
+
+        @elseif($subscription->status === 'cancelled')
+
+            <a
+                href="{{ route(
+                    'admin.subscriptions.reactivate',
+                    $subscription->id
+                ) }}"
+                class="btn btn-success"
+            >
+                Reactivate Subscription
+            </a>
 
         @endif
 
