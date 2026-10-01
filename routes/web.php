@@ -63,11 +63,64 @@ Route::prefix('admin')
                 )->name('dashboard');
 
 
+                /*
+                |--------------------------------------------------------------------------
+                | Users
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/users',
+                    [AdminWebController::class, 'users']
+                )->name('users');
+
+
+                Route::get(
+                    '/users/create',
+                    [AdminWebController::class, 'userCreate']
+                )->name('users.create');
+
+
+                Route::post(
+                    '/users',
+                    [AdminWebController::class, 'userStore']
+                )->name('users.store');
+
+
+                Route::get(
+                    '/users/{id}',
+                    [AdminWebController::class, 'userShow']
+                )->name('users.show');
+
+
+                Route::get(
+                    '/users/{id}/edit',
+                    [AdminWebController::class, 'userEdit']
+                )->name('users.edit');
+
+
+                Route::put(
+                    '/users/{id}',
+                    [AdminWebController::class, 'userUpdate']
+                )->name('users.update');
+
+
+                Route::delete(
+                    '/users/{id}',
+                    [AdminWebController::class, 'userDestroy']
+                )->name('users.destroy');
+
+
                 Route::post(
                     '/logout',
                     [AdminWebController::class, 'logout']
                 )->name('logout');
 
             });
+
+
+
+
+
 
     });

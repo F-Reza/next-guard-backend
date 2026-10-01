@@ -70,7 +70,10 @@
                 $admin->permissions->contains('name', 'manage_users')
             )
 
-                <a href="#" class="nav-link">
+                <a
+                    href="{{ route('admin.users') }}"
+                    class="nav-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}"
+                >
                     <i class="bi bi-people"></i>
                     Users
                 </a>

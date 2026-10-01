@@ -254,6 +254,7 @@ class AdminWebController extends Controller
             ->intended(route('admin.dashboard'));
     }
 
+    
     /**
      * Admin dashboard.
      */
@@ -314,6 +315,362 @@ class AdminWebController extends Controller
             )
         );
     }
+
+
+    /**
+     * Admin users list.
+     */
+    public function users(Request $request): View
+    {
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
+
+        $this->ensureUserPermission($admin);
+
+        $query = User::query();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Search
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('search')) {
+
+            $search = $request->input('search');
+
+            $query->where(function ($q) use ($search) {
+
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
+
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Status Filter
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('status')) {
+
+            $query->where(
+                'status',
+                $request->input('status')
+            );
+        }
+
+        $users = $query
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        return view(
+            'admin.users.index',
+            compact(
+                'admin',
+                'users'
+            )
+        );
+    }
+
+
+    /**
+     * Show create user form.
+     */
+    public function userCreate(): View
+    {
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
+
+        $this->ensureUserPermission($admin);
+
+        return view(
+            'admin.users.create',
+            compact('admin')
+        );
+    }
+
+
+    /**
+     * Store new user.
+     */
+    public function userStore(Request $request): RedirectResponse
+    {
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
+
+        $this->ensureUserPermission($admin);
+
+        $validated = $request->validate([
+
+            'name' => [
+                'required',
+                'string',
+                'max:120',
+            ],
+
+            'email' => [
+                'nullable',
+                'email',
+                'max:190',
+                'unique:users,email',
+            ],
+
+            'phone' => [
+                'nullable',
+                'string',
+                'max:30',
+            ],
+
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
+
+            'status' => [
+                'required',
+                'in:active,inactive',
+            ],
+
+        ]);
+
+        User::create($validated);
+
+        AdminActivityLogger::log(
+            'ADMIN_USER_CREATED',
+            'Admin created a new user.',
+            $request,
+            $admin,
+            AdminActivityLogger::INFO,
+            [
+                'email' => $validated['email'] ?? null,
+            ]
+        );
+
+        return redirect()
+            ->route('admin.users')
+            ->with(
+                'success',
+                'User created successfully.'
+            );
+    }
+
+
+    /**
+     * Show single user.
+     */
+    public function userShow(int $id): View
+    {
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
+
+        $this->ensureUserPermission($admin);
+
+        $user = User::find($id);
+
+        if (!$user) {
+            abort(404);
+        }
+
+        return view(
+            'admin.users.show',
+            compact(
+                'admin',
+                'user'
+            )
+        );
+    }
+
+
+    /**
+     * Show edit user form.
+     */
+    public function userEdit(int $id): View
+    {
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
+
+        $this->ensureUserPermission($admin);
+
+        $user = User::find($id);
+
+        if (!$user) {
+            abort(404);
+        }
+
+        return view(
+            'admin.users.edit',
+            compact(
+                'admin',
+                'user'
+            )
+        );
+    }
+
+
+    /**
+     * Update user.
+     */
+    public function userUpdate(
+        Request $request,
+        int $id
+    ): RedirectResponse {
+
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
+
+        $this->ensureUserPermission($admin);
+
+        $user = User::find($id);
+
+        if (!$user) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+
+            'name' => [
+                'required',
+                'string',
+                'max:120',
+            ],
+
+            'email' => [
+                'nullable',
+                'email',
+                'max:190',
+                'unique:users,email,' . $user->id,
+            ],
+
+            'phone' => [
+                'nullable',
+                'string',
+                'max:30',
+            ],
+
+            'password' => [
+                'nullable',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
+
+            'status' => [
+                'required',
+                'in:active,inactive',
+            ],
+
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Password
+        |--------------------------------------------------------------------------
+        */
+
+        if (empty($validated['password'])) {
+
+            unset($validated['password']);
+
+        }
+
+        $user->update($validated);
+
+        AdminActivityLogger::log(
+            'ADMIN_USER_UPDATED',
+            'Admin updated a user.',
+            $request,
+            $admin,
+            AdminActivityLogger::INFO,
+            [
+                'user_id' => $user->id,
+            ]
+        );
+
+        return redirect()
+            ->route(
+                'admin.users.show',
+                $user->id
+            )
+            ->with(
+                'success',
+                'User updated successfully.'
+            );
+    }
+
+
+    /**
+     * Delete user.
+     */
+    public function userDestroy(
+        Request $request,
+        int $id
+    ): RedirectResponse {
+
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
+
+        $this->ensureUserPermission($admin);
+
+        $user = User::find($id);
+
+        if (!$user) {
+            abort(404);
+        }
+
+        $userId = $user->id;
+
+        $user->delete();
+
+        AdminActivityLogger::log(
+            'ADMIN_USER_DELETED',
+            'Admin deleted a user.',
+            $request,
+            $admin,
+            AdminActivityLogger::WARNING,
+            [
+                'user_id' => $userId,
+            ]
+        );
+
+        return redirect()
+            ->route('admin.users')
+            ->with(
+                'success',
+                'User deleted successfully.'
+            );
+    }
+
+
+    /**
+     * Check user management permission.
+     */
+    private function ensureUserPermission(Admin $admin): void
+    {
+        if (
+            $admin->role !== 'super_admin'
+            &&
+            !$admin->permissions->contains(
+                'name',
+                'manage_users'
+            )
+        ) {
+            abort(403);
+        }
+    }
+
 
     /**
      * Admin logout.
