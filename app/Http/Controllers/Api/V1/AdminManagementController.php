@@ -75,7 +75,7 @@ class AdminManagementController extends Controller
             'password'=>[
                 'required',
                 'string',
-                'min:6'
+                'min:8'
             ],
 
 
@@ -590,7 +590,7 @@ class AdminManagementController extends Controller
 
                 'string',
 
-                'min:6'
+                'min:8'
 
             ]
 

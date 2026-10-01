@@ -889,7 +889,7 @@ class AdminAuthController extends Controller
 
                     'string',
 
-                    'min:6',
+                    'min:8',
 
                     'confirmed'
 
