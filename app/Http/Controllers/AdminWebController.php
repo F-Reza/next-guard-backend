@@ -1692,7 +1692,203 @@ class AdminWebController extends Controller
     }
 
 
+    
 
+    /**
+     * Reactivate cancelled subscription.
+     */
+    public function subscriptionReactivateStore(
+        Request $request,
+        int $id
+    ): RedirectResponse {
+
+        /** @var Admin|null $admin */
+        $admin = Auth::guard('admin_web')
+            ->user();
+
+        if (!$admin) {
+            abort(401);
+        }
+
+        $admin->load('permissions');
+
+        $this->ensureSubscriptionPermission($admin);
+
+
+        $subscription = Subscription::with([
+            'user',
+            'plan',
+            'device',
+        ])
+        ->findOrFail($id);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Status Check
+        |--------------------------------------------------------------------------
+        */
+
+        if ($subscription->status !== 'cancelled') {
+
+            return redirect()
+                ->route(
+                    'admin.subscriptions.show',
+                    $subscription->id
+                )
+                ->withErrors([
+                    'subscription' =>
+                        'Only cancelled subscriptions can be reactivated.',
+                ]);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validation
+        |--------------------------------------------------------------------------
+        */
+
+        $validated = $request->validate([
+            'reason' => [
+                'required',
+                'string',
+                'max:500',
+            ],
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Expiry Check
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            !$subscription->expires_at
+            ||
+            $subscription->expires_at->isPast()
+        ) {
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'subscription' =>
+                        'This subscription has already expired. Use Admin Grant instead.',
+                ]);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent Multiple Active Subscriptions
+        |--------------------------------------------------------------------------
+        */
+
+        $otherActiveSubscription =
+            $subscription->user
+                ->subscriptions()
+                ->where('status', 'active')
+                ->where('id', '!=', $subscription->id)
+                ->exists();
+
+
+        if ($otherActiveSubscription) {
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'subscription' =>
+                        'This user already has another active subscription.',
+                ]);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Reactivate
+        |--------------------------------------------------------------------------
+        */
+
+        DB::transaction(function () use (
+            $subscription,
+            $validated
+        ) {
+
+            $oldStatus = $subscription->status;
+
+            $subscription->update([
+                'status' => 'active',
+            ]);
+
+            $subscription->events()->create([
+                'event' => 'reactivated',
+                'old_status' => $oldStatus,
+                'new_status' => 'active',
+                'description' =>
+                    'Subscription reactivated by admin. Reason: '
+                    .$validated['reason'],
+            ]);
+
+        });
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Protection Sync
+        |--------------------------------------------------------------------------
+        */
+
+        ProtectionActivationService::activate(
+            $subscription->fresh()
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Admin Audit
+        |--------------------------------------------------------------------------
+        */
+
+        AdminActivityLogger::log(
+            'ADMIN_SUBSCRIPTION_REACTIVATED',
+            'Admin reactivated a cancelled subscription.',
+            $request,
+            $admin,
+            AdminActivityLogger::INFO,
+            [
+                'subscription_id' =>
+                    $subscription->id,
+
+                'user_id' =>
+                    $subscription->user_id,
+
+                'plan_id' =>
+                    $subscription->subscription_plan_id,
+
+                'device_id' =>
+                    $subscription->device_id,
+
+                'expires_at' =>
+                    $subscription->expires_at?->toDateTimeString(),
+
+                'reason' =>
+                    $validated['reason'],
+            ]
+        );
+
+
+        return redirect()
+            ->route(
+                'admin.subscriptions.show',
+                $subscription->id
+            )
+            ->with(
+                'success',
+                'Subscription reactivated successfully.'
+            );
+    }
+        
 
 
 
