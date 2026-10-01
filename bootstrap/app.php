@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'subscription' => \App\Http\Middleware\CheckSubscription::class,
             'permission' => \App\Http\Middleware\CheckPermission::class,
+            'admin.web' => \App\Http\Middleware\AdminWebAuth::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
