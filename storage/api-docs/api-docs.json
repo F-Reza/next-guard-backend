@@ -676,8 +676,8 @@
                     "Authentication"
                 ],
                 "summary": "User Registration",
-                "description": "Authentication API Documentation",
-                "operationId": "2737ae43991d86e6292c3f6894ddc72e",
+                "description": "Register a new user account.",
+                "operationId": "userRegister",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -685,21 +685,38 @@
                             "schema": {
                                 "required": [
                                     "name",
-                                    "email",
-                                    "password"
+                                    "password",
+                                    "password_confirmation"
                                 ],
                                 "properties": {
                                     "name": {
                                         "type": "string",
-                                        "example": "John Doe"
+                                        "example": "John Doe",
+                                        "maxLength": 120
                                     },
                                     "email": {
                                         "type": "string",
-                                        "example": "user@test.com"
+                                        "format": "email",
+                                        "example": "user@test.com",
+                                        "nullable": true
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+8801712345678",
+                                        "nullable": true,
+                                        "maxLength": 30
                                     },
                                     "password": {
                                         "type": "string",
-                                        "example": "password"
+                                        "format": "password",
+                                        "example": "password123",
+                                        "minLength": 8
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123",
+                                        "minLength": 8
                                     }
                                 },
                                 "type": "object"
@@ -709,26 +726,91 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "User registered successfully",
+                        "description": "Registration successful",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/User"
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Registration successful."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "user": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "example": "John Doe"
+                                                        },
+                                                        "email": {
+                                                            "type": "string",
+                                                            "format": "email",
+                                                            "example": "user@test.com",
+                                                            "nullable": true
+                                                        },
+                                                        "phone": {
+                                                            "type": "string",
+                                                            "example": "+8801712345678",
+                                                            "nullable": true
+                                                        },
+                                                        "status": {
+                                                            "type": "string",
+                                                            "example": "active"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "access_token": {
+                                                    "type": "string",
+                                                    "example": "eyJ0eXAiOiJKV1QiLCJhbGc..."
+                                                },
+                                                "token_type": {
+                                                    "type": "string",
+                                                    "example": "Bearer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
                     },
                     "422": {
-                        "description": "Validation error",
+                        "description": "Validation failed",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
                     }
-                }
+                },
+                "security": []
             }
         },
         "/auth/login": {
@@ -737,7 +819,8 @@
                     "Authentication"
                 ],
                 "summary": "User Login",
-                "operationId": "2fd667260bbc7592fe0a08835fd5b6df",
+                "description": "Login using email or phone and an enrolled device.",
+                "operationId": "userLogin",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -745,16 +828,23 @@
                             "schema": {
                                 "required": [
                                     "login",
-                                    "password"
+                                    "password",
+                                    "device_id"
                                 ],
                                 "properties": {
                                     "login": {
+                                        "description": "User email or phone number.",
                                         "type": "string",
                                         "example": "user@test.com"
                                     },
                                     "password": {
                                         "type": "string",
-                                        "example": "password"
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "device_id": {
+                                        "type": "integer",
+                                        "example": 1
                                     }
                                 },
                                 "type": "object"
@@ -764,7 +854,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Login success",
+                        "description": "Login successful",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -773,12 +863,63 @@
                                             "type": "boolean",
                                             "example": true
                                         },
-                                        "token": {
+                                        "message": {
                                             "type": "string",
-                                            "example": "eyJ0eXAiOiJKV1QiLCJhbGc..."
+                                            "example": "Login successful."
                                         },
-                                        "user": {
-                                            "$ref": "#/components/schemas/User"
+                                        "data": {
+                                            "properties": {
+                                                "user": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "example": "John Doe"
+                                                        },
+                                                        "email": {
+                                                            "type": "string",
+                                                            "format": "email",
+                                                            "example": "user@test.com",
+                                                            "nullable": true
+                                                        },
+                                                        "phone": {
+                                                            "type": "string",
+                                                            "example": "+8801712345678",
+                                                            "nullable": true
+                                                        },
+                                                        "status": {
+                                                            "type": "string",
+                                                            "example": "active"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "device_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "access_token": {
+                                                    "type": "string",
+                                                    "example": "eyJ0eXAiOiJKV1QiLCJhbGc..."
+                                                },
+                                                "refresh_token": {
+                                                    "type": "string",
+                                                    "example": "opaque-refresh-token..."
+                                                },
+                                                "token_type": {
+                                                    "type": "string",
+                                                    "example": "Bearer"
+                                                },
+                                                "refresh_expires_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2026-10-31T09:00:00Z"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -787,16 +928,211 @@
                         }
                     },
                     "401": {
-                        "description": "Invalid credentials",
+                        "description": "Invalid login credentials",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid login credentials."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Account or device is not active",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Device is not registered for this account."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
                     }
-                }
+                },
+                "security": []
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Refresh access token",
+                "description": "Rotate the opaque refresh token and issue a new access token. This endpoint does not require an access JWT.",
+                "operationId": "refreshAccessToken",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "refresh_token"
+                                ],
+                                "properties": {
+                                    "refresh_token": {
+                                        "type": "string",
+                                        "example": "opaque-refresh-token..."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Token refreshed successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Token refreshed successfully."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "access_token": {
+                                                    "type": "string",
+                                                    "example": "eyJ0eXAiOiJKV1QiLCJhbGc..."
+                                                },
+                                                "refresh_token": {
+                                                    "type": "string",
+                                                    "example": "new-opaque-refresh-token..."
+                                                },
+                                                "token_type": {
+                                                    "type": "string",
+                                                    "example": "Bearer"
+                                                },
+                                                "refresh_expires_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2026-10-31T09:00:00Z"
+                                                },
+                                                "device_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid, inactive, or expired refresh session",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid refresh token."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "User account or device is not active",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Device is no longer active."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validation failed."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
             }
         },
         "/auth/me": {
@@ -805,10 +1141,10 @@
                     "Authentication"
                 ],
                 "summary": "Get authenticated user",
-                "operationId": "d29e2a07053891a5e2e3bc0de153de05",
+                "operationId": "getAuthenticatedUser",
                 "responses": {
                     "200": {
-                        "description": "User profile",
+                        "description": "Authenticated user",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -824,7 +1160,32 @@
                                         "data": {
                                             "properties": {
                                                 "user": {
-                                                    "$ref": "#/components/schemas/User"
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 1
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "example": "John Doe"
+                                                        },
+                                                        "email": {
+                                                            "type": "string",
+                                                            "format": "email",
+                                                            "example": "user@test.com",
+                                                            "nullable": true
+                                                        },
+                                                        "phone": {
+                                                            "type": "string",
+                                                            "example": "+8801712345678",
+                                                            "nullable": true
+                                                        },
+                                                        "status": {
+                                                            "type": "string",
+                                                            "example": "active"
+                                                        }
+                                                    },
+                                                    "type": "object"
                                                 }
                                             },
                                             "type": "object"
@@ -840,7 +1201,17 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
@@ -859,7 +1230,7 @@
                     "Authentication"
                 ],
                 "summary": "Logout user",
-                "operationId": "256d4db256255f0069adc4311e7d3709",
+                "operationId": "userLogout",
                 "responses": {
                     "200": {
                         "description": "Logout successful",
@@ -873,7 +1244,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Logged out successfully"
+                                            "example": "Logout successful."
                                         }
                                     },
                                     "type": "object"
@@ -886,7 +1257,17 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
