@@ -94,5 +94,6 @@ class SubscriptionSchema
     )]
     public string $updated_at;
 
+    
 
 }
