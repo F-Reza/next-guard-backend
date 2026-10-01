@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Services\AdminActivityLogger;
 use App\Services\AdminLoginSecurity;
 use App\Services\AdminNotificationService;
+use App\Services\SubscriptionChangeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -1292,9 +1293,179 @@ class AdminWebController extends Controller
 
 
 
+/**
+ * Show change subscription plan form.
+ */
+public function subscriptionChangePlan(int $id): View
+{
+    $admin = Auth::guard('admin_web')
+        ->user()
+        ->load('permissions');
+
+    $this->ensureSubscriptionPermission($admin);
+
+    $subscription = Subscription::with([
+        'user',
+        'plan',
+        'device',
+    ])
+    ->findOrFail($id);
+
+    if ($subscription->status !== 'active') {
+        abort(409, 'Only active subscriptions can change plan.');
+    }
+
+    $plans = SubscriptionPlan::query()
+        ->where('status', 'active')
+        ->where('id', '!=', $subscription->subscription_plan_id)
+        ->orderBy('price')
+        ->get();
+
+    return view(
+        'admin.subscriptions.change-plan',
+        compact(
+            'admin',
+            'subscription',
+            'plans'
+        )
+    );
+}
 
 
-    
+/**
+ * Change subscription plan.
+ */
+public function subscriptionChangePlanStore(
+    Request $request,
+    int $id
+): RedirectResponse {
+
+    $admin = Auth::guard('admin_web')
+        ->user()
+        ->load('permissions');
+
+    $this->ensureSubscriptionPermission($admin);
+
+    $subscription = Subscription::with([
+        'user',
+        'plan',
+    ])
+    ->findOrFail($id);
+
+    if ($subscription->status !== 'active') {
+
+        return redirect()
+            ->route(
+                'admin.subscriptions.show',
+                $subscription->id
+            )
+            ->withErrors([
+                'subscription' =>
+                    'Only an active subscription can change plan.',
+            ]);
+    }
+
+    $validated = $request->validate([
+        'plan_id' => [
+            'required',
+            'integer',
+            'exists:subscription_plans,id',
+        ],
+    ]);
+
+    $newPlan = SubscriptionPlan::findOrFail(
+        $validated['plan_id']
+    );
+
+    if ($newPlan->status !== 'active') {
+
+        return back()
+            ->withErrors([
+                'plan_id' =>
+                    'The selected plan is not active.',
+            ]);
+    }
+
+    if (
+        $newPlan->id ===
+        $subscription->subscription_plan_id
+    ) {
+
+        return back()
+            ->withErrors([
+                'plan_id' =>
+                    'The selected plan is already active.',
+            ]);
+    }
+
+    try {
+
+        $newSubscription =
+            SubscriptionChangeService::changePlan(
+                $subscription->user,
+                $newPlan
+            );
+
+    } catch (\Throwable $e) {
+
+        return back()
+            ->withInput()
+            ->withErrors([
+                'plan_id' => $e->getMessage(),
+            ]);
+    }
+
+    AdminActivityLogger::log(
+        'ADMIN_SUBSCRIPTION_PLAN_CHANGED',
+        'Admin changed a subscription plan.',
+        $request,
+        $admin,
+        AdminActivityLogger::INFO,
+        [
+            'old_subscription_id' =>
+                $subscription->id,
+
+            'new_subscription_id' =>
+                $newSubscription->id,
+
+            'user_id' =>
+                $subscription->user_id,
+
+            'old_plan_id' =>
+                $subscription->subscription_plan_id,
+
+            'new_plan_id' =>
+                $newPlan->id,
+        ]
+    );
+
+    return redirect()
+        ->route(
+            'admin.subscriptions.show',
+            $newSubscription->id
+        )
+        ->with(
+            'success',
+            'Subscription plan changed successfully.'
+        );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * Admin logout.

@@ -27,120 +27,272 @@
     </div>
 
 
-    @if($subscription->status === 'active')
+    <div class="d-flex gap-2">
 
-        <form
-            method="POST"
-            action="{{ route(
-                'admin.subscriptions.cancel',
-                $subscription->id
-            ) }}"
-            onsubmit="return confirm(
-                'Cancel this subscription?'
-            )"
-        >
+        @if($subscription->status === 'active')
 
-            @csrf
-
-            <button
-                class="btn btn-danger"
-                type="submit"
+            <a
+                href="{{ route(
+                    'admin.subscriptions.change-plan',
+                    $subscription->id
+                ) }}"
+                class="btn btn-primary"
             >
-                Cancel Subscription
-            </button>
+                Change Plan
+            </a>
 
-        </form>
+        @endif
+        
+        @if($subscription->status === 'active')
 
-    @endif
+            <form
+                method="POST"
+                action="{{ route(
+                    'admin.subscriptions.cancel',
+                    $subscription->id
+                ) }}"
+                onsubmit="return confirm(
+                    'Are you sure you want to cancel this subscription?'
+                )"
+            >
+
+                @csrf
+
+                <button
+                    class="btn btn-danger"
+                    type="submit"
+                >
+                    Cancel Subscription
+                </button>
+
+            </form>
+
+        @endif
+
+    </div>
 
 </div>
 
 
 <div class="row g-4">
 
+    {{-- Subscription Information --}}
     <div class="col-lg-6">
 
         <div class="card h-100">
 
             <div class="card-header fw-semibold">
-                Subscription
+                Subscription Information
             </div>
 
             <div class="card-body">
 
-                <table class="table">
+                <table class="table align-middle mb-0">
 
                     <tr>
-                        <th>Status</th>
+
+                        <th style="width: 40%;">
+                            Status
+                        </th>
+
                         <td>
-                            {{ strtoupper(
-                                $subscription->status
-                            ) }}
+
+                            @if($subscription->status === 'active')
+
+                                <span class="badge text-bg-success">
+                                    Active
+                                </span>
+
+                            @elseif($subscription->status === 'cancelled')
+
+                                <span class="badge text-bg-warning">
+                                    Cancelled
+                                </span>
+
+                            @elseif($subscription->status === 'expired')
+
+                                <span class="badge text-bg-secondary">
+                                    Expired
+                                </span>
+
+                            @elseif($subscription->status === 'changed')
+
+                                <span class="badge text-bg-info">
+                                    Changed
+                                </span>
+
+                            @else
+
+                                <span class="badge text-bg-secondary">
+                                    {{ ucfirst($subscription->status) }}
+                                </span>
+
+                            @endif
+
                         </td>
+
                     </tr>
 
+
                     <tr>
-                        <th>Plan</th>
+
+                        <th>
+                            Plan
+                        </th>
+
                         <td>
                             {{ $subscription->plan?->name ?? '—' }}
                         </td>
+
                     </tr>
 
+
                     <tr>
-                        <th>Source</th>
+
+                        <th>
+                            Source
+                        </th>
+
                         <td>
-                            {{ ucfirst(
-                                $subscription->source
-                            ) }}
+
+                            @if($subscription->source === 'payment')
+
+                                <span class="badge text-bg-primary">
+                                    Payment
+                                </span>
+
+                            @elseif($subscription->source === 'license')
+
+                                <span class="badge text-bg-secondary">
+                                    License
+                                </span>
+
+                            @elseif($subscription->source === 'admin')
+
+                                <span class="badge text-bg-dark">
+                                    Admin
+                                </span>
+
+                            @elseif($subscription->source === 'upgrade')
+
+                                <span class="badge text-bg-info">
+                                    Upgrade
+                                </span>
+
+                            @else
+
+                                <span class="badge text-bg-secondary">
+                                    {{ ucfirst($subscription->source) }}
+                                </span>
+
+                            @endif
+
                         </td>
+
                     </tr>
 
+
                     <tr>
-                        <th>Auto Renew</th>
+
+                        <th>
+                            Auto Renew
+                        </th>
+
                         <td>
-                            {{ $subscription->auto_renew
-                                ? 'Yes'
-                                : 'No'
-                            }}
+
+                            @if($subscription->auto_renew)
+
+                                <span class="badge text-bg-success">
+                                    Yes
+                                </span>
+
+                            @else
+
+                                <span class="badge text-bg-secondary">
+                                    No
+                                </span>
+
+                            @endif
+
                         </td>
+
                     </tr>
 
+
                     <tr>
-                        <th>Starts At</th>
+
+                        <th>
+                            Starts At
+                        </th>
+
                         <td>
+
                             {{ $subscription->starts_at
                                 ? $subscription
                                     ->starts_at
-                                    ->format(
-                                        'd M Y, h:i:s A'
-                                    )
+                                    ->format('d M Y, h:i:s A')
                                 : '—'
                             }}
+
                         </td>
+
                     </tr>
 
+
                     <tr>
-                        <th>Expires At</th>
+
+                        <th>
+                            Expires At
+                        </th>
+
                         <td>
+
                             {{ $subscription->expires_at
                                 ? $subscription
                                     ->expires_at
-                                    ->format(
-                                        'd M Y, h:i:s A'
-                                    )
+                                    ->format('d M Y, h:i:s A')
                                 : '—'
                             }}
+
                         </td>
+
                     </tr>
 
+
                     <tr>
-                        <th>Payment Reference</th>
+
+                        <th>
+                            Payment Reference
+                        </th>
+
                         <td>
-                            {{ $subscription
-                                ->payment_reference
+
+                            {{ $subscription->payment_reference
                                 ?? '—'
                             }}
+
                         </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <th>
+                            Created At
+                        </th>
+
+                        <td>
+
+                            {{ $subscription->created_at
+                                ? $subscription
+                                    ->created_at
+                                    ->format('d M Y, h:i:s A')
+                                : '—'
+                            }}
+
+                        </td>
+
                     </tr>
 
                 </table>
@@ -152,6 +304,7 @@
     </div>
 
 
+    {{-- User / Device --}}
     <div class="col-lg-6">
 
         <div class="card h-100">
@@ -162,40 +315,60 @@
 
             <div class="card-body">
 
-                <table class="table">
+                <table class="table align-middle mb-3">
 
                     <tr>
-                        <th>User</th>
+
+                        <th style="width: 40%;">
+                            User
+                        </th>
+
                         <td>
                             {{ $subscription->user?->name ?? '—' }}
                         </td>
+
                     </tr>
 
+
                     <tr>
-                        <th>Email</th>
+
+                        <th>
+                            Email
+                        </th>
+
                         <td>
                             {{ $subscription->user?->email ?? '—' }}
                         </td>
+
                     </tr>
 
+
                     <tr>
-                        <th>Device</th>
+
+                        <th>
+                            Phone
+                        </th>
+
                         <td>
-                            {{ $subscription->device?->name
-                                ?? '—'
-                            }}
+                            {{ $subscription->user?->phone ?? '—' }}
                         </td>
+
                     </tr>
 
+
                     <tr>
-                        <th>Plan Price</th>
+
+                        <th>
+                            Device
+                        </th>
 
                         <td>
 
-                            @if($subscription->plan)
+                            @if($subscription->device)
 
-                                {{ $subscription->plan->currency }}
-                                {{ $subscription->plan->price }}
+                                {{ $subscription->device->name
+                                    ?: 'Device #'.$subscription->device->id
+                                }}
 
                             @else
 
@@ -207,8 +380,39 @@
 
                     </tr>
 
+
                     <tr>
-                        <th>Duration</th>
+
+                        <th>
+                            Plan Price
+                        </th>
+
+                        <td>
+
+                            @if($subscription->plan)
+
+                                {{ $subscription->plan->currency }}
+                                {{ number_format(
+                                    (float) $subscription->plan->price,
+                                    2
+                                ) }}
+
+                            @else
+
+                                —
+
+                            @endif
+
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <th>
+                            Duration
+                        </th>
 
                         <td>
 
@@ -221,39 +425,64 @@
                             }}
 
                         </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <th>
+                            Device Limit
+                        </th>
+
+                        <td>
+
+                            {{ $subscription->plan
+                                ? $subscription
+                                    ->plan
+                                    ->device_limit
+                                : '—'
+                            }}
+
+                        </td>
+
                     </tr>
 
                 </table>
 
 
-                @if($subscription->user)
+                <div class="d-flex gap-2 flex-wrap">
 
-                    <a
-                        href="{{ route(
-                            'admin.users.show',
-                            $subscription->user->id
-                        ) }}"
-                        class="btn btn-sm btn-outline-primary"
-                    >
-                        View User
-                    </a>
+                    @if($subscription->user)
 
-                @endif
+                        <a
+                            href="{{ route(
+                                'admin.users.show',
+                                $subscription->user->id
+                            ) }}"
+                            class="btn btn-sm btn-outline-primary"
+                        >
+                            View User
+                        </a>
+
+                    @endif
 
 
-                @if($subscription->device)
+                    @if($subscription->device)
 
-                    <a
-                        href="{{ route(
-                            'admin.devices.show',
-                            $subscription->device->id
-                        ) }}"
-                        class="btn btn-sm btn-outline-secondary"
-                    >
-                        View Device
-                    </a>
+                        <a
+                            href="{{ route(
+                                'admin.devices.show',
+                                $subscription->device->id
+                            ) }}"
+                            class="btn btn-sm btn-outline-secondary"
+                        >
+                            View Device
+                        </a>
 
-                @endif
+                    @endif
+
+                </div>
 
             </div>
 
@@ -264,85 +493,168 @@
 </div>
 
 
+{{-- Subscription Events --}}
 <div class="card mt-4">
 
-    <div class="card-header fw-semibold">
-        Subscription Events
+    <div class="card-header d-flex justify-content-between align-items-center">
+
+        <span class="fw-semibold">
+            Subscription Events
+        </span>
+
+        <span class="badge text-bg-secondary">
+            {{ $subscription->events->count() }} Events
+        </span>
+
     </div>
+
 
     <div class="table-responsive">
 
-        <table class="table table-hover mb-0">
+        <table class="table table-hover align-middle mb-0">
 
             <thead>
 
                 <tr>
-                    <th>Event</th>
-                    <th>Old Status</th>
-                    <th>New Status</th>
-                    <th>Description</th>
-                    <th>Time</th>
+
+                    <th>
+                        Event
+                    </th>
+
+                    <th>
+                        Old Status
+                    </th>
+
+                    <th>
+                        New Status
+                    </th>
+
+                    <th>
+                        Description
+                    </th>
+
+                    <th>
+                        Time
+                    </th>
+
                 </tr>
 
             </thead>
 
+
             <tbody>
 
-            @forelse($subscription->events as $event)
+                @forelse($subscription->events as $event)
 
-                <tr>
+                    <tr>
 
-                    <td>
-                        {{ ucwords(
-                            str_replace(
-                                '_',
-                                ' ',
-                                $event->event
-                            )
-                        ) }}
-                    </td>
+                        <td>
 
-                    <td>
-                        {{ $event->old_status ?? '—' }}
-                    </td>
+                            <span class="fw-semibold">
 
-                    <td>
-                        {{ $event->new_status ?? '—' }}
-                    </td>
+                                {{ ucwords(
+                                    str_replace(
+                                        '_',
+                                        ' ',
+                                        $event->event
+                                    )
+                                ) }}
 
-                    <td>
-                        {{ $event->description ?? '—' }}
-                    </td>
+                            </span>
 
-                    <td>
+                        </td>
 
-                        {{ $event->created_at
-                            ? $event
-                                ->created_at
-                                ->format(
-                                    'd M Y, h:i:s A'
-                                )
-                            : '—'
-                        }}
 
-                    </td>
+                        <td>
 
-                </tr>
+                            @if($event->old_status)
 
-            @empty
+                                <span class="badge text-bg-secondary">
+                                    {{ ucfirst($event->old_status) }}
+                                </span>
 
-                <tr>
+                            @else
 
-                    <td
-                        colspan="5"
-                        class="text-center text-muted py-4"
-                    >
-                        No subscription events recorded.
-                    </td>
+                                —
 
-                </tr>
+                            @endif
 
-            @endforelse
+                        </td>
+
+
+                        <td>
+
+                            @if($event->new_status === 'active')
+
+                                <span class="badge text-bg-success">
+                                    Active
+                                </span>
+
+                            @elseif($event->new_status === 'cancelled')
+
+                                <span class="badge text-bg-warning">
+                                    Cancelled
+                                </span>
+
+                            @elseif($event->new_status === 'expired')
+
+                                <span class="badge text-bg-secondary">
+                                    Expired
+                                </span>
+
+                            @elseif($event->new_status === 'changed')
+
+                                <span class="badge text-bg-info">
+                                    Changed
+                                </span>
+
+                            @elseif($event->new_status)
+
+                                <span class="badge text-bg-secondary">
+                                    {{ ucfirst($event->new_status) }}
+                                </span>
+
+                            @else
+
+                                —
+
+                            @endif
+
+                        </td>
+
+
+                        <td>
+                            {{ $event->description ?? '—' }}
+                        </td>
+
+
+                        <td>
+
+                            {{ $event->created_at
+                                ? $event
+                                    ->created_at
+                                    ->format('d M Y, h:i:s A')
+                                : '—'
+                            }}
+
+                        </td>
+
+                    </tr>
+
+                @empty
+
+                    <tr>
+
+                        <td
+                            colspan="5"
+                            class="text-center text-muted py-5"
+                        >
+                            No subscription events recorded.
+                        </td>
+
+                    </tr>
+
+                @endforelse
 
             </tbody>
 
