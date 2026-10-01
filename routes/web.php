@@ -130,12 +130,26 @@ Route::prefix('admin')
                 )->name('devices.show');
 
 
+                Route::get(
+                    '/devices/{id}/sessions',
+                    [AdminWebController::class, 'sessions']
+                )->name('devices.sessions');
+
+                Route::get(
+                    '/devices/{id}/events',
+                    [AdminWebController::class, 'events']
+                )->name('devices.events');
+
+
                 Route::post(
                     '/devices/{id}/revoke',
                     [AdminWebController::class, 'deviceRevoke']
                 )->name('devices.revoke');               
 
-
+                Route::post(
+                    '/devices/{id}/reactivate',
+                    [AdminWebController::class, 'deviceReactivate']
+                )->name('devices.reactivate');
 
                 Route::post(
                     '/logout',

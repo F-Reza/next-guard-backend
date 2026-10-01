@@ -29,31 +29,59 @@
     </div>
 
 
-    @if($device->status === 'active')
+    <div class="d-flex gap-2">
 
-        <form
-            method="POST"
-            action="{{ route(
-                'admin.devices.revoke',
-                $device->id
-            ) }}"
-            onsubmit="return confirm(
-                'Are you sure you want to revoke this device?'
-            )"
-        >
+        @if($device->status === 'active')
 
-            @csrf
-
-            <button
-                type="submit"
-                class="btn btn-danger"
+            <form
+                method="POST"
+                action="{{ route(
+                    'admin.devices.revoke',
+                    $device->id
+                ) }}"
+                onsubmit="return confirm(
+                    'Are you sure you want to revoke this device?'
+                )"
             >
-                Revoke Device
-            </button>
 
-        </form>
+                @csrf
 
-    @endif
+                <button
+                    type="submit"
+                    class="btn btn-danger"
+                >
+                    Revoke Device
+                </button>
+
+            </form>
+
+        @elseif($device->status === 'revoked')
+
+            <form
+                method="POST"
+                action="{{ route(
+                    'admin.devices.reactivate',
+                    $device->id
+                ) }}"
+                onsubmit="return confirm(
+                    'Reactivate this device?'
+                )"
+            >
+
+                @csrf
+
+                <button
+                    type="submit"
+                    class="btn btn-success"
+                >
+                    Reactivate Device
+                </button>
+
+            </form>
+
+        @endif
+
+    </div>
 
 </div>
 
@@ -140,7 +168,7 @@
                             {{ $device->last_seen_at
                                 ? $device
                                     ->last_seen_at
-                                    ->format('Y-m-d H:i:s')
+                                    ->format('d M Y, h:i:s A')
                                 : 'Never'
                             }}
 
@@ -269,7 +297,7 @@
                     {{ $p->last_sync_at
                         ? $p
                             ->last_sync_at
-                            ->format('Y-m-d H:i:s')
+                            ->format('d M Y, h:i:s A')
                         : 'Never'
                     }}
 
@@ -348,7 +376,7 @@
                         {{ $session->last_used_at
                             ? $session
                                 ->last_used_at
-                                ->format('Y-m-d H:i:s')
+                                ->format('d M Y, h:i:s A')
                             : '—'
                         }}
 
@@ -359,7 +387,7 @@
                         {{ $session->expires_at
                             ? $session
                                 ->expires_at
-                                ->format('Y-m-d H:i:s')
+                                ->format('d M Y, h:i:s A')
                             : '—'
                         }}
 
@@ -370,7 +398,7 @@
                         {{ $session->revoked_at
                             ? $session
                                 ->revoked_at
-                                ->format('Y-m-d H:i:s')
+                                ->format('d M Y, h:i:s A')
                             : '—'
                         }}
 
@@ -392,6 +420,7 @@
                 </tr>
 
             @endforelse
+            
 
             </tbody>
 
@@ -399,7 +428,29 @@
 
     </div>
 
+
+    @if($device->deviceSessions->count() >= 5)
+
+        <div class="card-footer text-end">
+
+            <a
+                href="{{ route(
+                    'admin.devices.sessions',
+                    $device->id
+                ) }}"
+                class="btn btn-sm btn-outline-secondary"
+            >
+                View All Sessions
+            </a>
+
+        </div>
+
+    @endif
+
+
 </div>
+
+
 
 
 <div class="card mt-4">
@@ -434,7 +485,7 @@
                         {{ $event->created_at
                             ? \Illuminate\Support\Carbon::parse(
                                 $event->created_at
-                            )->format('Y-m-d H:i:s')
+                            )->format('d M Y, h:i:s A')
                             : '—'
                         }}
 
@@ -462,6 +513,25 @@
         </table>
 
     </div>
+
+
+    @if($device->events->count() >= 10)
+
+        <div class="card-footer text-end">
+
+            <a
+                href="{{ route(
+                    'admin.devices.events',
+                    $device->id
+                ) }}"
+                class="btn btn-sm btn-outline-secondary"
+            >
+                View All Events
+            </a>
+
+        </div>
+
+    @endif
 
 </div>
 

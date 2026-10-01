@@ -806,12 +806,13 @@ class AdminWebController extends Controller
             'user',
             'protectionSetting',
             'deviceSessions' => function ($query) {
-                $query->latest();
+                $query->latest()
+                ->limit(5);
             },
             'events' => function ($query) {
                 $query
                     ->latest('created_at')
-                    ->limit(20);
+                    ->limit(10);
             },
             'subscriptions' => function ($query) {
                 $query->latest();
@@ -831,6 +832,71 @@ class AdminWebController extends Controller
             )
         );
     }
+
+
+    /**
+     * Show device sessions.
+     */
+    public function sessions(int $id): View
+    {
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
+
+        $this->ensureDevicePermission($admin);
+
+        $device = Device::find($id);
+
+        if (!$device) {
+            abort(404);
+        }
+
+        $sessions = $device->deviceSessions()
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        return view(
+            'admin.devices.sessions',
+            compact(
+                'admin',
+                'device',
+                'sessions'
+            )
+        );
+    }
+        
+
+    public function events(int $id): View
+    {
+            $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
+
+        $this->ensureDevicePermission($admin);
+
+        $device = Device::find($id);
+
+        if (!$device) {
+            abort(404);
+        }
+
+        $events = $device->events()
+            ->latest()
+            ->paginate(25)
+            ->withQueryString();
+
+        return view(
+            'admin.devices.events',
+            compact(
+                'admin',
+                'device',
+                'events'
+            )
+        );
+    }
+
+
 
 
     /**
@@ -911,7 +977,65 @@ class AdminWebController extends Controller
 
 
 
+    /**
+     * Reactivate revoked device.
+     */
+    public function deviceReactivate(
+        Request $request,
+        int $id
+    ): RedirectResponse {
 
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
+
+        $this->ensureDevicePermission($admin);
+
+        $device = Device::findOrFail($id);
+
+        if ($device->status === 'active') {
+
+            return redirect()
+                ->route(
+                    'admin.devices.show',
+                    $device->id
+                )
+                ->with(
+                    'success',
+                    'Device is already active.'
+                );
+        }
+
+        DB::transaction(function () use ($device) {
+
+            $device->update([
+                'status' => 'active',
+            ]);
+
+        });
+
+        AdminActivityLogger::log(
+            'ADMIN_DEVICE_REACTIVATED',
+            'Admin reactivated a revoked device.',
+            $request,
+            $admin,
+            AdminActivityLogger::INFO,
+            [
+                'device_id' => $device->id,
+                'user_id' => $device->user_id,
+            ]
+        );
+
+        return redirect()
+            ->route(
+                'admin.devices.show',
+                $device->id
+            )
+            ->with(
+                'success',
+                'Device reactivated successfully.'
+            );
+    }
 
 
 
@@ -950,7 +1074,7 @@ class AdminWebController extends Controller
 
 
 
-    
+
 
 
 /**
