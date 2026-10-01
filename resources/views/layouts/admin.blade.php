@@ -121,10 +121,13 @@
                 $admin->permissions->contains('name', 'manage_subscriptions')
             )
 
-                <a href="#" class="nav-link">
-                    <i class="bi bi-credit-card"></i>
-                    Subscriptions
-                </a>
+            <a
+                href="{{ route('admin.subscriptions') }}"
+                class="nav-link {{ request()->routeIs('admin.subscriptions*') ? 'active' : '' }}"
+            >
+                <i class="bi bi-credit-card"></i>
+                Subscriptions
+            </a>
 
             @endif
 

@@ -160,6 +160,32 @@ Route::prefix('admin')
 
 
 
+            
+            /*
+            |--------------------------------------------------------------------------
+            | Subscriptions
+            |--------------------------------------------------------------------------
+            */
+
+            Route::get(
+                '/subscriptions',
+                [AdminWebController::class, 'subscriptions']
+            )->name('subscriptions');
+
+
+            Route::get(
+                '/subscriptions/{id}',
+                [AdminWebController::class, 'subscriptionShow']
+            )->name('subscriptions.show');
+
+
+            Route::post(
+                '/subscriptions/{id}/cancel',
+                [AdminWebController::class, 'subscriptionCancel']
+            )->name('subscriptions.cancel');          
+
+
+
 
 
 

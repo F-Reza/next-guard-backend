@@ -834,67 +834,67 @@ class AdminWebController extends Controller
     }
 
 
-    /**
-     * Show device sessions.
-     */
-    public function sessions(int $id): View
-    {
-        $admin = Auth::guard('admin_web')
-            ->user()
-            ->load('permissions');
-
-        $this->ensureDevicePermission($admin);
-
-        $device = Device::find($id);
-
-        if (!$device) {
-            abort(404);
-        }
-
-        $sessions = $device->deviceSessions()
-            ->latest()
-            ->paginate(20)
-            ->withQueryString();
-
-        return view(
-            'admin.devices.sessions',
-            compact(
-                'admin',
-                'device',
-                'sessions'
-            )
-        );
-    }
-        
-
-    public function events(int $id): View
-    {
+        /**
+         * Show device sessions.
+         */
+        public function sessions(int $id): View
+        {
             $admin = Auth::guard('admin_web')
-            ->user()
-            ->load('permissions');
+                ->user()
+                ->load('permissions');
 
-        $this->ensureDevicePermission($admin);
+            $this->ensureDevicePermission($admin);
 
-        $device = Device::find($id);
+            $device = Device::find($id);
 
-        if (!$device) {
-            abort(404);
+            if (!$device) {
+                abort(404);
+            }
+
+            $sessions = $device->deviceSessions()
+                ->latest()
+                ->paginate(20)
+                ->withQueryString();
+
+            return view(
+                'admin.devices.sessions',
+                compact(
+                    'admin',
+                    'device',
+                    'sessions'
+                )
+            );
         }
+            
 
-        $events = $device->events()
-            ->latest()
-            ->paginate(25)
-            ->withQueryString();
+        public function events(int $id): View
+        {
+                $admin = Auth::guard('admin_web')
+                ->user()
+                ->load('permissions');
 
-        return view(
-            'admin.devices.events',
-            compact(
-                'admin',
-                'device',
-                'events'
-            )
-        );
-    }
+            $this->ensureDevicePermission($admin);
+
+            $device = Device::find($id);
+
+            if (!$device) {
+                abort(404);
+            }
+
+            $events = $device->events()
+                ->latest()
+                ->paginate(25)
+                ->withQueryString();
+
+            return view(
+                'admin.devices.events',
+                compact(
+                    'admin',
+                    'device',
+                    'events'
+                )
+            );
+        }
 
 
 
@@ -1040,6 +1040,262 @@ class AdminWebController extends Controller
 
 
 
+
+    /**
+     * Admin subscriptions list.
+     */
+    public function subscriptions(Request $request): View
+    {
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
+
+        $this->ensureSubscriptionPermission($admin);
+
+        $query = Subscription::query()
+            ->with([
+                'user',
+                'plan',
+                'device',
+            ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Search
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('search')) {
+
+            $search = $request->input('search');
+
+            $query->where(function ($q) use ($search) {
+
+                if (is_numeric($search)) {
+                    $q->orWhere('id', (int) $search);
+                }
+
+                $q->orWhere(
+                    'payment_reference',
+                    'like',
+                    "%{$search}%"
+                )
+                ->orWhereHas(
+                    'user',
+                    function ($userQuery) use ($search) {
+
+                        $userQuery
+                            ->where(
+                                'name',
+                                'like',
+                                "%{$search}%"
+                            )
+                            ->orWhere(
+                                'email',
+                                'like',
+                                "%{$search}%"
+                            )
+                            ->orWhere(
+                                'phone',
+                                'like',
+                                "%{$search}%"
+                            );
+                    }
+                );
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Status
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('status')) {
+
+            $query->where(
+                'status',
+                $request->input('status')
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Plan
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('plan_id')) {
+
+            $query->where(
+                'subscription_plan_id',
+                $request->integer('plan_id')
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Source
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('source')) {
+
+            $query->where(
+                'source',
+                $request->input('source')
+            );
+        }
+
+        $subscriptions = $query
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        $plans = SubscriptionPlan::query()
+            ->orderBy('name')
+            ->get();
+
+        return view(
+            'admin.subscriptions.index',
+            compact(
+                'admin',
+                'subscriptions',
+                'plans'
+            )
+        );
+    }
+
+
+
+    /**
+     * Show subscription details.
+     */
+    public function subscriptionShow(int $id): View
+    {
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
+
+        $this->ensureSubscriptionPermission($admin);
+
+        $subscription = Subscription::with([
+            'user',
+            'plan',
+            'device',
+            'events' => function ($query) {
+                $query->latest();
+            },
+        ])
+        ->findOrFail($id);
+
+        return view(
+            'admin.subscriptions.show',
+            compact(
+                'admin',
+                'subscription'
+            )
+        );
+    }
+
+
+
+
+    /**
+     * Cancel subscription.
+     */
+    public function subscriptionCancel(
+        Request $request,
+        int $id
+    ): RedirectResponse {
+
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
+
+        $this->ensureSubscriptionPermission($admin);
+
+        $subscription = Subscription::findOrFail($id);
+
+        if ($subscription->status === 'cancelled') {
+
+            return redirect()
+                ->route(
+                    'admin.subscriptions.show',
+                    $subscription->id
+                )
+                ->with(
+                    'success',
+                    'Subscription is already cancelled.'
+                );
+        }
+
+        if ($subscription->status === 'expired') {
+
+            return redirect()
+                ->route(
+                    'admin.subscriptions.show',
+                    $subscription->id
+                )
+                ->with(
+                    'success',
+                    'Expired subscription cannot be cancelled.'
+                );
+        }
+
+        $oldStatus = $subscription->status;
+
+        DB::transaction(function () use (
+            $subscription,
+            $oldStatus
+        ) {
+
+            $subscription->update([
+                'status' => 'cancelled',
+                'auto_renew' => false,
+            ]);
+
+            $subscription->events()->create([
+                'event' => 'cancelled',
+                'old_status' => $oldStatus,
+                'new_status' => 'cancelled',
+                'description' =>
+                    'Subscription cancelled by admin.',
+            ]);
+
+        });
+
+        AdminActivityLogger::log(
+            'ADMIN_SUBSCRIPTION_CANCELLED',
+            'Admin cancelled a subscription.',
+            $request,
+            $admin,
+            AdminActivityLogger::WARNING,
+            [
+                'subscription_id' => $subscription->id,
+                'user_id' => $subscription->user_id,
+                'old_status' => $oldStatus,
+            ]
+        );
+
+        return redirect()
+            ->route(
+                'admin.subscriptions.show',
+                $subscription->id
+            )
+            ->with(
+                'success',
+                'Subscription cancelled successfully.'
+            );
+    }
+
+
+
+
+
+
+    
+
     /**
      * Admin logout.
      */
@@ -1090,6 +1346,25 @@ private function ensureDevicePermission(
         !$admin->permissions->contains(
             'name',
             'manage_devices'
+        )
+    ) {
+        abort(403);
+    }
+}
+
+/**
+ * Check subscription management permission.
+ */
+private function ensureSubscriptionPermission(
+    Admin $admin
+): void {
+
+    if (
+        $admin->role !== 'super_admin'
+        &&
+        !$admin->permissions->contains(
+            'name',
+            'manage_subscriptions'
         )
     ) {
         abort(403);
