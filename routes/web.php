@@ -185,6 +185,18 @@ Route::prefix('admin')
             )->name('subscriptions.change-plan.store');
 
 
+            Route::get(
+                '/subscriptions/{id}/extend',
+                [AdminWebController::class, 'subscriptionExtend']
+            )->name('subscriptions.extend');
+
+
+            Route::post(
+                '/subscriptions/{id}/extend',
+                [AdminWebController::class, 'subscriptionExtendStore']
+            )->name('subscriptions.extend.store');
+
+
             Route::post(
                 '/subscriptions/{id}/cancel',
                 [AdminWebController::class, 'subscriptionCancel']
@@ -194,7 +206,7 @@ Route::prefix('admin')
             Route::get(
                 '/subscriptions/{id}',
                 [AdminWebController::class, 'subscriptionShow']
-            )->name('subscriptions.show');        
+            )->name('subscriptions.show');      
 
 
 

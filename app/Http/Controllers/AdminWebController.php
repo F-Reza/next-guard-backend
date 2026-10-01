@@ -1453,7 +1453,206 @@ public function subscriptionChangePlanStore(
 
 
 
+/**
+ * Show extend subscription form.
+ */
+public function subscriptionExtend(int $id): View
+{
+    $admin = Auth::guard('admin_web')
+        ->user()
+        ->load('permissions');
 
+    $this->ensureSubscriptionPermission($admin);
+
+    $subscription = Subscription::with([
+        'user',
+        'plan',
+        'device',
+    ])
+    ->findOrFail($id);
+
+    if ($subscription->status !== 'active') {
+        abort(409, 'Only active subscriptions can be extended.');
+    }
+
+    return view(
+        'admin.subscriptions.extend',
+        compact(
+            'admin',
+            'subscription'
+        )
+    );
+}
+
+
+/**
+ * Extend active subscription.
+ */
+public function subscriptionExtendStore(
+    Request $request,
+    int $id
+): RedirectResponse {
+
+    $admin = Auth::guard('admin_web')
+        ->user()
+        ->load('permissions');
+
+    $this->ensureSubscriptionPermission($admin);
+
+    $subscription = Subscription::findOrFail($id);
+
+    if ($subscription->status !== 'active') {
+
+        return redirect()
+            ->route(
+                'admin.subscriptions.show',
+                $subscription->id
+            )
+            ->withErrors([
+                'subscription' =>
+                    'Only active subscriptions can be extended.',
+            ]);
+    }
+
+    $validated = $request->validate([
+        'preset_days' => [
+            'nullable',
+            'integer',
+            'in:7,30,90,365',
+        ],
+
+        'custom_days' => [
+            'nullable',
+            'integer',
+            'min:1',
+            'max:3650',
+        ],
+
+        'reason' => [
+            'required',
+            'string',
+            'max:500',
+        ],
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Determine Extension Days
+    |--------------------------------------------------------------------------
+    */
+
+    $days = null;
+
+    if (!empty($validated['custom_days'])) {
+
+        $days = (int) $validated['custom_days'];
+
+    } elseif (!empty($validated['preset_days'])) {
+
+        $days = (int) $validated['preset_days'];
+
+    }
+
+    if (!$days) {
+
+        return back()
+            ->withInput()
+            ->withErrors([
+                'preset_days' =>
+                    'Select preset days or enter custom days.',
+            ]);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Current Expiry
+    |--------------------------------------------------------------------------
+    */
+
+    $oldExpiry = $subscription->expires_at;
+
+    $baseDate =
+        $subscription->expires_at
+        && $subscription->expires_at->isFuture()
+            ? $subscription->expires_at->copy()
+            : now();
+
+    $newExpiry = $baseDate->copy()->addDays($days);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update + Event
+    |--------------------------------------------------------------------------
+    */
+
+    DB::transaction(function () use (
+        $subscription,
+        $oldExpiry,
+        $newExpiry,
+        $days,
+        $validated
+    ) {
+
+        $subscription->update([
+            'expires_at' => $newExpiry,
+        ]);
+
+        $subscription->events()->create([
+            'event' => 'extended',
+            'old_status' => $subscription->status,
+            'new_status' => $subscription->status,
+            'description' =>
+                'Subscription extended by '
+                .$days
+                .' day(s). Reason: '
+                .$validated['reason'],
+        ]);
+
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Audit Log
+    |--------------------------------------------------------------------------
+    */
+
+    AdminActivityLogger::log(
+        'ADMIN_SUBSCRIPTION_EXTENDED',
+        'Admin extended a subscription.',
+        $request,
+        $admin,
+        AdminActivityLogger::INFO,
+        [
+            'subscription_id' =>
+                $subscription->id,
+
+            'user_id' =>
+                $subscription->user_id,
+
+            'days_added' =>
+                $days,
+
+            'old_expires_at' =>
+                $oldExpiry?->toDateTimeString(),
+
+            'new_expires_at' =>
+                $newExpiry->toDateTimeString(),
+
+            'reason' =>
+                $validated['reason'],
+        ]
+    );
+
+    return redirect()
+        ->route(
+            'admin.subscriptions.show',
+            $subscription->id
+        )
+        ->with(
+            'success',
+            'Subscription extended successfully.'
+        );
+}
 
 
 

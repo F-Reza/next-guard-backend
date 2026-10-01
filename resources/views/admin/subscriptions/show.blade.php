@@ -41,9 +41,17 @@
                 Change Plan
             </a>
 
-        @endif
-        
-        @if($subscription->status === 'active')
+
+            <a
+                href="{{ route(
+                    'admin.subscriptions.extend',
+                    $subscription->id
+                ) }}"
+                class="btn btn-success"
+            >
+                Extend
+            </a>
+
 
             <form
                 method="POST"
