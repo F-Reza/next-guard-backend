@@ -12,7 +12,6 @@ use OpenApi\Attributes as OA;
 */
 
 
-
 #[OA\Get(
     path:"/devices/{id}/protection/notifications",
 
@@ -30,7 +29,6 @@ use OpenApi\Attributes as OA;
 
     parameters:[
 
-
         new OA\Parameter(
 
             name:"id",
@@ -38,7 +36,6 @@ use OpenApi\Attributes as OA;
             in:"path",
 
             required:true,
-
 
             schema:new OA\Schema(
 
@@ -60,18 +57,55 @@ use OpenApi\Attributes as OA;
 
             response:200,
 
-            description:"Notification list"
+            description:"Notification list",
+
+            content:new OA\JsonContent(
+
+                type:"array",
+
+                items:new OA\Items(
+
+                    ref:"#/components/schemas/Notification"
+
+                )
+
+            )
+
+        ),
+
+
+        new OA\Response(
+
+            response:401,
+
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+
+                ref:"#/components/schemas/ErrorResponse"
+
+            )
+
+        ),
+
+
+        new OA\Response(
+
+            response:404,
+
+            description:"Device not found",
+
+            content:new OA\JsonContent(
+
+                ref:"#/components/schemas/ErrorResponse"
+
+            )
 
         )
-
 
     ]
 
 )]
-
-
-
-
 
 
 
@@ -92,7 +126,6 @@ use OpenApi\Attributes as OA;
     ],
 
 
-
     parameters:[
 
 
@@ -103,7 +136,6 @@ use OpenApi\Attributes as OA;
             in:"path",
 
             required:true,
-
 
             schema:new OA\Schema(
 
@@ -123,7 +155,6 @@ use OpenApi\Attributes as OA;
 
             required:true,
 
-
             schema:new OA\Schema(
 
                 type:"integer"
@@ -132,9 +163,7 @@ use OpenApi\Attributes as OA;
 
         )
 
-
     ],
-
 
 
     responses:[
@@ -144,18 +173,49 @@ use OpenApi\Attributes as OA;
 
             response:200,
 
-            description:"Notification marked as read"
+            description:"Notification marked as read",
+
+            content:new OA\JsonContent(
+
+                ref:"#/components/schemas/Notification"
+
+            )
+
+        ),
+
+
+        new OA\Response(
+
+            response:401,
+
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+
+                ref:"#/components/schemas/ErrorResponse"
+
+            )
+
+        ),
+
+
+        new OA\Response(
+
+            response:404,
+
+            description:"Notification not found",
+
+            content:new OA\JsonContent(
+
+                ref:"#/components/schemas/ErrorResponse"
+
+            )
 
         )
-
 
     ]
 
 )]
-
-
-
-
 
 
 
@@ -176,7 +236,6 @@ use OpenApi\Attributes as OA;
     ],
 
 
-
     responses:[
 
 
@@ -184,18 +243,40 @@ use OpenApi\Attributes as OA;
 
             response:200,
 
-            description:"Admin notification list"
+            description:"Admin notification list",
+
+            content:new OA\JsonContent(
+
+                type:"array",
+
+                items:new OA\Items(
+
+                    ref:"#/components/schemas/Notification"
+
+                )
+
+            )
+
+        ),
+
+
+        new OA\Response(
+
+            response:401,
+
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+
+                ref:"#/components/schemas/ErrorResponse"
+
+            )
 
         )
-
 
     ]
 
 )]
-
-
-
-
 
 
 
@@ -216,7 +297,6 @@ use OpenApi\Attributes as OA;
     ],
 
 
-
     responses:[
 
 
@@ -224,18 +304,40 @@ use OpenApi\Attributes as OA;
 
             response:200,
 
-            description:"Unread notifications"
+            description:"Unread notifications",
+
+            content:new OA\JsonContent(
+
+                type:"array",
+
+                items:new OA\Items(
+
+                    ref:"#/components/schemas/Notification"
+
+                )
+
+            )
+
+        ),
+
+
+        new OA\Response(
+
+            response:401,
+
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+
+                ref:"#/components/schemas/ErrorResponse"
+
+            )
 
         )
-
 
     ]
 
 )]
-
-
-
-
 
 
 
@@ -256,7 +358,6 @@ use OpenApi\Attributes as OA;
     ],
 
 
-
     parameters:[
 
 
@@ -267,7 +368,6 @@ use OpenApi\Attributes as OA;
             in:"path",
 
             required:true,
-
 
             schema:new OA\Schema(
 
@@ -280,7 +380,6 @@ use OpenApi\Attributes as OA;
     ],
 
 
-
     responses:[
 
 
@@ -288,17 +387,49 @@ use OpenApi\Attributes as OA;
 
             response:200,
 
-            description:"Notification read"
+            description:"Notification read",
+
+            content:new OA\JsonContent(
+
+                ref:"#/components/schemas/Notification"
+
+            )
+
+        ),
+
+
+        new OA\Response(
+
+            response:401,
+
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+
+                ref:"#/components/schemas/ErrorResponse"
+
+            )
+
+        ),
+
+
+        new OA\Response(
+
+            response:404,
+
+            description:"Notification not found",
+
+            content:new OA\JsonContent(
+
+                ref:"#/components/schemas/ErrorResponse"
+
+            )
 
         )
-
 
     ]
 
 )]
-
-
-
 
 
 

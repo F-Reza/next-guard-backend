@@ -12,14 +12,12 @@ use OpenApi\Attributes as OA;
 */
 
 
-
 #[OA\Post(
     path:"/payments/create",
 
     tags:["Payment System"],
 
     summary:"Create payment",
-
 
     security:[
         [
@@ -32,40 +30,35 @@ use OpenApi\Attributes as OA;
 
         required:true,
 
-
         content:new OA\JsonContent(
 
             required:[
-
-                "subscription_id",
+                "amount",
+                "currency",
                 "gateway"
-
             ],
-
 
             properties:[
 
 
                 new OA\Property(
-
-                    property:"subscription_id",
-
-                    type:"integer",
-
-                    example:1
-
+                    property:"amount",
+                    type:"number",
+                    example:10
                 ),
 
 
+                new OA\Property(
+                    property:"currency",
+                    type:"string",
+                    example:"USD"
+                ),
+
 
                 new OA\Property(
-
                     property:"gateway",
-
                     type:"string",
-
                     example:"stripe"
-
                 )
 
             ]
@@ -75,7 +68,6 @@ use OpenApi\Attributes as OA;
     ),
 
 
-
     responses:[
 
 
@@ -83,7 +75,11 @@ use OpenApi\Attributes as OA;
 
             response:201,
 
-            description:"Payment created"
+            description:"Payment created",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/Payment"
+            )
 
         ),
 
@@ -92,17 +88,17 @@ use OpenApi\Attributes as OA;
 
             response:422,
 
-            description:"Validation error"
+            description:"Validation error",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
 
         )
 
     ]
 
 )]
-
-
-
-
 
 
 
@@ -123,40 +119,31 @@ use OpenApi\Attributes as OA;
     ],
 
 
-
     requestBody:new OA\RequestBody(
 
         required:true,
 
-
         content:new OA\JsonContent(
 
             required:[
-
                 "transaction_id"
-
             ],
-
 
             properties:[
 
 
                 new OA\Property(
-
                     property:"transaction_id",
-
                     type:"string",
-
                     example:"STRIPE-TEST123"
-
                 )
+
 
             ]
 
         )
 
     ),
-
 
 
     responses:[
@@ -166,7 +153,11 @@ use OpenApi\Attributes as OA;
 
             response:200,
 
-            description:"Payment confirmed"
+            description:"Payment confirmed",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/Payment"
+            )
 
         ),
 
@@ -175,16 +166,17 @@ use OpenApi\Attributes as OA;
 
             response:404,
 
-            description:"Payment not found"
+            description:"Payment not found",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
 
         )
 
     ]
 
 )]
-
-
-
 
 
 
@@ -199,95 +191,6 @@ use OpenApi\Attributes as OA;
     summary:"Payment gateway webhook",
 
 
-    parameters:[
-
-
-        new OA\Parameter(
-
-            name:"X-Webhook-Signature",
-
-            in:"header",
-
-            required:true,
-
-
-            schema:new OA\Schema(
-
-                type:"string",
-
-                example:"a83f9d82..."
-
-            )
-
-        )
-
-
-    ],
-
-
-
-    requestBody:new OA\RequestBody(
-
-        required:true,
-
-
-        content:new OA\JsonContent(
-
-            required:[
-
-                "gateway",
-                "event_id",
-                "transaction_id"
-
-            ],
-
-
-
-            properties:[
-
-
-                new OA\Property(
-
-                    property:"gateway",
-
-                    type:"string",
-
-                    example:"stripe"
-
-                ),
-
-
-
-                new OA\Property(
-
-                    property:"event_id",
-
-                    type:"string",
-
-                    example:"evt_test_001"
-
-                ),
-
-
-
-                new OA\Property(
-
-                    property:"transaction_id",
-
-                    type:"string",
-
-                    example:"STRIPE-TEST123"
-
-                )
-
-            ]
-
-        )
-
-    ),
-
-
-
     responses:[
 
 
@@ -295,24 +198,13 @@ use OpenApi\Attributes as OA;
 
             response:200,
 
-            description:"Webhook processed"
-
-        ),
-
-
-        new OA\Response(
-
-            response:401,
-
-            description:"Invalid webhook signature"
+            description:"Webhook received"
 
         )
 
     ]
 
 )]
-
-
 
 
 
@@ -325,7 +217,8 @@ use OpenApi\Attributes as OA;
 
     tags:["Payment System"],
 
-    summary:"Get payment history",
+    summary:"Get payments",
+    // summary:"Get payment history",
 
 
     security:[
@@ -335,7 +228,6 @@ use OpenApi\Attributes as OA;
     ],
 
 
-
     responses:[
 
 
@@ -343,16 +235,38 @@ use OpenApi\Attributes as OA;
 
             response:200,
 
-            description:"Payment history"
+            description:"Payment list",
+
+            content:new OA\JsonContent(
+
+                type:"array",
+
+                items:new OA\Items(
+
+                    ref:"#/components/schemas/Payment"
+
+                )
+
+            )
+
+        ),
+
+
+        new OA\Response(
+
+            response:401,
+
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
 
         )
 
     ]
 
 )]
-
-
-
 
 
 
@@ -374,7 +288,6 @@ use OpenApi\Attributes as OA;
     ],
 
 
-
     responses:[
 
 
@@ -382,16 +295,38 @@ use OpenApi\Attributes as OA;
 
             response:200,
 
-            description:"Invoice list"
+            description:"Invoice list",
+
+            content:new OA\JsonContent(
+
+                type:"array",
+
+                items:new OA\Items(
+
+                    ref:"#/components/schemas/Invoice"
+
+                )
+
+            )
+
+        ),
+
+
+        new OA\Response(
+
+            response:401,
+
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
 
         )
 
     ]
 
 )]
-
-
-
 
 
 

@@ -24,26 +24,20 @@ use OpenApi\Attributes as OA;
 
         required:true,
 
-
         content:new OA\JsonContent(
 
             required:[
-
                 "email",
                 "password"
-
             ],
 
-
             properties:[
-
 
                 new OA\Property(
                     property:"email",
                     type:"string",
                     example:"admin@test.com"
                 ),
-
 
                 new OA\Property(
                     property:"password",
@@ -65,7 +59,27 @@ use OpenApi\Attributes as OA;
 
             response:200,
 
-            description:"Admin login successful"
+            description:"Admin login successful",
+
+            content:new OA\JsonContent(
+
+                properties:[
+
+                    new OA\Property(
+                        property:"success",
+                        type:"boolean",
+                        example:true
+                    ),
+
+                    new OA\Property(
+                        property:"token",
+                        type:"string",
+                        example:"eyJ0eXAiOiJKV1QiLCJhbGc..."
+                    )
+
+                ]
+
+            )
 
         ),
 
@@ -74,16 +88,17 @@ use OpenApi\Attributes as OA;
 
             response:401,
 
-            description:"Invalid credentials"
+            description:"Invalid credentials",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
 
         )
 
     ]
 
 )]
-
-
-
 
 
 
@@ -115,7 +130,11 @@ use OpenApi\Attributes as OA;
 
             response:200,
 
-            description:"Admin profile"
+            description:"Admin profile",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/User"
+            )
 
         ),
 
@@ -124,17 +143,17 @@ use OpenApi\Attributes as OA;
 
             response:401,
 
-            description:"Unauthenticated"
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
 
         )
 
     ]
 
 )]
-
-
-
-
 
 
 
@@ -168,14 +187,24 @@ use OpenApi\Attributes as OA;
 
             description:"Dashboard statistics"
 
+        ),
+
+
+        new OA\Response(
+
+            response:401,
+
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
+
         )
 
     ]
 
 )]
-
-
-
 
 
 
@@ -209,14 +238,24 @@ use OpenApi\Attributes as OA;
 
             description:"System statistics"
 
+        ),
+
+
+        new OA\Response(
+
+            response:401,
+
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
+
         )
 
     ]
 
 )]
-
-
-
 
 
 
@@ -248,17 +287,38 @@ use OpenApi\Attributes as OA;
 
             response:200,
 
-            description:"User list"
+            description:"User list",
+
+            content:new OA\JsonContent(
+
+                type:"array",
+
+                items:new OA\Items(
+
+                    ref:"#/components/schemas/User"
+
+                )
+
+            )
+
+        ),
+
+
+        new OA\Response(
+
+            response:401,
+
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
 
         )
 
     ]
 
 )]
-
-
-
-
 
 
 
@@ -292,15 +352,24 @@ use OpenApi\Attributes as OA;
 
             description:"Activity logs"
 
+        ),
+
+
+        new OA\Response(
+
+            response:401,
+
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
+
         )
 
     ]
 
 )]
-
-
-
-
 
 
 
@@ -334,14 +403,24 @@ use OpenApi\Attributes as OA;
 
             description:"Security information"
 
+        ),
+
+
+        new OA\Response(
+
+            response:401,
+
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
+
         )
 
     ]
 
 )]
-
-
-
 
 
 
@@ -373,13 +452,47 @@ use OpenApi\Attributes as OA;
 
             response:200,
 
-            description:"Logout successful"
+            description:"Logout successful",
+
+            content:new OA\JsonContent(
+
+                properties:[
+
+                    new OA\Property(
+                        property:"success",
+                        type:"boolean",
+                        example:true
+                    ),
+
+                    new OA\Property(
+                        property:"message",
+                        type:"string",
+                        example:"Logged out successfully"
+                    )
+
+                ]
+
+            )
+
+        ),
+
+
+        new OA\Response(
+
+            response:401,
+
+            description:"Unauthenticated",
+
+            content:new OA\JsonContent(
+                ref:"#/components/schemas/ErrorResponse"
+            )
 
         )
 
     ]
 
 )]
+
 
 
 

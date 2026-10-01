@@ -39,10 +39,34 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Admin login successful"
+                        "description": "Admin login successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "eyJ0eXAiOiJKV1QiLCJhbGc..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Invalid credentials"
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -56,10 +80,24 @@
                 "operationId": "dfbbdbf469b76433fc08eb14eeca8980",
                 "responses": {
                     "200": {
-                        "description": "Admin profile"
+                        "description": "Admin profile",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
                     },
                     "401": {
-                        "description": "Unauthenticated"
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -79,6 +117,16 @@
                 "responses": {
                     "200": {
                         "description": "Dashboard statistics"
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -98,6 +146,16 @@
                 "responses": {
                     "200": {
                         "description": "System statistics"
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -116,7 +174,27 @@
                 "operationId": "018e8c8b444f9a624981b2e1be2cde4c",
                 "responses": {
                     "200": {
-                        "description": "User list"
+                        "description": "User list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/User"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -136,6 +214,16 @@
                 "responses": {
                     "200": {
                         "description": "Activity logs"
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -155,6 +243,16 @@
                 "responses": {
                     "200": {
                         "description": "Security information"
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -173,7 +271,34 @@
                 "operationId": "b4d55a1362e9b0e8c3f8493545b66566",
                 "responses": {
                     "200": {
-                        "description": "Logout successful"
+                        "description": "Logout successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logged out successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1256,7 +1381,37 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Notification list"
+                        "description": "Notification list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Notification"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Device not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1293,7 +1448,34 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Notification marked as read"
+                        "description": "Notification marked as read",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Notification"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Notification not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1312,7 +1494,27 @@
                 "operationId": "4e92fc7fe934360154c99b1846d15f24",
                 "responses": {
                     "200": {
-                        "description": "Admin notification list"
+                        "description": "Admin notification list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Notification"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1331,7 +1533,27 @@
                 "operationId": "0921b34ec9fdae444d7fa327bcb18e25",
                 "responses": {
                     "200": {
-                        "description": "Unread notifications"
+                        "description": "Unread notifications",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Notification"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1360,7 +1582,34 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Notification read"
+                        "description": "Notification read",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Notification"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Notification not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1403,13 +1652,18 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "subscription_id",
+                                    "amount",
+                                    "currency",
                                     "gateway"
                                 ],
                                 "properties": {
-                                    "subscription_id": {
-                                        "type": "integer",
-                                        "example": 1
+                                    "amount": {
+                                        "type": "number",
+                                        "example": 10
+                                    },
+                                    "currency": {
+                                        "type": "string",
+                                        "example": "USD"
                                     },
                                     "gateway": {
                                         "type": "string",
@@ -1423,10 +1677,24 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Payment created"
+                        "description": "Payment created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Payment"
+                                }
+                            }
+                        }
                     },
                     "422": {
-                        "description": "Validation error"
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1464,10 +1732,24 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Payment confirmed"
+                        "description": "Payment confirmed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Payment"
+                                }
+                            }
+                        }
                     },
                     "404": {
-                        "description": "Payment not found"
+                        "description": "Payment not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1484,52 +1766,9 @@
                 ],
                 "summary": "Payment gateway webhook",
                 "operationId": "fdc559cb1838b0f80544132136c09c20",
-                "parameters": [
-                    {
-                        "name": "X-Webhook-Signature",
-                        "in": "header",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": "a83f9d82..."
-                        }
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "gateway",
-                                    "event_id",
-                                    "transaction_id"
-                                ],
-                                "properties": {
-                                    "gateway": {
-                                        "type": "string",
-                                        "example": "stripe"
-                                    },
-                                    "event_id": {
-                                        "type": "string",
-                                        "example": "evt_test_001"
-                                    },
-                                    "transaction_id": {
-                                        "type": "string",
-                                        "example": "STRIPE-TEST123"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
                 "responses": {
                     "200": {
-                        "description": "Webhook processed"
-                    },
-                    "401": {
-                        "description": "Invalid webhook signature"
+                        "description": "Webhook received"
                     }
                 }
             }
@@ -1539,11 +1778,31 @@
                 "tags": [
                     "Payment System"
                 ],
-                "summary": "Get payment history",
+                "summary": "Get payments",
                 "operationId": "d9f2661d2e7d9a9f0263639447c4ec39",
                 "responses": {
                     "200": {
-                        "description": "Payment history"
+                        "description": "Payment list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Payment"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -1562,7 +1821,27 @@
                 "operationId": "fc0f7126aa33eaef23b8125473335fbd",
                 "responses": {
                     "200": {
-                        "description": "Invoice list"
+                        "description": "Invoice list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Invoice"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -2195,6 +2474,7 @@
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "Device ID",
                         "required": true,
                         "schema": {
                             "type": "integer",
@@ -2204,10 +2484,37 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Violation list"
+                        "description": "Violation list",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     },
                     "404": {
-                        "description": "Device not found"
+                        "description": "Device not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -2228,9 +2535,11 @@
                     {
                         "name": "id",
                         "in": "path",
+                        "description": "Device ID",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "type": "integer",
+                            "example": 1
                         }
                     }
                 ],
@@ -2255,10 +2564,68 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Protection check result"
+                        "description": "Protection check result",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "domain": {
+                                            "type": "string",
+                                            "example": "example.com"
+                                        },
+                                        "protected": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "blocked": {
+                                            "type": "boolean",
+                                            "example": false
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     },
                     "403": {
-                        "description": "Domain blocked"
+                        "description": "Domain blocked",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Device not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
