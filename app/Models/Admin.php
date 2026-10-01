@@ -51,6 +51,16 @@ class Admin extends Authenticatable implements JWTSubject
 
         'password',
 
+        'failed_login_attempts',
+
+        'locked_until',
+
+        'last_failed_login_at',
+
+        'created_by',
+
+        'deleted_at',
+
     ];
 
 
