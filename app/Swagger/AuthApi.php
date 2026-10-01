@@ -183,17 +183,13 @@ use OpenApi\Attributes as OA;
 
     summary:"Get authenticated user",
 
-
     security:[
         [
             "bearerAuth"=>[]
         ]
     ],
 
-
-
     responses:[
-
 
         new OA\Response(
             response:200,
@@ -201,11 +197,38 @@ use OpenApi\Attributes as OA;
             description:"User profile",
 
             content:new OA\JsonContent(
-                ref:"#/components/schemas/User"
+
+                properties:[
+
+                    new OA\Property(
+                        property:"success",
+                        type:"boolean",
+                        example:true
+                    ),
+
+                    new OA\Property(
+                        property:"message",
+                        type:"string",
+                        example:"Authenticated user."
+                    ),
+
+                    new OA\Property(
+                        property:"data",
+                        type:"object",
+
+                        properties:[
+
+                            new OA\Property(
+                                property:"user",
+                                ref:"#/components/schemas/User"
+                            )
+
+                        ]
+                    )
+
+                ]
             )
         ),
-
-
 
         new OA\Response(
             response:401,
@@ -217,9 +240,7 @@ use OpenApi\Attributes as OA;
             )
         )
 
-
     ]
-
 )]
 
 

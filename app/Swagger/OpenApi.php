@@ -4,16 +4,17 @@ namespace App\Swagger;
 
 use OpenApi\Attributes as OA;
 
-
 #[OA\Info(
     version: "1.0.0",
     title: "Next Guard API",
     description: "Next Guard Backend API Documentation"
 )]
 
-#[OA\Server(
-    url: "/api/v1",
-    description: "Next Guard API Server"
+#[OA\SecurityScheme(
+    securityScheme: "bearerAuth",
+    type: "http",
+    scheme: "bearer",
+    bearerFormat: "JWT"
 )]
 
 #[OA\Get(
@@ -28,14 +29,6 @@ use OpenApi\Attributes as OA;
     ]
 )]
 
-#[OA\SecurityScheme(
-    securityScheme:"bearerAuth",
-    type:"http",
-    scheme:"bearer",
-    bearerFormat:"JWT"
-)]
-
 class OpenApi
 {
-
 }
