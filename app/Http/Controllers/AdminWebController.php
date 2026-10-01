@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 
 class AdminWebController extends Controller
 {
@@ -672,6 +673,249 @@ class AdminWebController extends Controller
     }
 
 
+
+
+
+
+    /**
+     * Admin devices list.
+     */
+    public function devices(Request $request): View
+    {
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
+
+        $this->ensureDevicePermission($admin);
+
+        $query = Device::query()
+            ->with([
+                'user',
+                'protectionSetting',
+            ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Search
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('search')) {
+
+            $search = $request->input('search');
+
+            $query->where(function ($q) use ($search) {
+
+                $q->where(
+                    'name',
+                    'like',
+                    "%{$search}%"
+                )
+                ->orWhere(
+                    'model',
+                    'like',
+                    "%{$search}%"
+                )
+                ->orWhere(
+                    'manufacturer',
+                    'like',
+                    "%{$search}%"
+                )
+                ->orWhereHas(
+                    'user',
+                    function ($userQuery) use ($search) {
+
+                        $userQuery
+                            ->where(
+                                'name',
+                                'like',
+                                "%{$search}%"
+                            )
+                            ->orWhere(
+                                'email',
+                                'like',
+                                "%{$search}%"
+                            )
+                            ->orWhere(
+                                'phone',
+                                'like',
+                                "%{$search}%"
+                            );
+                    }
+                );
+
+            });
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Device Status Filter
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('status')) {
+
+            $query->where(
+                'status',
+                $request->input('status')
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Management Mode Filter
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('management_mode')) {
+
+            $query->where(
+                'management_mode',
+                $request->input('management_mode')
+            );
+        }
+
+        $devices = $query
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        return view(
+            'admin.devices.index',
+            compact(
+                'admin',
+                'devices'
+            )
+        );
+    }
+
+
+
+    /**
+     * Show single device.
+     */
+    public function deviceShow(int $id): View
+    {
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
+
+        $this->ensureDevicePermission($admin);
+
+        $device = Device::with([
+            'user',
+            'protectionSetting',
+            'deviceSessions' => function ($query) {
+                $query->latest();
+            },
+            'events' => function ($query) {
+                $query
+                    ->latest('created_at')
+                    ->limit(20);
+            },
+            'subscriptions' => function ($query) {
+                $query->latest();
+            },
+        ])
+        ->find($id);
+
+        if (!$device) {
+            abort(404);
+        }
+
+        return view(
+            'admin.devices.show',
+            compact(
+                'admin',
+                'device'
+            )
+        );
+    }
+
+
+    /**
+     * Revoke device from admin panel.
+     */
+    public function deviceRevoke(
+        Request $request,
+        int $id
+    ): RedirectResponse {
+
+        $admin = Auth::guard('admin_web')
+            ->user()
+            ->load('permissions');
+
+        $this->ensureDevicePermission($admin);
+
+        $device = Device::find($id);
+
+        if (!$device) {
+            abort(404);
+        }
+
+        if ($device->status === 'revoked') {
+
+            return redirect()
+                ->route(
+                    'admin.devices.show',
+                    $device->id
+                )
+                ->with(
+                    'success',
+                    'Device is already revoked.'
+                );
+        }
+
+        DB::transaction(
+            function () use ($device) {
+
+                $device->update([
+                    'status' => 'revoked',
+                ]);
+
+                $device->deviceSessions()
+                    ->where(
+                        'status',
+                        'active'
+                    )
+                    ->update([
+                        'status' => 'revoked',
+                        'revoked_at' => now(),
+                    ]);
+
+            }
+        );
+
+        AdminActivityLogger::log(
+            'ADMIN_DEVICE_REVOKED',
+            'Admin revoked a device.',
+            $request,
+            $admin,
+            AdminActivityLogger::WARNING,
+            [
+                'device_id' => $device->id,
+                'user_id' => $device->user_id,
+            ]
+        );
+
+        return redirect()
+            ->route(
+                'admin.devices.show',
+                $device->id
+            )
+            ->with(
+                'success',
+                'Device revoked successfully.'
+            );
+    }
+
+
+
+
+
+
+
+
     /**
      * Admin logout.
      */
@@ -703,4 +947,34 @@ class AdminWebController extends Controller
             ->route('admin.login')
             ->with('success', 'Logged out successfully.');
     }
+
+
+
+    
+
+
+/**
+ * Check device management permission.
+ */
+private function ensureDevicePermission(
+    Admin $admin
+): void {
+
+    if (
+        $admin->role !== 'super_admin'
+        &&
+        !$admin->permissions->contains(
+            'name',
+            'manage_devices'
+        )
+    ) {
+        abort(403);
+    }
 }
+
+
+
+}
+
+
+

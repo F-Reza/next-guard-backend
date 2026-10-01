@@ -111,6 +111,32 @@ Route::prefix('admin')
                 )->name('users.destroy');
 
 
+
+                /*
+                |--------------------------------------------------------------------------
+                | Devices
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/devices',
+                    [AdminWebController::class, 'devices']
+                )->name('devices');
+
+
+                Route::get(
+                    '/devices/{id}',
+                    [AdminWebController::class, 'deviceShow']
+                )->name('devices.show');
+
+
+                Route::post(
+                    '/devices/{id}/revoke',
+                    [AdminWebController::class, 'deviceRevoke']
+                )->name('devices.revoke');               
+
+
+
                 Route::post(
                     '/logout',
                     [AdminWebController::class, 'logout']

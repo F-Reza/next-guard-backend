@@ -84,6 +84,26 @@
             @if(
                 $admin->role === 'super_admin'
                 ||
+                $admin->permissions->contains(
+                    'name',
+                    'manage_devices'
+                )
+            )
+
+                <a
+                    href="{{ route('admin.devices') }}"
+                    class="nav-link {{ request()->routeIs('admin.devices*') ? 'active' : '' }}"
+                >
+                    <i class="bi bi-phone"></i>
+                    Devices
+                </a>
+
+            @endif           
+
+
+            @if(
+                $admin->role === 'super_admin'
+                ||
                 $admin->permissions->contains('name', 'manage_plans')
             )
 

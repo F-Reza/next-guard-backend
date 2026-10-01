@@ -1,0 +1,316 @@
+Read all and keep it remamber.
+--------------------------------------------
+
+
+
+Backend Core
+│
+├── Authentication             ✅ Complete
+├── Device Management          ✅ Complete
+├── Protection Engine          ✅ Complete
+├── Protection Sync            ✅ Complete
+├── Violation System           ✅ Complete
+├── Notification System        ✅ Complete
+├── Subscription System        ✅ Complete
+├── Payment System             ✅ Complete
+├── License System             ✅ Complete
+└── Admin System               ✅ Complete
+             │
+             ▼
+Security Hardening             ✅ COMPLETE
+             │
+             ▼
+Automated Testing              ✅ STRONG
+             │
+             ▼
+Production Preparation         🟡 ← আমরা এখানে
+
+----------------------------------------------
+
+
+বর্তমান Production Preparation status
+Phase	Status	বর্তমান অবস্থা
+Backend Core	✅	Complete
+Security Hardening	✅	Complete
+Ownership checks	✅	সব pass
+Input Validation	✅	Review করা হয়েছে
+Mass Assignment	✅	$fillable review complete
+JWT Security	✅	নতুন secret generated + AuthTest 6/6 pass
+Rate Limiting	✅	Tests pass
+Payment Security	✅	Tests pass
+Webhook Security	✅	Signature + duplicate tests pass
+Automated Testing	✅	70 tests / 151 assertions pass
+Swagger/OpenAPI	🟡	Deferred — পরে করব
+Production Security Checklist	🟡	কিছু কাজ বাকি
+Queue/Scheduler local	✅	Run/work test successful
+Supervisor	⏳	Live server-এ করতে হবে
+Production Cron	⏳	Live server-এ করতে হবে
+Nginx	⏳	Live server-এ
+PHP-FPM	⏳	Live server-এ
+Real Stripe	🟡	Real credentials/API integration বাকি
+Real SSLCommerz	🟡	Real API integration বাকি
+Final Production Testing	⏳	পরে
+Production Deployment	⏳	সবশেষে
+
+-------------------------------------------------
+
+🔐 Production Security Checklist — কতটুকু হয়েছে
+ইতিমধ্যে হয়েছে
+
+JWT secret rotation             ✅
+JWT config loaded               ✅ 64 chars
+Old JWT invalidated             ✅
+Auth regression tests            ✅ 6/6
+Ownership security              ✅
+Validation review               ✅
+Mass assignment review         ✅
+Rate limiting                   ✅
+Payment security                ✅
+Webhook signature security     ✅
+Sensitive logging review       ✅
+Security headers                ✅ locally verified
+
+
+এখনো বাকি
+Production .env                 ⏳
+APP_ENV=production              ⏳
+APP_DEBUG=false                 ⏳
+Production APP_URL              ⏳
+Production DB credentials      ⏳
+Restricted DB user             ⏳
+Database backup strategy       ⏳
+HTTPS                           ⏳
+Production CORS restriction    ⏳
+Secure cookie settings         ⏳
+Production log rotation        ⏳
+Server firewall                ⏳
+SSH hardening                  ⏳
+
+
+----------------------------------------
+
+Backend Core                 ✅ Complete
+        ↓
+Security Hardening           ✅ Complete
+        ↓
+Automated Testing            ✅ Strong
+        ↓
+Production Preparation      🟡 Current
+        │
+        ├── Production Security      🟡
+        ├── Queue/Scheduler           🟡
+        ├── Nginx + PHP-FPM           ⏳
+        └── Real Payment Gateway      🟡
+        ↓
+Admin Frontend               ⏳ NOT STARTED
+        │
+        ├── Login
+        ├── Dashboard
+        ├── Users
+        ├── Devices
+        ├── Subscriptions
+        ├── Payments
+        ├── Licenses
+        ├── Notifications
+        ├── Admin Management
+        └── Security / Activity Logs
+        ↓
+Android App                  ⏳
+        ↓
+Final Production Deployment  ⏳
+
+
+
+-------------------------------------------------------------------
+
+📊 Overall status
+Area	Status
+Backend Core	✅
+Security	✅
+Automated Tests	✅
+Swagger/OpenAPI	🟡 পরে
+Production Preparation	🟡 Current
+Admin Frontend	⏳ বাকি
+FCM Push Notification	⏳ বাকি
+Real Payment Gateway	🟡 বাকি
+Android App	⏳ বাকি
+Final Deployment	⏳ বাকি
+
+
+-------------------------------------------------------------------
+Backend Core                 ✅
+Security Hardening           ✅
+Automated Testing            ✅
+Swagger                      🟡 পরে
+        │
+        ▼
+Admin Frontend               🟢 START NOW
+        │
+        ├── Admin Login
+        ├── Dashboard
+        ├── Users
+        ├── Devices
+        ├── Subscriptions
+        ├── Payments
+        ├── Licenses
+        ├── Notifications
+        ├── Admin Management
+        └── Security / Activity Logs
+        │
+        ▼
+FCM Notification             ⏳
+        │
+        ▼
+Real Stripe / SSLCommerz     🟡
+        │
+        ▼
+Production Security          🟡
+        │
+        ▼
+Queue + Supervisor + Cron    ⏳
+        │
+        ▼
+Nginx + PHP-FPM              ⏳
+        │
+        ▼
+Final Testing → Deployment   ⏳
+        │
+        ▼
+Android App                  ⏳
+
+
+
+
+
+
+
+----------------------------------------------
+
+📌 আজকের কাজ
+Phase: Admin Frontend — Step 1
+প্রথমে তৈরি করব:
+1. Admin login
+2. JWT authentication
+3. Protected admin routes
+4. Admin layout/sidebar
+5. Dashboard
+6. Permission অনুযায়ী menu visibility
+7. Logout
+8. API error/loading handling
+তারপর একে একে:
+Users → Devices → Subscriptions → Payments → Licenses → Notifications → Admin/RBAC → Security Logs
+তাই এখন Production server configuration-এ না গিয়ে Admin Frontend শুরু করি। Backend API-এর উপরেই frontend বসাব।
+
+
+Browser
+   │
+   ▼
+Laravel Blade + Bootstrap
+   │
+   ├── /admin/login
+   │       │
+   │       ▼
+   │   AdminAuthController
+   │       │
+   │       ▼
+   │   Existing Admin JWT API
+   │
+   └── /admin/dashboard
+           │
+           ▼
+      Admin Web Session
+           │
+           ▼
+      Existing Admin APIs
+	  
+	  
+
+প্রথম Phase
+Admin Frontend
+│
+├── Bootstrap setup
+├── Admin layout
+├── Sidebar
+├── Top navbar
+├── Login page
+├── JWT → Laravel session
+├── Admin auth middleware
+├── Logout
+└── Dashboard
+
+
+তারপর:
+Users
+Devices
+Subscriptions
+Payments
+Licenses
+Notifications
+Admin Management
+Permissions
+Security
+Activity Logs
+
+
+------------------------
+
+Admin Frontend
+│
+├── Dashboard             ← এখন
+├── Users                 ← Next
+├── Devices
+├── Subscriptions
+├── Plans
+├── Payments
+├── Licenses
+├── Notifications
+├── Admin Management
+├── Permissions
+└── Security / Activity Logs
+
+
+Laravel Blade
+     │
+     ├── GET /admin/login
+     │       ↓
+     │   AdminWebController
+     │
+     ├── POST /admin/login
+     │       ↓
+     │   Admin credentials
+     │       ↓
+     │   admin_web session
+     │       ↓
+     │   session regenerate
+     │
+     └── admin.web
+             ↓
+       AdminWebAuth
+             ↓
+       /admin/dashboard
+	   
+	   
+	
+
+	
+Planning / Architecture          ✅ Complete
+        ↓
+Backend Core                    ✅ Complete
+        ↓
+Security Hardening              ✅ Complete
+        ↓
+Automated Testing               ✅ Strong
+        ↓
+Admin Frontend                  🟢 In Progress  ← আমরা এখানে
+        ↓
+FCM Notification                ⏳ Pending
+        ↓
+Real Payment Gateway            🟡 Partial / Pending
+        ↓
+Production Server Setup         🟡 Partial / Pending
+        ↓
+Final Production Testing        ⏳ Pending
+        ↓
+Android App                     ⏳ Pending
+        ↓
+Final Release                   ⏳ Pending

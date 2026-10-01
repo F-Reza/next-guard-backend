@@ -1,0 +1,488 @@
+ekta report dew; amra koi achi r ki ki baki ache tar list
+নিচে Next Guard Project – Current Progress Report (01 Oct 2026) দিলাম। এটা আপনার দেওয়া latest status, Developer Specification v3, Professional Blueprint v2, এবং latest backend ZIP-এর current implementation ধরে তৈরি করা হয়েছে।
+
+NEXT GUARD – CURRENT PROJECT STATUS REPORT
+1. Overall Position
+বর্তমানে project এই অবস্থায় আছে:
+
+Planning / Architecture          ✅ Complete
+        ↓
+Backend Core                    ✅ Complete
+        ↓
+Security Hardening              ✅ Complete
+        ↓
+Automated Testing               ✅ Strong
+        ↓
+Admin Frontend                  🟢 In Progress  ← আমরা এখানে
+        ↓
+FCM Notification                ⏳ Pending
+        ↓
+Real Payment Gateway            🟡 Partial / Pending
+        ↓
+Production Server Setup         🟡 Partial / Pending
+        ↓
+Final Production Testing        ⏳ Pending
+        ↓
+Android App                     ⏳ Pending
+        ↓
+Final Release                   ⏳ Pending
+
+
+
+
+Developer Specification অনুযায়ী Laravel backend users, devices, subscriptions, licenses, policy, audit ও notifications-এর authoritative layer হিসেবে কাজ করবে এবং Admin Panel operational management-এর জন্য থাকবে। Next_Guard_Developer_Specificat…
+2. Backend Core
+Status: ✅ COMPLETE
+ইতিমধ্যে complete:
+- Authentication
+- Device Management
+- Protection Engine backend
+- Protection Sync
+- Violation System
+- Notification backend
+- Subscription System
+- Payment System backend
+- License System
+- Admin API/System
+Specification-এ authentication, device enrollment, subscription, payment, license, recovery এবং protection APIs-এর architecture আগে থেকেই define করা আছে। Next_Guard_Developer_Specificat…
+3. Security Hardening
+Status: ✅ COMPLETE / Strong
+Completed:
+- JWT secret rotation
+- 64-character JWT secret loaded
+- Old JWT invalidation
+- Authentication regression test
+- Ownership checks
+- Input validation review
+- Mass assignment review
+- Rate limiting
+- Payment security
+- Webhook signature verification
+- Duplicate webhook protection
+- Sensitive logging review
+- Security headers
+- License/recovery secret protection
+Specification অনুযায়ী production security-এর গুরুত্বপূর্ণ requirements হলো HTTPS, hashed secrets, rate limiting, RBAC, payment webhook verification এবং audit logging। Next_Guard_Professional_Project…
+4. Automated Testing
+Status: ✅ STRONG
+Current reported result:
+70 tests
+151 assertions
+All passing
+এর মধ্যে অন্তত:
+- Authentication tests
+- Ownership tests
+- Rate limit tests
+- Payment security tests
+- Webhook tests
+- JWT regression tests
+QA blueprint-এ trial duplication, webhook replay, payment failure, subscription cancellation, double license redemption এবং recovery testing-ও explicitly required। Next_Guard_Professional_Project…
+5. Swagger / OpenAPI
+Status: 🟡 DEFERRED
+এখনই blocking issue নয়।
+বাকি:
+- API documentation
+- Endpoint examples
+- Authentication description
+- Error response documentation
+- Admin API documentation
+এটি পরে করা যাবে।
+6. Admin Frontend
+Status: 🟢 IN PROGRESS
+এখানেই এখন main development চলছে।
+Latest backend ZIP অনুযায়ী ইতিমধ্যে basic Admin Frontend-এর গুরুত্বপূর্ণ অংশ তৈরি হয়েছে।
+Already implemented
+- Admin login
+- Admin web session
+- Authentication middleware
+- Protected admin routes
+- Session regeneration
+- Admin layout
+- Sidebar foundation
+- Dashboard
+- Logout
+- Users list
+- User search/filter
+- Create User
+- View User
+- Edit User
+- Delete User
+তাই আগের roadmap-এর:
+Admin Login      ✅
+JWT/Auth Bridge  ✅
+Protected Route  ✅
+Layout           ✅
+Dashboard        ✅
+Users            ✅ Basic CRUD
+
+7. Admin Frontend – এখন কী কী বাকি
+সবচেয়ে logical next module:
+A. Devices
+⏳ NEXT
+করতে হবে:
+- Device list
+- User অনুযায়ী device
+- Device detail
+- Device model
+- Manufacturer
+- Android version
+- App version
+- Management mode
+- Device status
+- Last seen
+- Protection state
+- Policy version
+- Revoke/disable controls
+- Device activity/events
+Blueprint অনুযায়ী Devices page-এ enrollment, management mode, last seen এবং policy version দেখানো হবে। Next_Guard_Professional_Project…
+B. Plans
+⏳ Pending
+- Monthly plan
+- 3-month plan
+- 6-month plan
+- 12-month plan
+- Price
+- Currency
+- Active/inactive
+- Features
+- Edit/create plan
+Subscription plan structure specification-এ 1/3/6/12-month plans explicitly defined। Next_Guard_Developer_Specificat…
+C. Trials
+⏳ Pending
+Admin থেকে:
+- Trial settings
+- Default duration
+- Enable/disable trial
+- Grant trial
+- Extend trial
+- Pause/resume
+- Trial history
+- Reason/audit
+Blueprint অনুযায়ী admin-specific trial grant, extension, pause/resume এবং full audit history থাকা উচিত। Next_Guard_Professional_Project…
+8. Subscriptions
+⏳ Pending
+Admin UI করতে হবে:
+- Active subscriptions
+- Trial
+- Past due
+- Cancelled
+- Expired
+- Start date
+- End date
+- Plan
+- Device
+- Payment provider
+- Admin grant
+- Cancel/extend where permitted
+Commercial states specification-এ TRIAL, ACTIVE, PAST_DUE, CANCELLED এবং EXPIRED আলাদা state হিসেবে defined। Next_Guard_Developer_Specificat…
+9. Payments
+🟡 Backend ready, Admin UI + real integration pending
+Admin frontend:
+- Payment list
+- Payment detail
+- Amount
+- Currency
+- Provider
+- Status
+- Transaction reference
+- Webhook record
+- Signature status
+- Payment failure
+Production side:
+- Real Stripe
+- Real SSLCommerz
+- Real credentials
+- Live callback/webhook URL
+- Live payment verification
+Payment webhook server-side verification mandatory; client success callback alone subscription activate করতে পারবে না। Next_Guard_Professional_Project…
+10. Licenses
+🟡 Backend ready, Admin UI pending
+করতে হবে:
+- Generate license
+- Select plan
+- Expiry
+- Show plaintext once
+- Unused
+- Redeemed
+- Revoked
+- Expired
+- Search/filter
+- Redemption history
+- Revoke license
+License secret plaintext store বা log করা যাবে না। Next_Guard_Developer_Specificat…
+11. Recovery / Deactivation
+⏳ Admin UI pending
+করতে হবে:
+- Recovery key status
+- Deactivation requests
+- Cooling period
+- Pending request
+- Cancel/approve
+- Completed
+- Recovery use history
+- Audit trail
+Recommended flow-এ recovery key verify করার পরে deactivation request → cooling period → admin notification → completion থাকে। Next_Guard_Professional_Project…
+12. Notifications
+🟡 Backend foundation exists / FCM pending
+Admin UI:
+- Create notification
+- Send immediately
+- Schedule
+- One user
+- Selected users
+- Trial users
+- Active subscribers
+- Expired users
+- Template
+- Deep link
+- Delivery status
+- Read status
+- Failed status
+FCM side:
+- Firebase setup
+- Service credentials
+- Push token lifecycle
+- Queue jobs
+- Send push
+- Retry
+- Token invalidation
+- Delivery tracking
+Blueprint-এ system এবং admin-controlled notifications, scheduling, targeting এবং delivery/read/failure tracking required। Next_Guard_Professional_Project…
+13. Admin Management / RBAC
+⏳ Pending
+করতে হবে:
+- Admin list
+- Create admin
+- Edit admin
+- Disable admin
+- Roles
+- Permissions
+- Permission-based sidebar
+- Route-level permission
+- Action-level permission
+Suggested roles:
+- Super Admin
+- Admin
+- Policy Admin
+- Support / Counseling Admin
+এগুলো Blueprint-এ explicitly recommended। Next_Guard_Professional_Project…
+14. Security / Activity Logs
+⏳ UI pending
+Backend logging foundation থাকলেও Admin UI দরকার।
+Display:
+- Admin action
+- User
+- Event
+- IP
+- Time
+- Resource
+- Result
+- Security events
+- Login attempts
+- Payment events
+- License actions
+- Recovery events
+15. Counseling Module
+⏳ Pending
+Admin panel-এ:
+- Deactivation alert
+- User contact info
+- Counseling note
+- Contact method
+- Follow-up date
+- Status
+- History
+Blueprint অনুযায়ী deactivation, recovery, subscription cancellation, trial expiry ইত্যাদি event থেকে counseling/support workflow তৈরি হতে পারে। Next_Guard_Professional_Project…
+16. Production Security
+🟡 PARTIAL
+Local security কাজ complete হলেও production server-specific কাজ বাকি।
+বাকি:
+- Production .env
+- APP_ENV=production
+- APP_DEBUG=false
+- Production APP_URL
+- Production DB credentials
+- Restricted DB user
+- Database backup
+- HTTPS/SSL
+- CORS restriction
+- Secure cookies
+- Production log rotation
+- Server firewall
+- SSH hardening
+- Secret management
+Production checklist-এ RBAC, hashing, rate limits, audit logs, HTTPS, backup ও monitoring required। Next_Guard_Professional_Project…
+17. Queue / Scheduler
+🟡 Local complete / Production pending
+Local:
+✅ queue tested
+✅ scheduler tested
+Production:
+- Supervisor
+- Worker restart
+- Failed jobs handling
+- Cron
+- Laravel scheduler
+- Log monitoring
+18. Nginx + PHP-FPM
+⏳ Pending
+Live server-এ করতে হবে:
+- Nginx config
+- Domain
+- SSL
+- Laravel document root
+- PHP-FPM
+- Upload limits
+- Timeout settings
+- Security headers
+- Cache/static files
+- Permission setup
+19. Real Payment Gateway
+🟡 Pending
+Stripe
+- Live account
+- Live secret
+- Publishable key
+- Webhook secret
+- Production webhook
+- Live payment test
+SSLCommerz
+- Store ID
+- Store password
+- Production endpoint
+- Success/fail/cancel callback
+- IPN
+- Verification API
+- Live transaction test
+20. Android App
+⏳ LARGE PHASE STILL PENDING
+Specification অনুযায়ী Android side হবে:
+Flutter
+- Onboarding
+- Dashboard
+- Protection UI
+- Subscription
+- License
+- Recovery
+- Notifications
+- Account
+Native Kotlin
+- Device management
+- Device Admin
+- DNS protection
+- Boot persistence
+- App blocking
+- Protection Manager
+- Policy Manager
+- Recovery Manager
+- MethodChannel
+- Optional accessibility
+- Bypass detection
+Blueprint অনুযায়ী Flutter + Kotlin separation এবং MethodChannel architecture already defined। Next_Guard_Professional_Project…
+21. Final Testing
+⏳ Pending
+করতে হবে:
+- Full regression
+- Production API test
+- Admin test
+- Payment test
+- FCM test
+- Queue test
+- Cron test
+- Recovery test
+- License concurrent redemption
+- Trial abuse test
+- Security test
+- Device test
+- Android OEM test
+- Reboot test
+- Offline test
+22. Final Deployment
+⏳ LAST PHASE
+শেষে:
+
+
+Domain
+↓
+Production Server
+↓
+Laravel Deploy
+↓
+DB Migration
+↓
+Redis/Queue
+↓
+Supervisor
+↓
+Cron
+↓
+Nginx
+↓
+SSL
+↓
+Payment Live
+↓
+Firebase
+↓
+Final Smoke Test
+↓
+Backup
+↓
+Monitoring
+↓
+Release
+
+
+
+Current Completion Snapshot
+Area	Status
+Project Architecture	✅ Complete
+Backend Core	✅ Complete
+Security Hardening	✅ Complete
+Automated Testing	✅ Strong
+Swagger/OpenAPI	🟡 Later
+Admin Login/Auth	✅
+Admin Dashboard	✅
+Admin Users	✅ Basic
+Admin Devices	⏳ Next
+Plans/Trials	⏳
+Subscriptions	⏳
+Payments Admin UI	⏳
+Licenses Admin UI	⏳
+Recovery Admin UI	⏳
+Notifications Admin UI	⏳
+Admin/RBAC	⏳
+Security Logs UI	⏳
+Counseling	⏳
+FCM	⏳
+Stripe Live	⏳
+SSLCommerz Live	⏳
+Production Security	🟡
+Queue/Supervisor/Cron	🟡
+Nginx/PHP-FPM	⏳
+Android App	⏳
+Final QA	⏳
+Deployment	⏳
+
+
+আমাদের এখন exact position
+Backend                 ✅ DONE
+Security                ✅ DONE
+Tests                   ✅ DONE
+
+Admin Frontend
+   ├── Login            ✅
+   ├── Auth             ✅
+   ├── Layout           ✅
+   ├── Dashboard        ✅
+   ├── Users            ✅
+   └── Devices          🟢 NEXT
+
+
+
+তাই এখন সবচেয়ে logical কাজ:
+Admin Frontend → Devices Module শুরু করা।
+তারপর:
+Devices → Plans/Trials → Subscriptions → Payments → 
+Licenses → Recovery → Notifications → Admin/RBAC → 
+Logs → Counseling → FCM → Production → Android.

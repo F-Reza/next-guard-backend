@@ -201,7 +201,18 @@ class Device extends Model
 
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Device Events
+    |--------------------------------------------------------------------------
+    */
 
+    public function events(): HasMany
+    {
+        return $this->hasMany(
+            DeviceEvent::class
+        );
+    }
 
 
 

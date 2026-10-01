@@ -40,6 +40,10 @@ class PermissionSeeder extends Seeder
                 'description'=>'View and manage subscriptions'
             ],
 
+            [
+                'name'=>'manage_devices',
+                'description'=>'View and manage enrolled devices'
+            ],
 
             [
                 'name'=>'manage_rules',
