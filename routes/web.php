@@ -235,6 +235,57 @@ Route::prefix('admin')
 
 
 
+            /*
+            |--------------------------------------------------------------------------
+            | Plans
+            |--------------------------------------------------------------------------
+            */
+
+            Route::get(
+                '/plans',
+                [AdminWebController::class, 'plans']
+            )->name('plans');
+
+
+            Route::get(
+                '/plans/create',
+                [AdminWebController::class, 'planCreate']
+            )->name('plans.create');
+
+
+            Route::post(
+                '/plans',
+                [AdminWebController::class, 'planStore']
+            )->name('plans.store');
+
+
+            Route::get(
+                '/plans/{id}/edit',
+                [AdminWebController::class, 'planEdit']
+            )->name('plans.edit');
+
+
+            Route::put(
+                '/plans/{id}',
+                [AdminWebController::class, 'planUpdate']
+            )->name('plans.update');
+
+
+            Route::post(
+                '/plans/{id}/toggle-status',
+                [AdminWebController::class, 'planToggleStatus']
+            )->name('plans.toggle-status');
+
+
+            Route::get(
+                '/plans/{id}',
+                [AdminWebController::class, 'planShow']
+            )->name('plans.show');
+
+
+
+    
+
 
 
 

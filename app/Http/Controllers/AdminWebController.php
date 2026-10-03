@@ -2269,6 +2269,590 @@ class AdminWebController extends Controller
 
 
 
+/**
+ * Admin subscription plans list.
+ */
+public function plans(Request $request): View
+{
+    /** @var Admin|null $admin */
+    $admin = Auth::guard('admin_web')->user();
+
+    if (!$admin) {
+        abort(401);
+    }
+
+    $admin->load('permissions');
+
+    $this->ensurePlanPermission($admin);
+
+
+    $query = SubscriptionPlan::query()
+        ->withCount('subscriptions');
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Search
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('search')) {
+
+        $search = $request->input('search');
+
+        $query->where(function ($q) use ($search) {
+
+            $q->where(
+                'name',
+                'like',
+                "%{$search}%"
+            )
+            ->orWhere(
+                'description',
+                'like',
+                "%{$search}%"
+            );
+
+        });
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Status Filter
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('status')) {
+
+        $query->where(
+            'status',
+            $request->input('status')
+        );
+    }
+
+
+    $plans = $query
+        ->orderBy('price')
+        ->paginate(20)
+        ->withQueryString();
+
+
+    return view(
+        'admin.plans.index',
+        compact(
+            'admin',
+            'plans'
+        )
+    );
+}
+
+
+/**
+ * Show create plan form.
+ */
+public function planCreate(): View
+{
+    /** @var Admin|null $admin */
+    $admin = Auth::guard('admin_web')->user();
+
+    if (!$admin) {
+        abort(401);
+    }
+
+    $admin->load('permissions');
+
+    $this->ensurePlanPermission($admin);
+
+
+    return view(
+        'admin.plans.create',
+        compact('admin')
+    );
+}
+
+
+/**
+ * Store subscription plan.
+ */
+public function planStore(
+    Request $request
+): RedirectResponse {
+
+    /** @var Admin|null $admin */
+    $admin = Auth::guard('admin_web')->user();
+
+    if (!$admin) {
+        abort(401);
+    }
+
+    $admin->load('permissions');
+
+    $this->ensurePlanPermission($admin);
+
+
+    $validated = $request->validate([
+
+        'name' => [
+            'required',
+            'string',
+            'max:100',
+        ],
+
+        'description' => [
+            'nullable',
+            'string',
+            'max:1000',
+        ],
+
+        'price' => [
+            'required',
+            'numeric',
+            'min:0',
+        ],
+
+        'currency' => [
+            'required',
+            'string',
+            'max:10',
+        ],
+
+        'duration_days' => [
+            'required',
+            'integer',
+            'min:1',
+            'max:3650',
+        ],
+
+        'device_limit' => [
+            'required',
+            'integer',
+            'min:1',
+            'max:100',
+        ],
+
+        'status' => [
+            'required',
+            'in:active,inactive',
+        ],
+
+        'features' => [
+            'nullable',
+            'string',
+            'max:5000',
+        ],
+
+    ]);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Convert Features Textarea To Array
+    |--------------------------------------------------------------------------
+    */
+
+    $features = collect(
+        preg_split(
+            '/\r\n|\r|\n/',
+            $validated['features'] ?? ''
+        )
+    )
+    ->map(function ($feature) {
+        return trim($feature);
+    })
+    ->filter()
+    ->values()
+    ->all();
+
+
+    $plan = SubscriptionPlan::create([
+
+        'name' =>
+            $validated['name'],
+
+        'description' =>
+            $validated['description'] ?? null,
+
+        'price' =>
+            $validated['price'],
+
+        'currency' =>
+            strtoupper($validated['currency']),
+
+        'duration_days' =>
+            $validated['duration_days'],
+
+        'device_limit' =>
+            $validated['device_limit'],
+
+        'status' =>
+            $validated['status'],
+
+        'features' =>
+            $features,
+
+    ]);
+
+
+    AdminActivityLogger::log(
+        'ADMIN_PLAN_CREATED',
+        'Admin created a subscription plan.',
+        $request,
+        $admin,
+        AdminActivityLogger::INFO,
+        [
+            'plan_id' =>
+                $plan->id,
+
+            'plan_name' =>
+                $plan->name,
+        ]
+    );
+
+
+    return redirect()
+        ->route(
+            'admin.plans.show',
+            $plan->id
+        )
+        ->with(
+            'success',
+            'Subscription plan created successfully.'
+        );
+}
+
+
+/**
+ * Show subscription plan.
+ */
+public function planShow(int $id): View
+{
+    /** @var Admin|null $admin */
+    $admin = Auth::guard('admin_web')->user();
+
+    if (!$admin) {
+        abort(401);
+    }
+
+    $admin->load('permissions');
+
+    $this->ensurePlanPermission($admin);
+
+
+    $plan = SubscriptionPlan::query()
+        ->withCount([
+            'subscriptions',
+        ])
+        ->findOrFail($id);
+
+
+    $activeSubscriptions =
+        $plan->subscriptions()
+            ->where(
+                'status',
+                'active'
+            )
+            ->count();
+
+
+    return view(
+        'admin.plans.show',
+        compact(
+            'admin',
+            'plan',
+            'activeSubscriptions'
+        )
+    );
+}
+
+
+/**
+ * Show edit plan form.
+ */
+public function planEdit(int $id): View
+{
+    /** @var Admin|null $admin */
+    $admin = Auth::guard('admin_web')->user();
+
+    if (!$admin) {
+        abort(401);
+    }
+
+    $admin->load('permissions');
+
+    $this->ensurePlanPermission($admin);
+
+
+    $plan = SubscriptionPlan::findOrFail($id);
+
+
+    return view(
+        'admin.plans.edit',
+        compact(
+            'admin',
+            'plan'
+        )
+    );
+}
+
+/**
+ * Update subscription plan.
+ */
+public function planUpdate(
+    Request $request,
+    int $id
+): RedirectResponse {
+
+    /** @var Admin|null $admin */
+    $admin = Auth::guard('admin_web')->user();
+
+    if (!$admin) {
+        abort(401);
+    }
+
+    $admin->load('permissions');
+
+    $this->ensurePlanPermission($admin);
+
+
+    $plan = SubscriptionPlan::findOrFail($id);
+
+
+    $validated = $request->validate([
+
+        'name' => [
+            'required',
+            'string',
+            'max:100',
+        ],
+
+        'description' => [
+            'nullable',
+            'string',
+            'max:1000',
+        ],
+
+        'price' => [
+            'required',
+            'numeric',
+            'min:0',
+        ],
+
+        'currency' => [
+            'required',
+            'string',
+            'max:10',
+        ],
+
+        'duration_days' => [
+            'required',
+            'integer',
+            'min:1',
+            'max:3650',
+        ],
+
+        'device_limit' => [
+            'required',
+            'integer',
+            'min:1',
+            'max:100',
+        ],
+
+        'status' => [
+            'required',
+            'in:active,inactive',
+        ],
+
+        'features' => [
+            'nullable',
+            'string',
+            'max:5000',
+        ],
+
+    ]);
+
+
+    $features = collect(
+        preg_split(
+            '/\r\n|\r|\n/',
+            $validated['features'] ?? ''
+        )
+    )
+    ->map(function ($feature) {
+        return trim($feature);
+    })
+    ->filter()
+    ->values()
+    ->all();
+
+
+    $oldData = [
+        'name' =>
+            $plan->name,
+
+        'price' =>
+            $plan->price,
+
+        'currency' =>
+            $plan->currency,
+
+        'duration_days' =>
+            $plan->duration_days,
+
+        'device_limit' =>
+            $plan->device_limit,
+
+        'status' =>
+            $plan->status,
+    ];
+
+
+    $plan->update([
+
+        'name' =>
+            $validated['name'],
+
+        'description' =>
+            $validated['description'] ?? null,
+
+        'price' =>
+            $validated['price'],
+
+        'currency' =>
+            strtoupper($validated['currency']),
+
+        'duration_days' =>
+            $validated['duration_days'],
+
+        'device_limit' =>
+            $validated['device_limit'],
+
+        'status' =>
+            $validated['status'],
+
+        'features' =>
+            $features,
+
+    ]);
+
+
+    AdminActivityLogger::log(
+        'ADMIN_PLAN_UPDATED',
+        'Admin updated a subscription plan.',
+        $request,
+        $admin,
+        AdminActivityLogger::INFO,
+        [
+            'plan_id' =>
+                $plan->id,
+
+            'old' =>
+                $oldData,
+
+            'new' => [
+                'name' =>
+                    $plan->name,
+
+                'price' =>
+                    $plan->price,
+
+                'currency' =>
+                    $plan->currency,
+
+                'duration_days' =>
+                    $plan->duration_days,
+
+                'device_limit' =>
+                    $plan->device_limit,
+
+                'status' =>
+                    $plan->status,
+            ],
+        ]
+    );
+
+
+    return redirect()
+        ->route(
+            'admin.plans.show',
+            $plan->id
+        )
+        ->with(
+            'success',
+            'Subscription plan updated successfully.'
+        );
+}
+
+
+/**
+ * Activate or deactivate subscription plan.
+ */
+public function planToggleStatus(
+    Request $request,
+    int $id
+): RedirectResponse {
+
+    /** @var Admin|null $admin */
+    $admin = Auth::guard('admin_web')->user();
+
+    if (!$admin) {
+        abort(401);
+    }
+
+    $admin->load('permissions');
+
+    $this->ensurePlanPermission($admin);
+
+
+    $plan = SubscriptionPlan::findOrFail($id);
+
+    $oldStatus = $plan->status;
+
+    $newStatus =
+        $plan->status === 'active'
+            ? 'inactive'
+            : 'active';
+
+
+    $plan->update([
+        'status' => $newStatus,
+    ]);
+
+
+    AdminActivityLogger::log(
+        'ADMIN_PLAN_STATUS_CHANGED',
+        'Admin changed subscription plan status.',
+        $request,
+        $admin,
+        AdminActivityLogger::INFO,
+        [
+            'plan_id' =>
+                $plan->id,
+
+            'old_status' =>
+                $oldStatus,
+
+            'new_status' =>
+                $newStatus,
+        ]
+    );
+
+
+    return redirect()
+        ->route(
+            'admin.plans.show',
+            $plan->id
+        )
+        ->with(
+            'success',
+            $newStatus === 'active'
+                ? 'Plan activated successfully.'
+                : 'Plan deactivated successfully.'
+        );
+}
+
+
+
 
 
 
@@ -2354,6 +2938,30 @@ private function ensureSubscriptionPermission(
         abort(403);
     }
 }
+
+
+/**
+ * Check plan management permission.
+ */
+private function ensurePlanPermission(
+    Admin $admin
+): void {
+
+    if (
+        $admin->role !== 'super_admin'
+        &&
+        !$admin->permissions->contains(
+            'name',
+            'manage_plans'
+        )
+    ) {
+        abort(403);
+    }
+}
+
+
+
+
 
 
 

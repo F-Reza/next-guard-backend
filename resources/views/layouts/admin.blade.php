@@ -107,7 +107,14 @@
                 $admin->permissions->contains('name', 'manage_plans')
             )
 
-                <a href="#" class="nav-link">
+                <a
+                    href="{{ route('admin.plans') }}"
+                    class="nav-link
+                        {{ request()->routeIs('admin.plans*')
+                            ? 'active'
+                            : ''
+                        }}"
+                >
                     <i class="bi bi-box-seam"></i>
                     Plans
                 </a>
