@@ -1891,6 +1891,9 @@ class AdminWebController extends Controller
         
 
 
+    /**
+     * Show admin grant subscription form.
+     */
     public function subscriptionGrant(): View
     {
         /** @var Admin|null $admin */
@@ -1904,15 +1907,62 @@ class AdminWebController extends Controller
 
         $this->ensureSubscriptionPermission($admin);
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Users + Available Devices
+        |--------------------------------------------------------------------------
+        |
+        | Load only active users.
+        |
+        | Device rule:
+        | - active  = allowed
+        | - offline = allowed
+        | - revoked = excluded
+        |
+        */
+
         $users = User::query()
             ->where('status', 'active')
+            ->with([
+                'devices' => function ($query) {
+
+                    $query
+                        ->where(
+                            'status',
+                            '!=',
+                            'revoked'
+                        )
+                        ->orderBy('name')
+                        ->orderBy('id');
+
+                },
+            ])
             ->orderBy('name')
             ->get();
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Active Subscription Plans
+        |--------------------------------------------------------------------------
+        */
+
         $plans = SubscriptionPlan::query()
-            ->where('status', 'active')
+            ->where(
+                'status',
+                'active'
+            )
             ->orderBy('price')
+            ->orderBy('name')
             ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Grant Subscription View
+        |--------------------------------------------------------------------------
+        */
 
         return view(
             'admin.subscriptions.grant',
@@ -1923,7 +1973,6 @@ class AdminWebController extends Controller
             )
         );
     }
-
 
 
     public function subscriptionGrantStore(
@@ -1943,6 +1992,7 @@ class AdminWebController extends Controller
 
 
         $validated = $request->validate([
+
             'user_id' => [
                 'required',
                 'integer',
@@ -1956,7 +2006,7 @@ class AdminWebController extends Controller
             ],
 
             'device_id' => [
-                'nullable',
+                'required',
                 'integer',
                 'exists:devices,id',
             ],
@@ -1966,6 +2016,7 @@ class AdminWebController extends Controller
                 'string',
                 'max:500',
             ],
+
         ]);
 
 
@@ -1977,6 +2028,12 @@ class AdminWebController extends Controller
             $validated['plan_id']
         );
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Plan Status
+        |--------------------------------------------------------------------------
+        */
 
         if ($plan->status !== 'active') {
 
@@ -1991,7 +2048,7 @@ class AdminWebController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Active Subscription Check
+        | Existing Active Subscription
         |--------------------------------------------------------------------------
         */
 
@@ -2024,35 +2081,32 @@ class AdminWebController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Optional Device Check
+        | Validate Selected Device
         |--------------------------------------------------------------------------
         */
 
-        $device = null;
-
-        if (!empty($validated['device_id'])) {
-
-            $device = $user->devices()
-                ->where(
-                    'id',
-                    $validated['device_id']
-                )
-                ->where(
-                    'status',
-                    'active'
-                )
-                ->first();
+        $device = $user
+            ->devices()
+            ->where(
+                'id',
+                $validated['device_id']
+            )
+            ->where(
+                'status',
+                '!=',
+                'revoked'
+            )
+            ->first();
 
 
-            if (!$device) {
+        if (!$device) {
 
-                return back()
-                    ->withInput()
-                    ->withErrors([
-                        'device_id' =>
-                            'Selected device does not belong to this user or is not active.',
-                    ]);
-            }
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'device_id' =>
+                        'Selected device does not belong to this user or has been revoked.',
+                ]);
         }
 
 
@@ -2062,22 +2116,23 @@ class AdminWebController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $activeDevices = $user
+        $availableDevices = $user
             ->devices()
             ->where(
                 'status',
-                'active'
+                '!=',
+                'revoked'
             )
             ->count();
 
 
-        if ($activeDevices > $plan->device_limit) {
+        if ($availableDevices > $plan->device_limit) {
 
             return back()
                 ->withInput()
                 ->withErrors([
                     'plan_id' =>
-                        'User active devices exceed the selected plan device limit.',
+                        'User devices exceed the selected plan device limit.',
                 ]);
         }
 
@@ -2105,7 +2160,7 @@ class AdminWebController extends Controller
                         $plan->id,
 
                     'device_id' =>
-                        $device?->id,
+                        $device->id,
 
                     'starts_at' =>
                         now(),
@@ -2190,7 +2245,7 @@ class AdminWebController extends Controller
                     $plan->id,
 
                 'device_id' =>
-                    $device?->id,
+                    $device->id,
 
                 'reason' =>
                     $validated['reason'],
@@ -2220,7 +2275,7 @@ class AdminWebController extends Controller
 
 
 
-    
+
 
 
 

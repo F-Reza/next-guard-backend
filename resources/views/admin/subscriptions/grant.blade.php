@@ -68,14 +68,19 @@
                     @csrf
 
 
+                    {{-- User --}}
                     <div class="mb-3">
 
-                        <label class="form-label">
+                        <label
+                            for="user_id"
+                            class="form-label"
+                        >
                             User
                         </label>
 
                         <select
                             name="user_id"
+                            id="user_id"
                             class="form-select
                                 @error('user_id')
                                 is-invalid
@@ -90,22 +95,59 @@
 
                             @foreach($users as $user)
 
-                                <option
-                                    value="{{ $user->id }}"
-                                    @selected(
-                                        old('user_id')
-                                        ==
-                                        $user->id
-                                    )
-                                >
+                                @php
 
-                                    {{ $user->name }}
+                                    $deviceData = $user->devices
+                                        ->map(function ($device) {
 
-                                    @if($user->email)
-                                        — {{ $user->email }}
-                                    @endif
+                                            return [
 
-                                </option>
+                                                'id' =>
+                                                    $device->id,
+
+                                                'name' =>
+                                                    $device->name
+                                                    ?: 'Device #'.$device->id,
+
+                                                'manufacturer' =>
+                                                    $device->manufacturer,
+
+                                                'model' =>
+                                                    $device->model,
+
+                                                'android_version' =>
+                                                    $device->android_version,
+
+                                                'status' =>
+                                                    $device->status,
+
+                                            ];
+
+                                        })
+                                        ->values()
+                                        ->all();
+
+                                @endphp
+
+                                    <option
+                                        value="{{ $user->id }}"
+                                        data-devices='@json($deviceData)'
+                                        @selected(
+                                            old('user_id')
+                                            ==
+                                            $user->id
+                                        )
+                                    >
+
+                                        {{ $user->name }}
+
+                                        @if($user->email)
+
+                                            — {{ $user->email }}
+
+                                        @endif
+
+                                    </option>
 
                             @endforeach
 
@@ -123,14 +165,66 @@
                     </div>
 
 
+                    {{-- Device --}}
                     <div class="mb-3">
 
-                        <label class="form-label">
+                        <label
+                            for="device_id"
+                            class="form-label"
+                        >
+                            Device
+                        </label>
+
+                        <select
+                            name="device_id"
+                            id="device_id"
+                            class="form-select
+                                @error('device_id')
+                                is-invalid
+                                @enderror"
+                            required
+                            disabled
+                        >
+
+                            <option value="">
+                                Select User First
+                            </option>
+
+                        </select>
+
+
+                        <div
+                            id="deviceHelp"
+                            class="form-text"
+                        >
+                            Select a user to load their active devices.
+                        </div>
+
+
+                        @error('device_id')
+
+                            <div class="invalid-feedback">
+                                {{ $message }}
+                            </div>
+
+                        @enderror
+
+                    </div>
+
+
+                    {{-- Plan --}}
+                    <div class="mb-3">
+
+                        <label
+                            for="plan_id"
+                            class="form-label"
+                        >
                             Plan
                         </label>
 
                         <select
                             name="plan_id"
+                            id="plan_id"
                             class="form-select
                                 @error('plan_id')
                                 is-invalid
@@ -147,6 +241,7 @@
 
                                 <option
                                     value="{{ $plan->id }}"
+                                    data-device-limit="{{ $plan->device_limit }}"
                                     @selected(
                                         old('plan_id')
                                         ==
@@ -193,56 +288,19 @@
                     </div>
 
 
+                    {{-- Grant Reason --}}
                     <div class="mb-3">
 
-                        <label class="form-label">
-                            Device ID
-                            <span class="text-muted">
-                                (Optional)
-                            </span>
-                        </label>
-
-                        <input
-                            type="number"
-                            name="device_id"
-                            value="{{ old('device_id') }}"
-                            class="form-control
-                                @error('device_id')
-                                is-invalid
-                                @enderror"
-                            min="1"
-                            placeholder="Example: 3"
+                        <label
+                            for="reason"
+                            class="form-label"
                         >
-
-
-                        <div class="form-text">
-
-                            Leave empty if the subscription
-                            is not being tied to a specific
-                            device yet.
-
-                        </div>
-
-
-                        @error('device_id')
-
-                            <div class="invalid-feedback">
-                                {{ $message }}
-                            </div>
-
-                        @enderror
-
-                    </div>
-
-
-                    <div class="mb-3">
-
-                        <label class="form-label">
                             Grant Reason
                         </label>
 
                         <textarea
                             name="reason"
+                            id="reason"
                             rows="4"
                             class="form-control
                                 @error('reason')
@@ -272,6 +330,12 @@
                         automatically from the selected
                         plan duration.
 
+                        The selected device will be linked
+                        to this subscription.
+
+                        Protection activation will run
+                        immediately for the selected device.
+
                         Source will be recorded as
 
                         <strong>
@@ -285,7 +349,9 @@
 
                         <button
                             type="submit"
+                            id="grantButton"
                             class="btn btn-primary"
+                            disabled
                             onclick="return confirm(
                                 'Grant this subscription?'
                             )"
@@ -314,5 +380,309 @@
     </div>
 
 </div>
+
+
+<script>
+
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+
+        const userSelect =
+            document.getElementById('user_id');
+
+        const deviceSelect =
+            document.getElementById('device_id');
+
+        const planSelect =
+            document.getElementById('plan_id');
+
+        const deviceHelp =
+            document.getElementById('deviceHelp');
+
+        const grantButton =
+            document.getElementById('grantButton');
+
+        const oldDeviceId =
+            @json(old('device_id'));
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Enable / Disable Grant Button
+        |--------------------------------------------------------------------------
+        */
+
+        function updateGrantButton() {
+
+            const hasUser =
+                userSelect.value !== '';
+
+            const hasDevice =
+                deviceSelect.value !== '';
+
+            const hasPlan =
+                planSelect.value !== '';
+
+            grantButton.disabled = !(
+                hasUser
+                &&
+                hasDevice
+                &&
+                hasPlan
+            );
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Load Devices for Selected User
+        |--------------------------------------------------------------------------
+        */
+
+        function loadDevices() {
+
+            const selectedOption =
+                userSelect.options[
+                    userSelect.selectedIndex
+                ];
+
+
+            deviceSelect.innerHTML = '';
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | No User Selected
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                !selectedOption
+                ||
+                !selectedOption.value
+            ) {
+
+                deviceSelect.disabled = true;
+
+                deviceSelect.innerHTML =
+                    '<option value="">'
+                    + 'Select User First'
+                    + '</option>';
+
+                deviceHelp.textContent =
+                    'Select a user to load their active devices.';
+
+                updateGrantButton();
+
+                return;
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Parse Device Data
+            |--------------------------------------------------------------------------
+            */
+
+            let devices = [];
+
+            try {
+
+                devices = JSON.parse(
+                    selectedOption.dataset.devices
+                    || '[]'
+                );
+
+            } catch (error) {
+
+                console.error(
+                    'Unable to parse device data.',
+                    error
+                );
+
+                devices = [];
+
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | User Has No Active Device
+            |--------------------------------------------------------------------------
+            */
+
+            if (devices.length === 0) {
+
+                deviceSelect.disabled = true;
+
+                deviceSelect.innerHTML =
+                    '<option value="">'
+                    + 'No Active Devices'
+                    + '</option>';
+
+                deviceHelp.textContent =
+                    'This user has no active devices. '
+                    + 'A subscription cannot be granted.';
+
+                updateGrantButton();
+
+                return;
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Populate Device Dropdown
+            |--------------------------------------------------------------------------
+            */
+
+            deviceSelect.disabled = false;
+
+            deviceSelect.innerHTML =
+                '<option value="">'
+                + 'Select Device'
+                + '</option>';
+
+
+            devices.forEach(function (device) {
+
+                const option =
+                    document.createElement('option');
+
+                option.value =
+                    device.id;
+
+
+                let label =
+                    device.name;
+
+
+                const deviceDetails = [
+                    device.manufacturer,
+                    device.model
+                ]
+                .filter(Boolean)
+                .join(' ');
+
+
+                if (deviceDetails) {
+
+                    label +=
+                        ' — '
+                        + deviceDetails;
+
+                }
+
+
+                if (device.android_version) {
+
+                    label +=
+                        ' — Android '
+                        + device.android_version;
+
+                }
+
+                if (device.status) {
+
+                    label +=
+                        ' — '
+                        + device.status.toUpperCase();
+
+                }
+
+
+                option.textContent =
+                    label;
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Restore Previous Selection After Validation Error
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    oldDeviceId
+                    &&
+                    String(oldDeviceId)
+                    ===
+                    String(device.id)
+                ) {
+
+                    option.selected =
+                        true;
+
+                }
+
+
+                deviceSelect.appendChild(
+                    option
+                );
+
+            });
+
+
+            deviceHelp.textContent =
+                devices.length
+                + ' active device(s) available.';
+
+
+            updateGrantButton();
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Event Listeners
+        |--------------------------------------------------------------------------
+        */
+
+        userSelect.addEventListener(
+            'change',
+            function () {
+
+                loadDevices();
+
+            }
+        );
+
+
+        deviceSelect.addEventListener(
+            'change',
+            function () {
+
+                updateGrantButton();
+
+            }
+        );
+
+
+        planSelect.addEventListener(
+            'change',
+            function () {
+
+                updateGrantButton();
+
+            }
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Initial State
+        |--------------------------------------------------------------------------
+        */
+
+        loadDevices();
+
+        updateGrantButton();
+
+    }
+);
+
+</script>
 
 @endsection
