@@ -242,36 +242,30 @@ class PaymentService
             */
 
 
+            $subscription->loadMissing('plan');
+
             $payment = Payment::create([
 
-
-                'user_id'=>
+                'user_id' =>
                     $user->id,
 
-
-                'subscription_id'=>
+                'subscription_id' =>
                     $subscription->id,
 
-
-                'gateway'=>
+                'gateway' =>
                     $data['gateway'] ?? 'manual',
 
-
-                'transaction_id'=>
+                'transaction_id' =>
                     $data['transaction_id'],
 
+                'amount' =>
+                    $subscription->plan->price,
 
-                'amount'=>
-                    $data['amount'],
+                'currency' =>
+                    $subscription->plan->currency,
 
-
-                'currency'=>
-                    $data['currency'] ?? 'USD',
-
-
-                'status'=>
+                'status' =>
                     'pending',
-
 
             ]);
 

@@ -142,6 +142,28 @@
             @if(
                 $admin->role === 'super_admin'
                 ||
+                $admin->permissions->contains('name', 'manage_payments')
+            )
+
+                <a
+                    href="{{ route('admin.payments') }}"
+                    class="nav-link
+                        {{ request()->routeIs('admin.payments*')
+                            ? 'active'
+                            : ''
+                        }}"
+                >
+                    <i class="bi bi-credit-card"></i>
+                    Payments
+                </a>
+
+            @endif
+
+
+
+            @if(
+                $admin->role === 'super_admin'
+                ||
                 $admin->permissions->contains('name', 'manage_licenses')
             )
 
@@ -151,6 +173,7 @@
                 </a>
 
             @endif
+
 
 
             <div class="small text-uppercase text-secondary px-3 mt-4 mb-2">

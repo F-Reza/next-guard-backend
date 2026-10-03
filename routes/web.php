@@ -284,7 +284,39 @@ Route::prefix('admin')
 
 
 
+
+
     
+            /*
+            |--------------------------------------------------------------------------
+            | Payments
+            |--------------------------------------------------------------------------
+            */
+
+            Route::get(
+                '/payments',
+                [AdminWebController::class, 'payments']
+            )->name('payments');
+
+
+            Route::get(
+                '/payments/webhooks',
+                [AdminWebController::class, 'paymentWebhooks']
+            )->name('payments.webhooks');
+
+
+            Route::get(
+                '/payments/webhooks/{id}',
+                [AdminWebController::class, 'paymentWebhookShow']
+            )->name('payments.webhooks.show');
+
+
+            Route::get(
+                '/payments/{id}',
+                [AdminWebController::class, 'paymentShow']
+            )->name('payments.show');
+
+
 
 
 

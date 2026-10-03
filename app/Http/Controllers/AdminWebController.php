@@ -7,20 +7,24 @@ use App\Models\AdminNotification;
 use App\Models\Device;
 use App\Models\LicenseCode;
 use App\Models\Payment;
+use App\Models\PaymentWebhook;
 use App\Models\Subscription;
+use App\Models\SubscriptionInvoice;
 use App\Models\SubscriptionPlan;
 use App\Models\User;
+
 use App\Services\AdminActivityLogger;
 use App\Services\AdminLoginSecurity;
 use App\Services\AdminNotificationService;
-use App\Services\SubscriptionChangeService;
 use App\Services\ProtectionActivationService;
+use App\Services\SubscriptionChangeService;
+
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\DB;
 
 class AdminWebController extends Controller
 {
@@ -2273,13 +2277,1004 @@ class AdminWebController extends Controller
 
 
 
+    /**
+     * Admin subscription plans list.
+     */
+    public function plans(Request $request): View
+    {
+        /** @var Admin|null $admin */
+        $admin = Auth::guard('admin_web')->user();
+
+        if (!$admin) {
+            abort(401);
+        }
+
+        $admin->load('permissions');
+
+        $this->ensurePlanPermission($admin);
+
+
+        $query = SubscriptionPlan::query()
+            ->withCount('subscriptions');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Search
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('search')) {
+
+            $search = $request->input('search');
+
+            $query->where(function ($q) use ($search) {
+
+                $q->where(
+                    'name',
+                    'like',
+                    "%{$search}%"
+                )
+                ->orWhere(
+                    'description',
+                    'like',
+                    "%{$search}%"
+                );
+
+            });
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Status Filter
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('status')) {
+
+            $query->where(
+                'status',
+                $request->input('status')
+            );
+        }
+
+
+        $plans = $query
+            ->orderBy('price')
+            ->paginate(20)
+            ->withQueryString();
+
+
+        return view(
+            'admin.plans.index',
+            compact(
+                'admin',
+                'plans'
+            )
+        );
+    }
+
+
+    /**
+     * Show create plan form.
+     */
+    public function planCreate(): View
+    {
+        /** @var Admin|null $admin */
+        $admin = Auth::guard('admin_web')->user();
+
+        if (!$admin) {
+            abort(401);
+        }
+
+        $admin->load('permissions');
+
+        $this->ensurePlanPermission($admin);
+
+
+        return view(
+            'admin.plans.create',
+            compact('admin')
+        );
+    }
+
+
+    /**
+     * Store subscription plan.
+     */
+    public function planStore(
+        Request $request
+    ): RedirectResponse {
+
+        /** @var Admin|null $admin */
+        $admin = Auth::guard('admin_web')->user();
+
+        if (!$admin) {
+            abort(401);
+        }
+
+        $admin->load('permissions');
+
+        $this->ensurePlanPermission($admin);
+
+
+        $validated = $request->validate([
+
+            'name' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'description' => [
+                'nullable',
+                'string',
+                'max:1000',
+            ],
+
+            'price' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
+
+            'currency' => [
+                'required',
+                'string',
+                'max:10',
+            ],
+
+            'duration_days' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:3650',
+            ],
+
+            'device_limit' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:100',
+            ],
+
+            'status' => [
+                'required',
+                'in:active,inactive',
+            ],
+
+            'features' => [
+                'nullable',
+                'array',
+            ],
+
+            'features.betting_block' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'features.adult_content_block' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'features.facebook_ad_block' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'features.youtube_ad_block' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'features.safe_search' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'features.dns_protection' => [
+                'nullable',
+                'boolean',
+            ],
+
+        ]);
+
+
+        $features = [
+
+            'betting_block' =>
+                $request->boolean(
+                    'features.betting_block'
+                ),
+
+            'adult_content_block' =>
+                $request->boolean(
+                    'features.adult_content_block'
+                ),
+
+            'facebook_ad_block' =>
+                $request->boolean(
+                    'features.facebook_ad_block'
+                ),
+
+            'youtube_ad_block' =>
+                $request->boolean(
+                    'features.youtube_ad_block'
+                ),
+
+            'safe_search' =>
+                $request->boolean(
+                    'features.safe_search'
+                ),
+
+            'dns_protection' =>
+                $request->boolean(
+                    'features.dns_protection'
+                ),
+
+        ];
+
+
+        $plan = SubscriptionPlan::create([
+
+            'name' =>
+                $validated['name'],
+
+            'description' =>
+                $validated['description'] ?? null,
+
+            'price' =>
+                $validated['price'],
+
+            'currency' =>
+                strtoupper(
+                    $validated['currency']
+                ),
+
+            'duration_days' =>
+                $validated['duration_days'],
+
+            'device_limit' =>
+                $validated['device_limit'],
+
+            'status' =>
+                $validated['status'],
+
+            'features' =>
+                $features,
+
+        ]);
+
+
+        AdminActivityLogger::log(
+            'ADMIN_PLAN_CREATED',
+            'Admin created a subscription plan.',
+            $request,
+            $admin,
+            AdminActivityLogger::INFO,
+            [
+                'plan_id' =>
+                    $plan->id,
+
+                'plan_name' =>
+                    $plan->name,
+
+                'features' =>
+                    $features,
+            ]
+        );
+
+
+        return redirect()
+            ->route(
+                'admin.plans.show',
+                $plan->id
+            )
+            ->with(
+                'success',
+                'Subscription plan created successfully.'
+            );
+    }
+
+
+    /**
+     * Show subscription plan.
+     */
+    public function planShow(int $id): View
+    {
+        /** @var Admin|null $admin */
+        $admin = Auth::guard('admin_web')->user();
+
+        if (!$admin) {
+            abort(401);
+        }
+
+        $admin->load('permissions');
+
+        $this->ensurePlanPermission($admin);
+
+
+        $plan = SubscriptionPlan::query()
+            ->withCount([
+                'subscriptions',
+            ])
+            ->findOrFail($id);
+
+
+        $activeSubscriptions =
+            $plan->subscriptions()
+                ->where(
+                    'status',
+                    'active'
+                )
+                ->count();
+
+
+        return view(
+            'admin.plans.show',
+            compact(
+                'admin',
+                'plan',
+                'activeSubscriptions'
+            )
+        );
+    }
+
+
+    /**
+     * Show edit plan form.
+     */
+    public function planEdit(int $id): View
+    {
+        /** @var Admin|null $admin */
+        $admin = Auth::guard('admin_web')->user();
+
+        if (!$admin) {
+            abort(401);
+        }
+
+        $admin->load('permissions');
+
+        $this->ensurePlanPermission($admin);
+
+
+        $plan = SubscriptionPlan::findOrFail($id);
+
+
+        return view(
+            'admin.plans.edit',
+            compact(
+                'admin',
+                'plan'
+            )
+        );
+    }
+
+    /**
+     * Update subscription plan.
+     */
+    /**
+     * Update subscription plan.
+     */
+    public function planUpdate(
+        Request $request,
+        int $id
+    ): RedirectResponse {
+
+        /** @var Admin|null $admin */
+        $admin = Auth::guard('admin_web')->user();
+
+        if (!$admin) {
+            abort(401);
+        }
+
+        $admin->load('permissions');
+
+        $this->ensurePlanPermission($admin);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Find Plan
+        |--------------------------------------------------------------------------
+        */
+
+        $plan = SubscriptionPlan::findOrFail($id);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate
+        |--------------------------------------------------------------------------
+        */
+
+        $validated = $request->validate([
+
+            'name' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'description' => [
+                'nullable',
+                'string',
+                'max:1000',
+            ],
+
+            'price' => [
+                'required',
+                'numeric',
+                'min:0',
+            ],
+
+            'currency' => [
+                'required',
+                'string',
+                'max:10',
+            ],
+
+            'duration_days' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:3650',
+            ],
+
+            'device_limit' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:100',
+            ],
+
+            'status' => [
+                'required',
+                'in:active,inactive',
+            ],
+
+            'features' => [
+                'nullable',
+                'array',
+            ],
+
+            'features.betting_block' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'features.adult_content_block' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'features.facebook_ad_block' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'features.youtube_ad_block' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'features.safe_search' => [
+                'nullable',
+                'boolean',
+            ],
+
+            'features.dns_protection' => [
+                'nullable',
+                'boolean',
+            ],
+
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Normalize New Feature Map
+        |--------------------------------------------------------------------------
+        */
+
+        $features = [
+
+            'betting_block' =>
+                $request->boolean(
+                    'features.betting_block'
+                ),
+
+            'adult_content_block' =>
+                $request->boolean(
+                    'features.adult_content_block'
+                ),
+
+            'facebook_ad_block' =>
+                $request->boolean(
+                    'features.facebook_ad_block'
+                ),
+
+            'youtube_ad_block' =>
+                $request->boolean(
+                    'features.youtube_ad_block'
+                ),
+
+            'safe_search' =>
+                $request->boolean(
+                    'features.safe_search'
+                ),
+
+            'dns_protection' =>
+                $request->boolean(
+                    'features.dns_protection'
+                ),
+
+        ];
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Existing Feature Map
+        |--------------------------------------------------------------------------
+        */
+
+        $oldFeatures = is_array($plan->features)
+            ? $plan->features
+            : [];
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Backward Compatibility
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            array_key_exists(
+                'adult_block',
+                $oldFeatures
+            )
+            &&
+            !array_key_exists(
+                'adult_content_block',
+                $oldFeatures
+            )
+        ) {
+
+            $oldFeatures[
+                'adult_content_block'
+            ] = (bool) $oldFeatures[
+                'adult_block'
+            ];
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Normalize Old Feature Map
+        |--------------------------------------------------------------------------
+        |
+        | This ensures missing old keys are treated as false.
+        |
+        */
+
+        $oldNormalizedFeatures = [
+
+            'betting_block' =>
+                (bool) (
+                    $oldFeatures[
+                        'betting_block'
+                    ] ?? false
+                ),
+
+            'adult_content_block' =>
+                (bool) (
+                    $oldFeatures[
+                        'adult_content_block'
+                    ] ?? false
+                ),
+
+            'facebook_ad_block' =>
+                (bool) (
+                    $oldFeatures[
+                        'facebook_ad_block'
+                    ] ?? false
+                ),
+
+            'youtube_ad_block' =>
+                (bool) (
+                    $oldFeatures[
+                        'youtube_ad_block'
+                    ] ?? false
+                ),
+
+            'safe_search' =>
+                (bool) (
+                    $oldFeatures[
+                        'safe_search'
+                    ] ?? false
+                ),
+
+            'dns_protection' =>
+                (bool) (
+                    $oldFeatures[
+                        'dns_protection'
+                    ] ?? false
+                ),
+
+        ];
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Detect Protection Feature Change
+        |--------------------------------------------------------------------------
+        */
+
+        $featuresChanged =
+            $oldNormalizedFeatures !== $features;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Store Old Plan Data For Audit
+        |--------------------------------------------------------------------------
+        */
+
+        $oldData = [
+
+            'name' =>
+                $plan->name,
+
+            'price' =>
+                $plan->price,
+
+            'currency' =>
+                $plan->currency,
+
+            'duration_days' =>
+                $plan->duration_days,
+
+            'device_limit' =>
+                $plan->device_limit,
+
+            'status' =>
+                $plan->status,
+
+            'features' =>
+                $oldNormalizedFeatures,
+
+        ];
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update Plan
+        |--------------------------------------------------------------------------
+        */
+
+        $plan->update([
+
+            'name' =>
+                $validated['name'],
+
+            'description' =>
+                $validated['description']
+                ?? null,
+
+            'price' =>
+                $validated['price'],
+
+            'currency' =>
+                strtoupper(
+                    $validated['currency']
+                ),
+
+            'duration_days' =>
+                $validated['duration_days'],
+
+            'device_limit' =>
+                $validated['device_limit'],
+
+            'status' =>
+                $validated['status'],
+
+            'features' =>
+                $features,
+
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Re-sync Existing Active Subscribers
+        |--------------------------------------------------------------------------
+        |
+        | Only when protection features changed.
+        |
+        */
+
+        $resyncedDevices = 0;
+
+        $failedDevices = 0;
+
+
+        if ($featuresChanged) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Active Subscriptions Using This Plan
+            |--------------------------------------------------------------------------
+            */
+
+            $activeSubscriptions =
+                Subscription::query()
+                    ->where(
+                        'subscription_plan_id',
+                        $plan->id
+                    )
+                    ->where(
+                        'status',
+                        'active'
+                    )
+                    ->whereNotNull(
+                        'device_id'
+                    )
+                    ->with([
+                        'device',
+                        'plan',
+                    ])
+                    ->get();
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Avoid Duplicate Device Sync
+            |--------------------------------------------------------------------------
+            |
+            | Defensive protection in case historical data contains more than
+            | one active subscription for the same device.
+            |
+            */
+
+            $activeSubscriptions =
+                $activeSubscriptions
+                    ->unique('device_id')
+                    ->values();
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Apply Updated Features To Each Device
+            |--------------------------------------------------------------------------
+            */
+
+            foreach (
+                $activeSubscriptions
+                as $activeSubscription
+            ) {
+
+                try {
+
+                    ProtectionActivationService::activate(
+                        $activeSubscription
+                    );
+
+                    $resyncedDevices++;
+
+                } catch (\Throwable $e) {
+
+                    $failedDevices++;
+
+                    report($e);
+                }
+            }
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Audit Log
+        |--------------------------------------------------------------------------
+        */
+
+        AdminActivityLogger::log(
+
+            'ADMIN_PLAN_UPDATED',
+
+            'Admin updated a subscription plan.',
+
+            $request,
+
+            $admin,
+
+            AdminActivityLogger::INFO,
+
+            [
+                'plan_id' =>
+                    $plan->id,
+
+                'old' =>
+                    $oldData,
+
+                'new' => [
+
+                    'name' =>
+                        $plan->name,
+
+                    'price' =>
+                        $plan->price,
+
+                    'currency' =>
+                        $plan->currency,
+
+                    'duration_days' =>
+                        $plan->duration_days,
+
+                    'device_limit' =>
+                        $plan->device_limit,
+
+                    'status' =>
+                        $plan->status,
+
+                    'features' =>
+                        $plan->features,
+
+                ],
+
+                'features_changed' =>
+                    $featuresChanged,
+
+                'protection_resynced_devices' =>
+                    $resyncedDevices,
+
+                'protection_resync_failures' =>
+                    $failedDevices,
+            ]
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Success Message
+        |--------------------------------------------------------------------------
+        */
+
+        $message =
+            'Subscription plan updated successfully.';
+
+
+        if ($featuresChanged) {
+
+            $message .=
+                ' Protection settings were refreshed for '
+                .$resyncedDevices
+                .' active device(s).';
+
+
+            if ($failedDevices > 0) {
+
+                $message .=
+                    ' '
+                    .$failedDevices
+                    .' device(s) could not be refreshed.';
+            }
+        }
+
+
+        return redirect()
+            ->route(
+                'admin.plans.show',
+                $plan->id
+            )
+            ->with(
+                'success',
+                $message
+            );
+    }
+
+
+    /**
+     * Activate or deactivate subscription plan.
+     */
+    public function planToggleStatus(
+        Request $request,
+        int $id
+    ): RedirectResponse {
+
+        /** @var Admin|null $admin */
+        $admin = Auth::guard('admin_web')->user();
+
+        if (!$admin) {
+            abort(401);
+        }
+
+        $admin->load('permissions');
+
+        $this->ensurePlanPermission($admin);
+
+
+        $plan = SubscriptionPlan::findOrFail($id);
+
+        $oldStatus = $plan->status;
+
+        $newStatus =
+            $plan->status === 'active'
+                ? 'inactive'
+                : 'active';
+
+
+        $plan->update([
+            'status' => $newStatus,
+        ]);
+
+
+        AdminActivityLogger::log(
+            'ADMIN_PLAN_STATUS_CHANGED',
+            'Admin changed subscription plan status.',
+            $request,
+            $admin,
+            AdminActivityLogger::INFO,
+            [
+                'plan_id' =>
+                    $plan->id,
+
+                'old_status' =>
+                    $oldStatus,
+
+                'new_status' =>
+                    $newStatus,
+            ]
+        );
+
+
+        return redirect()
+            ->route(
+                'admin.plans.show',
+                $plan->id
+            )
+            ->with(
+                'success',
+                $newStatus === 'active'
+                    ? 'Plan activated successfully.'
+                    : 'Plan deactivated successfully.'
+            );
+    }
+
+
 /**
- * Admin subscription plans list.
+ * Check payment management permission.
  */
-public function plans(Request $request): View
-{
+private function ensurePaymentPermission(
+    Admin $admin
+): void {
+
+    if (
+        $admin->role !== 'super_admin'
+        &&
+        !$admin->permissions->contains(
+            'name',
+            'manage_payments'
+        )
+    ) {
+        abort(403);
+    }
+}
+
+
+
+/**
+ * Admin payments list.
+ */
+public function payments(
+    Request $request
+): View {
+
     /** @var Admin|null $admin */
-    $admin = Auth::guard('admin_web')->user();
+    $admin = Auth::guard('admin_web')
+        ->user();
 
     if (!$admin) {
         abort(401);
@@ -2287,11 +3282,14 @@ public function plans(Request $request): View
 
     $admin->load('permissions');
 
-    $this->ensurePlanPermission($admin);
+    $this->ensurePaymentPermission($admin);
 
 
-    $query = SubscriptionPlan::query()
-        ->withCount('subscriptions');
+    $query = Payment::query()
+        ->with([
+            'user',
+            'subscription.plan',
+        ]);
 
 
     /*
@@ -2302,22 +3300,252 @@ public function plans(Request $request): View
 
     if ($request->filled('search')) {
 
-        $search = $request->input('search');
+        $search = trim(
+            $request->input('search')
+        );
+
+        $query->where(
+            function ($q) use ($search) {
+
+                $q->where(
+                    'transaction_id',
+                    'like',
+                    "%{$search}%"
+                )
+                ->orWhere(
+                    'provider_transaction_id',
+                    'like',
+                    "%{$search}%"
+                )
+                ->orWhereHas(
+                    'user',
+                    function ($userQuery) use ($search) {
+
+                        $userQuery
+                            ->where(
+                                'name',
+                                'like',
+                                "%{$search}%"
+                            )
+                            ->orWhere(
+                                'email',
+                                'like',
+                                "%{$search}%"
+                            );
+
+                    }
+                );
+
+            }
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Status
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('status')) {
+
+        $query->where(
+            'status',
+            $request->input('status')
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Gateway
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('gateway')) {
+
+        $query->where(
+            'gateway',
+            $request->input('gateway')
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Payments
+    |--------------------------------------------------------------------------
+    */
+
+    $payments = $query
+        ->latest('id')
+        ->paginate(20)
+        ->withQueryString();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Gateway Filter Options
+    |--------------------------------------------------------------------------
+    */
+
+    $gateways = Payment::query()
+        ->whereNotNull('gateway')
+        ->where('gateway', '!=', '')
+        ->distinct()
+        ->orderBy('gateway')
+        ->pluck('gateway');
+
+
+    return view(
+        'admin.payments.index',
+        compact(
+            'admin',
+            'payments',
+            'gateways'
+        )
+    );
+}
+
+
+/**
+ * Admin payment details.
+ */
+public function paymentShow(
+    int $id
+): View {
+
+    /** @var Admin|null $admin */
+    $admin = Auth::guard('admin_web')
+        ->user();
+
+    if (!$admin) {
+        abort(401);
+    }
+
+    $admin->load('permissions');
+
+    $this->ensurePaymentPermission($admin);
+
+
+    $payment = Payment::with([
+        'user',
+        'subscription.plan',
+        'subscription.device',
+    ])
+    ->findOrFail($id);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Linked Invoice
+    |--------------------------------------------------------------------------
+    */
+
+    $invoice = null;
+
+    if ($payment->subscription_id) {
+
+        $invoice = SubscriptionInvoice::query()
+            ->where(
+                'subscription_id',
+                $payment->subscription_id
+            )
+            ->latest('id')
+            ->first();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Related Webhooks
+    |--------------------------------------------------------------------------
+    */
+
+    $webhooks = PaymentWebhook::query()
+        ->where(
+            'transaction_id',
+            $payment->transaction_id
+        )
+        ->latest('id')
+        ->limit(10)
+        ->get();
+
+
+    return view(
+        'admin.payments.show',
+        compact(
+            'admin',
+            'payment',
+            'invoice',
+            'webhooks'
+        )
+    );
+}
+
+
+
+public function paymentWebhooks(
+    Request $request
+): View {
+
+    /** @var Admin|null $admin */
+    $admin = Auth::guard('admin_web')
+        ->user();
+
+    if (!$admin) {
+        abort(401);
+    }
+
+    $admin->load('permissions');
+
+    $this->ensurePaymentPermission($admin);
+
+
+    $query = PaymentWebhook::query();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Search
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('search')) {
+
+        $search = trim(
+            $request->input('search')
+        );
 
         $query->where(function ($q) use ($search) {
 
             $q->where(
-                'name',
+                'event_id',
                 'like',
                 "%{$search}%"
             )
             ->orWhere(
-                'description',
+                'transaction_id',
                 'like',
                 "%{$search}%"
             );
 
         });
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Gateway Filter
+    |--------------------------------------------------------------------------
+    */
+
+    if ($request->filled('gateway')) {
+
+        $query->where(
+            'gateway',
+            $request->input('gateway')
+        );
     }
 
 
@@ -2336,29 +3564,38 @@ public function plans(Request $request): View
     }
 
 
-    $plans = $query
-        ->orderBy('price')
+    $webhooks = $query
+        ->latest('id')
         ->paginate(20)
         ->withQueryString();
 
 
+    $gateways = PaymentWebhook::query()
+        ->whereNotNull('gateway')
+        ->where('gateway', '!=', '')
+        ->distinct()
+        ->orderBy('gateway')
+        ->pluck('gateway');
+
+
     return view(
-        'admin.plans.index',
+        'admin.payments.webhooks',
         compact(
             'admin',
-            'plans'
+            'webhooks',
+            'gateways'
         )
     );
 }
 
 
-/**
- * Show create plan form.
- */
-public function planCreate(): View
-{
+public function paymentWebhookShow(
+    int $id
+): View {
+
     /** @var Admin|null $admin */
-    $admin = Auth::guard('admin_web')->user();
+    $admin = Auth::guard('admin_web')
+        ->user();
 
     if (!$admin) {
         abort(401);
@@ -2366,878 +3603,50 @@ public function planCreate(): View
 
     $admin->load('permissions');
 
-    $this->ensurePlanPermission($admin);
+    $this->ensurePaymentPermission($admin);
 
 
-    return view(
-        'admin.plans.create',
-        compact('admin')
-    );
-}
-
-
-/**
- * Store subscription plan.
- */
-public function planStore(
-    Request $request
-): RedirectResponse {
-
-    /** @var Admin|null $admin */
-    $admin = Auth::guard('admin_web')->user();
-
-    if (!$admin) {
-        abort(401);
-    }
-
-    $admin->load('permissions');
-
-    $this->ensurePlanPermission($admin);
-
-
-    $validated = $request->validate([
-
-        'name' => [
-            'required',
-            'string',
-            'max:100',
-        ],
-
-        'description' => [
-            'nullable',
-            'string',
-            'max:1000',
-        ],
-
-        'price' => [
-            'required',
-            'numeric',
-            'min:0',
-        ],
-
-        'currency' => [
-            'required',
-            'string',
-            'max:10',
-        ],
-
-        'duration_days' => [
-            'required',
-            'integer',
-            'min:1',
-            'max:3650',
-        ],
-
-        'device_limit' => [
-            'required',
-            'integer',
-            'min:1',
-            'max:100',
-        ],
-
-        'status' => [
-            'required',
-            'in:active,inactive',
-        ],
-
-        'features' => [
-            'nullable',
-            'array',
-        ],
-
-        'features.betting_block' => [
-            'nullable',
-            'boolean',
-        ],
-
-        'features.adult_content_block' => [
-            'nullable',
-            'boolean',
-        ],
-
-        'features.facebook_ad_block' => [
-            'nullable',
-            'boolean',
-        ],
-
-        'features.youtube_ad_block' => [
-            'nullable',
-            'boolean',
-        ],
-
-        'features.safe_search' => [
-            'nullable',
-            'boolean',
-        ],
-
-        'features.dns_protection' => [
-            'nullable',
-            'boolean',
-        ],
-
-    ]);
-
-
-    $features = [
-
-        'betting_block' =>
-            $request->boolean(
-                'features.betting_block'
-            ),
-
-        'adult_content_block' =>
-            $request->boolean(
-                'features.adult_content_block'
-            ),
-
-        'facebook_ad_block' =>
-            $request->boolean(
-                'features.facebook_ad_block'
-            ),
-
-        'youtube_ad_block' =>
-            $request->boolean(
-                'features.youtube_ad_block'
-            ),
-
-        'safe_search' =>
-            $request->boolean(
-                'features.safe_search'
-            ),
-
-        'dns_protection' =>
-            $request->boolean(
-                'features.dns_protection'
-            ),
-
-    ];
-
-
-    $plan = SubscriptionPlan::create([
-
-        'name' =>
-            $validated['name'],
-
-        'description' =>
-            $validated['description'] ?? null,
-
-        'price' =>
-            $validated['price'],
-
-        'currency' =>
-            strtoupper(
-                $validated['currency']
-            ),
-
-        'duration_days' =>
-            $validated['duration_days'],
-
-        'device_limit' =>
-            $validated['device_limit'],
-
-        'status' =>
-            $validated['status'],
-
-        'features' =>
-            $features,
-
-    ]);
-
-
-    AdminActivityLogger::log(
-        'ADMIN_PLAN_CREATED',
-        'Admin created a subscription plan.',
-        $request,
-        $admin,
-        AdminActivityLogger::INFO,
-        [
-            'plan_id' =>
-                $plan->id,
-
-            'plan_name' =>
-                $plan->name,
-
-            'features' =>
-                $features,
-        ]
+    $webhook = PaymentWebhook::findOrFail(
+        $id
     );
 
 
-    return redirect()
-        ->route(
-            'admin.plans.show',
-            $plan->id
-        )
-        ->with(
-            'success',
-            'Subscription plan created successfully.'
-        );
-}
+    $payment = null;
 
+    if ($webhook->transaction_id) {
 
-/**
- * Show subscription plan.
- */
-public function planShow(int $id): View
-{
-    /** @var Admin|null $admin */
-    $admin = Auth::guard('admin_web')->user();
-
-    if (!$admin) {
-        abort(401);
-    }
-
-    $admin->load('permissions');
-
-    $this->ensurePlanPermission($admin);
-
-
-    $plan = SubscriptionPlan::query()
-        ->withCount([
-            'subscriptions',
-        ])
-        ->findOrFail($id);
-
-
-    $activeSubscriptions =
-        $plan->subscriptions()
+        $payment = Payment::query()
             ->where(
-                'status',
-                'active'
+                'transaction_id',
+                $webhook->transaction_id
             )
-            ->count();
+            ->first();
+    }
 
 
     return view(
-        'admin.plans.show',
+        'admin.payments.webhook-show',
         compact(
             'admin',
-            'plan',
-            'activeSubscriptions'
+            'webhook',
+            'payment'
         )
     );
 }
 
 
-/**
- * Show edit plan form.
- */
-public function planEdit(int $id): View
-{
-    /** @var Admin|null $admin */
-    $admin = Auth::guard('admin_web')->user();
 
-    if (!$admin) {
-        abort(401);
-    }
 
-    $admin->load('permissions');
 
-    $this->ensurePlanPermission($admin);
 
 
-    $plan = SubscriptionPlan::findOrFail($id);
 
 
-    return view(
-        'admin.plans.edit',
-        compact(
-            'admin',
-            'plan'
-        )
-    );
-}
 
-/**
- * Update subscription plan.
- */
-/**
- * Update subscription plan.
- */
-public function planUpdate(
-    Request $request,
-    int $id
-): RedirectResponse {
 
-    /** @var Admin|null $admin */
-    $admin = Auth::guard('admin_web')->user();
 
-    if (!$admin) {
-        abort(401);
-    }
 
-    $admin->load('permissions');
 
-    $this->ensurePlanPermission($admin);
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Find Plan
-    |--------------------------------------------------------------------------
-    */
-
-    $plan = SubscriptionPlan::findOrFail($id);
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Validate
-    |--------------------------------------------------------------------------
-    */
-
-    $validated = $request->validate([
-
-        'name' => [
-            'required',
-            'string',
-            'max:100',
-        ],
-
-        'description' => [
-            'nullable',
-            'string',
-            'max:1000',
-        ],
-
-        'price' => [
-            'required',
-            'numeric',
-            'min:0',
-        ],
-
-        'currency' => [
-            'required',
-            'string',
-            'max:10',
-        ],
-
-        'duration_days' => [
-            'required',
-            'integer',
-            'min:1',
-            'max:3650',
-        ],
-
-        'device_limit' => [
-            'required',
-            'integer',
-            'min:1',
-            'max:100',
-        ],
-
-        'status' => [
-            'required',
-            'in:active,inactive',
-        ],
-
-        'features' => [
-            'nullable',
-            'array',
-        ],
-
-        'features.betting_block' => [
-            'nullable',
-            'boolean',
-        ],
-
-        'features.adult_content_block' => [
-            'nullable',
-            'boolean',
-        ],
-
-        'features.facebook_ad_block' => [
-            'nullable',
-            'boolean',
-        ],
-
-        'features.youtube_ad_block' => [
-            'nullable',
-            'boolean',
-        ],
-
-        'features.safe_search' => [
-            'nullable',
-            'boolean',
-        ],
-
-        'features.dns_protection' => [
-            'nullable',
-            'boolean',
-        ],
-
-    ]);
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Normalize New Feature Map
-    |--------------------------------------------------------------------------
-    */
-
-    $features = [
-
-        'betting_block' =>
-            $request->boolean(
-                'features.betting_block'
-            ),
-
-        'adult_content_block' =>
-            $request->boolean(
-                'features.adult_content_block'
-            ),
-
-        'facebook_ad_block' =>
-            $request->boolean(
-                'features.facebook_ad_block'
-            ),
-
-        'youtube_ad_block' =>
-            $request->boolean(
-                'features.youtube_ad_block'
-            ),
-
-        'safe_search' =>
-            $request->boolean(
-                'features.safe_search'
-            ),
-
-        'dns_protection' =>
-            $request->boolean(
-                'features.dns_protection'
-            ),
-
-    ];
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Existing Feature Map
-    |--------------------------------------------------------------------------
-    */
-
-    $oldFeatures = is_array($plan->features)
-        ? $plan->features
-        : [];
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Backward Compatibility
-    |--------------------------------------------------------------------------
-    */
-
-    if (
-        array_key_exists(
-            'adult_block',
-            $oldFeatures
-        )
-        &&
-        !array_key_exists(
-            'adult_content_block',
-            $oldFeatures
-        )
-    ) {
-
-        $oldFeatures[
-            'adult_content_block'
-        ] = (bool) $oldFeatures[
-            'adult_block'
-        ];
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Normalize Old Feature Map
-    |--------------------------------------------------------------------------
-    |
-    | This ensures missing old keys are treated as false.
-    |
-    */
-
-    $oldNormalizedFeatures = [
-
-        'betting_block' =>
-            (bool) (
-                $oldFeatures[
-                    'betting_block'
-                ] ?? false
-            ),
-
-        'adult_content_block' =>
-            (bool) (
-                $oldFeatures[
-                    'adult_content_block'
-                ] ?? false
-            ),
-
-        'facebook_ad_block' =>
-            (bool) (
-                $oldFeatures[
-                    'facebook_ad_block'
-                ] ?? false
-            ),
-
-        'youtube_ad_block' =>
-            (bool) (
-                $oldFeatures[
-                    'youtube_ad_block'
-                ] ?? false
-            ),
-
-        'safe_search' =>
-            (bool) (
-                $oldFeatures[
-                    'safe_search'
-                ] ?? false
-            ),
-
-        'dns_protection' =>
-            (bool) (
-                $oldFeatures[
-                    'dns_protection'
-                ] ?? false
-            ),
-
-    ];
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Detect Protection Feature Change
-    |--------------------------------------------------------------------------
-    */
-
-    $featuresChanged =
-        $oldNormalizedFeatures !== $features;
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Store Old Plan Data For Audit
-    |--------------------------------------------------------------------------
-    */
-
-    $oldData = [
-
-        'name' =>
-            $plan->name,
-
-        'price' =>
-            $plan->price,
-
-        'currency' =>
-            $plan->currency,
-
-        'duration_days' =>
-            $plan->duration_days,
-
-        'device_limit' =>
-            $plan->device_limit,
-
-        'status' =>
-            $plan->status,
-
-        'features' =>
-            $oldNormalizedFeatures,
-
-    ];
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Update Plan
-    |--------------------------------------------------------------------------
-    */
-
-    $plan->update([
-
-        'name' =>
-            $validated['name'],
-
-        'description' =>
-            $validated['description']
-            ?? null,
-
-        'price' =>
-            $validated['price'],
-
-        'currency' =>
-            strtoupper(
-                $validated['currency']
-            ),
-
-        'duration_days' =>
-            $validated['duration_days'],
-
-        'device_limit' =>
-            $validated['device_limit'],
-
-        'status' =>
-            $validated['status'],
-
-        'features' =>
-            $features,
-
-    ]);
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Re-sync Existing Active Subscribers
-    |--------------------------------------------------------------------------
-    |
-    | Only when protection features changed.
-    |
-    */
-
-    $resyncedDevices = 0;
-
-    $failedDevices = 0;
-
-
-    if ($featuresChanged) {
-
-        /*
-        |--------------------------------------------------------------------------
-        | Active Subscriptions Using This Plan
-        |--------------------------------------------------------------------------
-        */
-
-        $activeSubscriptions =
-            Subscription::query()
-                ->where(
-                    'subscription_plan_id',
-                    $plan->id
-                )
-                ->where(
-                    'status',
-                    'active'
-                )
-                ->whereNotNull(
-                    'device_id'
-                )
-                ->with([
-                    'device',
-                    'plan',
-                ])
-                ->get();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Avoid Duplicate Device Sync
-        |--------------------------------------------------------------------------
-        |
-        | Defensive protection in case historical data contains more than
-        | one active subscription for the same device.
-        |
-        */
-
-        $activeSubscriptions =
-            $activeSubscriptions
-                ->unique('device_id')
-                ->values();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Apply Updated Features To Each Device
-        |--------------------------------------------------------------------------
-        */
-
-        foreach (
-            $activeSubscriptions
-            as $activeSubscription
-        ) {
-
-            try {
-
-                ProtectionActivationService::activate(
-                    $activeSubscription
-                );
-
-                $resyncedDevices++;
-
-            } catch (\Throwable $e) {
-
-                $failedDevices++;
-
-                report($e);
-            }
-        }
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Audit Log
-    |--------------------------------------------------------------------------
-    */
-
-    AdminActivityLogger::log(
-
-        'ADMIN_PLAN_UPDATED',
-
-        'Admin updated a subscription plan.',
-
-        $request,
-
-        $admin,
-
-        AdminActivityLogger::INFO,
-
-        [
-            'plan_id' =>
-                $plan->id,
-
-            'old' =>
-                $oldData,
-
-            'new' => [
-
-                'name' =>
-                    $plan->name,
-
-                'price' =>
-                    $plan->price,
-
-                'currency' =>
-                    $plan->currency,
-
-                'duration_days' =>
-                    $plan->duration_days,
-
-                'device_limit' =>
-                    $plan->device_limit,
-
-                'status' =>
-                    $plan->status,
-
-                'features' =>
-                    $plan->features,
-
-            ],
-
-            'features_changed' =>
-                $featuresChanged,
-
-            'protection_resynced_devices' =>
-                $resyncedDevices,
-
-            'protection_resync_failures' =>
-                $failedDevices,
-        ]
-    );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Success Message
-    |--------------------------------------------------------------------------
-    */
-
-    $message =
-        'Subscription plan updated successfully.';
-
-
-    if ($featuresChanged) {
-
-        $message .=
-            ' Protection settings were refreshed for '
-            .$resyncedDevices
-            .' active device(s).';
-
-
-        if ($failedDevices > 0) {
-
-            $message .=
-                ' '
-                .$failedDevices
-                .' device(s) could not be refreshed.';
-        }
-    }
-
-
-    return redirect()
-        ->route(
-            'admin.plans.show',
-            $plan->id
-        )
-        ->with(
-            'success',
-            $message
-        );
-}
-
-
-/**
- * Activate or deactivate subscription plan.
- */
-public function planToggleStatus(
-    Request $request,
-    int $id
-): RedirectResponse {
-
-    /** @var Admin|null $admin */
-    $admin = Auth::guard('admin_web')->user();
-
-    if (!$admin) {
-        abort(401);
-    }
-
-    $admin->load('permissions');
-
-    $this->ensurePlanPermission($admin);
-
-
-    $plan = SubscriptionPlan::findOrFail($id);
-
-    $oldStatus = $plan->status;
-
-    $newStatus =
-        $plan->status === 'active'
-            ? 'inactive'
-            : 'active';
-
-
-    $plan->update([
-        'status' => $newStatus,
-    ]);
-
-
-    AdminActivityLogger::log(
-        'ADMIN_PLAN_STATUS_CHANGED',
-        'Admin changed subscription plan status.',
-        $request,
-        $admin,
-        AdminActivityLogger::INFO,
-        [
-            'plan_id' =>
-                $plan->id,
-
-            'old_status' =>
-                $oldStatus,
-
-            'new_status' =>
-                $newStatus,
-        ]
-    );
-
-
-    return redirect()
-        ->route(
-            'admin.plans.show',
-            $plan->id
-        )
-        ->with(
-            'success',
-            $newStatus === 'active'
-                ? 'Plan activated successfully.'
-                : 'Plan deactivated successfully.'
-        );
-}
 
 
 

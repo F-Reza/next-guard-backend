@@ -91,8 +91,8 @@ class PaymentController extends Controller
                         $subscription->plan->price,
 
 
-                    'currency'=>
-                        'USD',
+                    'currency' =>
+                        $subscription->plan->currency,
 
 
                     'subscription_id'=>
