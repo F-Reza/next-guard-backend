@@ -78,15 +78,15 @@
                     )
 
 
-                    <div class="alert alert-warning">
+                    <div class="alert alert-warning mt-4">
 
                         Changes to price, duration,
                         features or device limit apply
                         to future subscription operations.
 
                         Existing subscription records
-                        retain their own existing dates
-                        and status.
+                        retain their current start date,
+                        expiry date and status.
 
                     </div>
 

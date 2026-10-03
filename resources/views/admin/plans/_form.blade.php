@@ -296,24 +296,253 @@
         Features
     </label>
 
-    <textarea
-        name="features"
-        id="features"
-        rows="7"
-        class="form-control
-            @error('features')
-            is-invalid
-            @enderror"
-        placeholder="One feature per line"
-    >{{ old(
-        'features',
-        isset($plan)
-            ? implode(
-                "\n",
-                $plan->features ?? []
-            )
-            : ''
-    ) }}</textarea>
+    <div class="mt-4">
+
+        <label class="form-label fw-semibold">
+            Plan Features
+        </label>
+
+        <div class="text-muted small mb-3">
+            Select the protection features included in this plan.
+        </div>
+
+
+        @php
+
+            $currentFeatures =
+                old(
+                    'features',
+                    $plan->features ?? []
+                );
+
+            /*
+            * Support old Premium key temporarily:
+            * adult_block → adult_content_block
+            */
+
+            if (
+                is_array($currentFeatures)
+                &&
+                isset($currentFeatures['adult_block'])
+                &&
+                !isset(
+                    $currentFeatures[
+                        'adult_content_block'
+                    ]
+                )
+            ) {
+
+                $currentFeatures[
+                    'adult_content_block'
+                ] =
+                    (bool)
+                    $currentFeatures[
+                        'adult_block'
+                    ];
+
+            }
+
+        @endphp
+
+
+        <div class="row g-3">
+
+
+            {{-- Betting Block --}}
+            <div class="col-md-6">
+
+                <div class="form-check border rounded p-3">
+
+                    <input
+                        type="checkbox"
+                        name="features[betting_block]"
+                        id="feature_betting_block"
+                        value="1"
+                        class="form-check-input ms-0 me-2"
+                        @checked(
+                            !empty(
+                                $currentFeatures[
+                                    'betting_block'
+                                ]
+                            )
+                        )
+                    >
+
+                    <label
+                        for="feature_betting_block"
+                        class="form-check-label fw-semibold"
+                    >
+                        Betting Block
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            {{-- Adult Content --}}
+            <div class="col-md-6">
+
+                <div class="form-check border rounded p-3">
+
+                    <input
+                        type="checkbox"
+                        name="features[adult_content_block]"
+                        id="feature_adult_content_block"
+                        value="1"
+                        class="form-check-input ms-0 me-2"
+                        @checked(
+                            !empty(
+                                $currentFeatures[
+                                    'adult_content_block'
+                                ]
+                            )
+                        )
+                    >
+
+                    <label
+                        for="feature_adult_content_block"
+                        class="form-check-label fw-semibold"
+                    >
+                        Adult Content Block
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            {{-- Safe Search --}}
+            <div class="col-md-6">
+
+                <div class="form-check border rounded p-3">
+
+                    <input
+                        type="checkbox"
+                        name="features[safe_search]"
+                        id="feature_safe_search"
+                        value="1"
+                        class="form-check-input ms-0 me-2"
+                        @checked(
+                            !empty(
+                                $currentFeatures[
+                                    'safe_search'
+                                ]
+                            )
+                        )
+                    >
+
+                    <label
+                        for="feature_safe_search"
+                        class="form-check-label fw-semibold"
+                    >
+                        Safe Search
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            {{-- DNS --}}
+            <div class="col-md-6">
+
+                <div class="form-check border rounded p-3">
+
+                    <input
+                        type="checkbox"
+                        name="features[dns_protection]"
+                        id="feature_dns_protection"
+                        value="1"
+                        class="form-check-input ms-0 me-2"
+                        @checked(
+                            !empty(
+                                $currentFeatures[
+                                    'dns_protection'
+                                ]
+                            )
+                        )
+                    >
+
+                    <label
+                        for="feature_dns_protection"
+                        class="form-check-label fw-semibold"
+                    >
+                        DNS Protection
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            {{-- YouTube Ads --}}
+            <div class="col-md-6">
+
+                <div class="form-check border rounded p-3">
+
+                    <input
+                        type="checkbox"
+                        name="features[youtube_ad_block]"
+                        id="feature_youtube_ad_block"
+                        value="1"
+                        class="form-check-input ms-0 me-2"
+                        @checked(
+                            !empty(
+                                $currentFeatures[
+                                    'youtube_ad_block'
+                                ]
+                            )
+                        )
+                    >
+
+                    <label
+                        for="feature_youtube_ad_block"
+                        class="form-check-label fw-semibold"
+                    >
+                        YouTube Ad Block
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            {{-- Facebook Ads --}}
+            <div class="col-md-6">
+
+                <div class="form-check border rounded p-3">
+
+                    <input
+                        type="checkbox"
+                        name="features[facebook_ad_block]"
+                        id="feature_facebook_ad_block"
+                        value="1"
+                        class="form-check-input ms-0 me-2"
+                        @checked(
+                            !empty(
+                                $currentFeatures[
+                                    'facebook_ad_block'
+                                ]
+                            )
+                        )
+                    >
+
+                    <label
+                        for="feature_facebook_ad_block"
+                        class="form-check-label fw-semibold"
+                    >
+                        Facebook Ad Block
+                    </label>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </div>
 
     <div class="form-text">
         Enter one feature per line.

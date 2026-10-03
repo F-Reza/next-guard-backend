@@ -1407,6 +1407,10 @@ class AdminWebController extends Controller
                     $newPlan
                 );
 
+                ProtectionActivationService::activate(
+                    $newSubscription->fresh()
+                );
+
         } catch (\Throwable $e) {
 
             return back()
@@ -2438,31 +2442,75 @@ public function planStore(
 
         'features' => [
             'nullable',
-            'string',
-            'max:5000',
+            'array',
+        ],
+
+        'features.betting_block' => [
+            'nullable',
+            'boolean',
+        ],
+
+        'features.adult_content_block' => [
+            'nullable',
+            'boolean',
+        ],
+
+        'features.facebook_ad_block' => [
+            'nullable',
+            'boolean',
+        ],
+
+        'features.youtube_ad_block' => [
+            'nullable',
+            'boolean',
+        ],
+
+        'features.safe_search' => [
+            'nullable',
+            'boolean',
+        ],
+
+        'features.dns_protection' => [
+            'nullable',
+            'boolean',
         ],
 
     ]);
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Convert Features Textarea To Array
-    |--------------------------------------------------------------------------
-    */
+    $features = [
 
-    $features = collect(
-        preg_split(
-            '/\r\n|\r|\n/',
-            $validated['features'] ?? ''
-        )
-    )
-    ->map(function ($feature) {
-        return trim($feature);
-    })
-    ->filter()
-    ->values()
-    ->all();
+        'betting_block' =>
+            $request->boolean(
+                'features.betting_block'
+            ),
+
+        'adult_content_block' =>
+            $request->boolean(
+                'features.adult_content_block'
+            ),
+
+        'facebook_ad_block' =>
+            $request->boolean(
+                'features.facebook_ad_block'
+            ),
+
+        'youtube_ad_block' =>
+            $request->boolean(
+                'features.youtube_ad_block'
+            ),
+
+        'safe_search' =>
+            $request->boolean(
+                'features.safe_search'
+            ),
+
+        'dns_protection' =>
+            $request->boolean(
+                'features.dns_protection'
+            ),
+
+    ];
 
 
     $plan = SubscriptionPlan::create([
@@ -2477,7 +2525,9 @@ public function planStore(
             $validated['price'],
 
         'currency' =>
-            strtoupper($validated['currency']),
+            strtoupper(
+                $validated['currency']
+            ),
 
         'duration_days' =>
             $validated['duration_days'],
@@ -2506,6 +2556,9 @@ public function planStore(
 
             'plan_name' =>
                 $plan->name,
+
+            'features' =>
+                $features,
         ]
     );
 
@@ -2598,6 +2651,9 @@ public function planEdit(int $id): View
 /**
  * Update subscription plan.
  */
+/**
+ * Update subscription plan.
+ */
 public function planUpdate(
     Request $request,
     int $id
@@ -2615,8 +2671,20 @@ public function planUpdate(
     $this->ensurePlanPermission($admin);
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Find Plan
+    |--------------------------------------------------------------------------
+    */
+
     $plan = SubscriptionPlan::findOrFail($id);
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validate
+    |--------------------------------------------------------------------------
+    */
 
     $validated = $request->validate([
 
@@ -2665,28 +2733,194 @@ public function planUpdate(
 
         'features' => [
             'nullable',
-            'string',
-            'max:5000',
+            'array',
+        ],
+
+        'features.betting_block' => [
+            'nullable',
+            'boolean',
+        ],
+
+        'features.adult_content_block' => [
+            'nullable',
+            'boolean',
+        ],
+
+        'features.facebook_ad_block' => [
+            'nullable',
+            'boolean',
+        ],
+
+        'features.youtube_ad_block' => [
+            'nullable',
+            'boolean',
+        ],
+
+        'features.safe_search' => [
+            'nullable',
+            'boolean',
+        ],
+
+        'features.dns_protection' => [
+            'nullable',
+            'boolean',
         ],
 
     ]);
 
 
-    $features = collect(
-        preg_split(
-            '/\r\n|\r|\n/',
-            $validated['features'] ?? ''
-        )
-    )
-    ->map(function ($feature) {
-        return trim($feature);
-    })
-    ->filter()
-    ->values()
-    ->all();
+    /*
+    |--------------------------------------------------------------------------
+    | Normalize New Feature Map
+    |--------------------------------------------------------------------------
+    */
 
+    $features = [
+
+        'betting_block' =>
+            $request->boolean(
+                'features.betting_block'
+            ),
+
+        'adult_content_block' =>
+            $request->boolean(
+                'features.adult_content_block'
+            ),
+
+        'facebook_ad_block' =>
+            $request->boolean(
+                'features.facebook_ad_block'
+            ),
+
+        'youtube_ad_block' =>
+            $request->boolean(
+                'features.youtube_ad_block'
+            ),
+
+        'safe_search' =>
+            $request->boolean(
+                'features.safe_search'
+            ),
+
+        'dns_protection' =>
+            $request->boolean(
+                'features.dns_protection'
+            ),
+
+    ];
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Existing Feature Map
+    |--------------------------------------------------------------------------
+    */
+
+    $oldFeatures = is_array($plan->features)
+        ? $plan->features
+        : [];
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Backward Compatibility
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        array_key_exists(
+            'adult_block',
+            $oldFeatures
+        )
+        &&
+        !array_key_exists(
+            'adult_content_block',
+            $oldFeatures
+        )
+    ) {
+
+        $oldFeatures[
+            'adult_content_block'
+        ] = (bool) $oldFeatures[
+            'adult_block'
+        ];
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Normalize Old Feature Map
+    |--------------------------------------------------------------------------
+    |
+    | This ensures missing old keys are treated as false.
+    |
+    */
+
+    $oldNormalizedFeatures = [
+
+        'betting_block' =>
+            (bool) (
+                $oldFeatures[
+                    'betting_block'
+                ] ?? false
+            ),
+
+        'adult_content_block' =>
+            (bool) (
+                $oldFeatures[
+                    'adult_content_block'
+                ] ?? false
+            ),
+
+        'facebook_ad_block' =>
+            (bool) (
+                $oldFeatures[
+                    'facebook_ad_block'
+                ] ?? false
+            ),
+
+        'youtube_ad_block' =>
+            (bool) (
+                $oldFeatures[
+                    'youtube_ad_block'
+                ] ?? false
+            ),
+
+        'safe_search' =>
+            (bool) (
+                $oldFeatures[
+                    'safe_search'
+                ] ?? false
+            ),
+
+        'dns_protection' =>
+            (bool) (
+                $oldFeatures[
+                    'dns_protection'
+                ] ?? false
+            ),
+
+    ];
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Detect Protection Feature Change
+    |--------------------------------------------------------------------------
+    */
+
+    $featuresChanged =
+        $oldNormalizedFeatures !== $features;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Store Old Plan Data For Audit
+    |--------------------------------------------------------------------------
+    */
 
     $oldData = [
+
         'name' =>
             $plan->name,
 
@@ -2704,8 +2938,18 @@ public function planUpdate(
 
         'status' =>
             $plan->status,
+
+        'features' =>
+            $oldNormalizedFeatures,
+
     ];
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update Plan
+    |--------------------------------------------------------------------------
+    */
 
     $plan->update([
 
@@ -2713,13 +2957,16 @@ public function planUpdate(
             $validated['name'],
 
         'description' =>
-            $validated['description'] ?? null,
+            $validated['description']
+            ?? null,
 
         'price' =>
             $validated['price'],
 
         'currency' =>
-            strtoupper($validated['currency']),
+            strtoupper(
+                $validated['currency']
+            ),
 
         'duration_days' =>
             $validated['duration_days'],
@@ -2736,12 +2983,111 @@ public function planUpdate(
     ]);
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Re-sync Existing Active Subscribers
+    |--------------------------------------------------------------------------
+    |
+    | Only when protection features changed.
+    |
+    */
+
+    $resyncedDevices = 0;
+
+    $failedDevices = 0;
+
+
+    if ($featuresChanged) {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Active Subscriptions Using This Plan
+        |--------------------------------------------------------------------------
+        */
+
+        $activeSubscriptions =
+            Subscription::query()
+                ->where(
+                    'subscription_plan_id',
+                    $plan->id
+                )
+                ->where(
+                    'status',
+                    'active'
+                )
+                ->whereNotNull(
+                    'device_id'
+                )
+                ->with([
+                    'device',
+                    'plan',
+                ])
+                ->get();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Avoid Duplicate Device Sync
+        |--------------------------------------------------------------------------
+        |
+        | Defensive protection in case historical data contains more than
+        | one active subscription for the same device.
+        |
+        */
+
+        $activeSubscriptions =
+            $activeSubscriptions
+                ->unique('device_id')
+                ->values();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Apply Updated Features To Each Device
+        |--------------------------------------------------------------------------
+        */
+
+        foreach (
+            $activeSubscriptions
+            as $activeSubscription
+        ) {
+
+            try {
+
+                ProtectionActivationService::activate(
+                    $activeSubscription
+                );
+
+                $resyncedDevices++;
+
+            } catch (\Throwable $e) {
+
+                $failedDevices++;
+
+                report($e);
+            }
+        }
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Audit Log
+    |--------------------------------------------------------------------------
+    */
+
     AdminActivityLogger::log(
+
         'ADMIN_PLAN_UPDATED',
+
         'Admin updated a subscription plan.',
+
         $request,
+
         $admin,
+
         AdminActivityLogger::INFO,
+
         [
             'plan_id' =>
                 $plan->id,
@@ -2750,6 +3096,7 @@ public function planUpdate(
                 $oldData,
 
             'new' => [
+
                 'name' =>
                     $plan->name,
 
@@ -2767,9 +3114,50 @@ public function planUpdate(
 
                 'status' =>
                     $plan->status,
+
+                'features' =>
+                    $plan->features,
+
             ],
+
+            'features_changed' =>
+                $featuresChanged,
+
+            'protection_resynced_devices' =>
+                $resyncedDevices,
+
+            'protection_resync_failures' =>
+                $failedDevices,
         ]
     );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Success Message
+    |--------------------------------------------------------------------------
+    */
+
+    $message =
+        'Subscription plan updated successfully.';
+
+
+    if ($featuresChanged) {
+
+        $message .=
+            ' Protection settings were refreshed for '
+            .$resyncedDevices
+            .' active device(s).';
+
+
+        if ($failedDevices > 0) {
+
+            $message .=
+                ' '
+                .$failedDevices
+                .' device(s) could not be refreshed.';
+        }
+    }
 
 
     return redirect()
@@ -2779,7 +3167,7 @@ public function planUpdate(
         )
         ->with(
             'success',
-            'Subscription plan updated successfully.'
+            $message
         );
 }
 

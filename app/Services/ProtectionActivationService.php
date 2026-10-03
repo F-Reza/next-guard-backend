@@ -2,173 +2,333 @@
 
 namespace App\Services;
 
-
 use App\Models\DeviceProtectionSetting;
 use App\Models\ProtectionSyncLog;
 use App\Models\Subscription;
-use App\Services\ProtectionEngineService;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-
 
 
 class ProtectionActivationService
 {
-
-
     public static function activate(
         Subscription $subscription
     ): void
     {
+        DB::transaction(function () use ($subscription) {
 
+            /*
+            |--------------------------------------------------------------------------
+            | Load Required Relations
+            |--------------------------------------------------------------------------
+            */
 
-        DB::transaction(function() use(
-            $subscription
-        ){
+            $subscription->loadMissing([
+                'device',
+                'plan',
+            ]);
 
 
             $device = $subscription->device;
+            $plan = $subscription->plan;
 
 
+            /*
+            |--------------------------------------------------------------------------
+            | Device Must Exist
+            |--------------------------------------------------------------------------
+            */
 
-            if(!$device){
-
+            if (!$device) {
                 return;
-
             }
 
 
+            /*
+            |--------------------------------------------------------------------------
+            | Plan Must Exist
+            |--------------------------------------------------------------------------
+            */
+
+            if (!$plan) {
+                return;
+            }
 
 
             /*
             |--------------------------------------------------------------------------
-            | Enable Protection Setting
+            | Read Plan Features
             |--------------------------------------------------------------------------
             */
 
-
-            $setting =
-                DeviceProtectionSetting::firstOrCreate(
-
-                    [
-                        'device_id'=>$device->id
-                    ],
-
-                    [
-
-                        'betting_block'=>false,
-
-                        'adult_content_block'=>false,
-
-                        'facebook_ad_block'=>false,
-
-                        'youtube_ad_block'=>false,
-
-                        'safe_search'=>false,
-
-                        'dns_protection'=>false,
-
-                        'protection_status'=>'inactive',
-
-                    ]
-
-                );
-
-
-
-
-
-            $setting->update([
-
-
-                'protection_status'=>'active',
-
-
-                'disabled_reason'=>null,
-
-
-                // 'dns_protection'=>true,
-
-
-                // 'safe_search'=>true,
-
-
-                'last_sync_at'=>now(),
-
-
-            ]);
-
-
-
-
-
+            $features = is_array($plan->features)
+                ? $plan->features
+                : [];
 
 
             /*
             |--------------------------------------------------------------------------
-            | Create Protection Sync Request
+            | Backward Compatibility
+            |--------------------------------------------------------------------------
+            |
+            | Older data used:
+            | adult_block
+            |
+            | Current standard:
+            | adult_content_block
+            |
+            */
+
+            if (
+                array_key_exists(
+                    'adult_block',
+                    $features
+                )
+                &&
+                !array_key_exists(
+                    'adult_content_block',
+                    $features
+                )
+            ) {
+                $features[
+                    'adult_content_block'
+                ] = (bool) $features[
+                    'adult_block'
+                ];
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Normalize Features
             |--------------------------------------------------------------------------
             */
 
+            $protectionFeatures = [
 
-            $payload = ProtectionEngineService::payload(
-                $device
-            );
+                'betting_block' =>
+                    (bool) (
+                        $features[
+                            'betting_block'
+                        ] ?? false
+                    ),
 
+                'adult_content_block' =>
+                    (bool) (
+                        $features[
+                            'adult_content_block'
+                        ] ?? false
+                    ),
 
-            $rules = collect($payload['rules'])
-                ->sortBy('id')
-                ->values()
-                ->toArray();
+                'facebook_ad_block' =>
+                    (bool) (
+                        $features[
+                            'facebook_ad_block'
+                        ] ?? false
+                    ),
 
+                'youtube_ad_block' =>
+                    (bool) (
+                        $features[
+                            'youtube_ad_block'
+                        ] ?? false
+                    ),
 
-            $syncData = [
-                'protection'=>$payload['protection'],
-                'rules'=>$rules,
+                'safe_search' =>
+                    (bool) (
+                        $features[
+                            'safe_search'
+                        ] ?? false
+                    ),
+
+                'dns_protection' =>
+                    (bool) (
+                        $features[
+                            'dns_protection'
+                        ] ?? false
+                    ),
             ];
 
 
-            $hash = hash(
-                'sha256',
-                json_encode($syncData)
-            );
+            /*
+            |--------------------------------------------------------------------------
+            | Create Device Protection Setting If Missing
+            |--------------------------------------------------------------------------
+            */
+
+            $setting =
+                DeviceProtectionSetting::firstOrCreate(
+                    [
+                        'device_id' =>
+                            $device->id,
+                    ],
+                    [
+                        'betting_block' =>
+                            false,
+
+                        'adult_content_block' =>
+                            false,
+
+                        'facebook_ad_block' =>
+                            false,
+
+                        'youtube_ad_block' =>
+                            false,
+
+                        'safe_search' =>
+                            false,
+
+                        'dns_protection' =>
+                            false,
+
+                        'protection_status' =>
+                            'inactive',
+                    ]
+                );
 
 
-            $lastVersion = ProtectionSyncLog::where(
-                'device_id',
-                $device->id
-            )
-            ->lockForUpdate()
-            ->max('sync_version');
+            /*
+            |--------------------------------------------------------------------------
+            | Apply Plan Features
+            |--------------------------------------------------------------------------
+            */
 
+            $setting->update([
 
-            ProtectionSyncLog::create([
+                'betting_block' =>
+                    $protectionFeatures[
+                        'betting_block'
+                    ],
 
-                'device_id'=>$device->id,
+                'adult_content_block' =>
+                    $protectionFeatures[
+                        'adult_content_block'
+                    ],
 
-                'sync_version'=>($lastVersion ?? 0)+1,
+                'facebook_ad_block' =>
+                    $protectionFeatures[
+                        'facebook_ad_block'
+                    ],
 
-                'rules_hash'=>$hash,
+                'youtube_ad_block' =>
+                    $protectionFeatures[
+                        'youtube_ad_block'
+                    ],
 
-                'apply_status'=>'pending',
+                'safe_search' =>
+                    $protectionFeatures[
+                        'safe_search'
+                    ],
 
-                'retry_count'=>0,
+                'dns_protection' =>
+                    $protectionFeatures[
+                        'dns_protection'
+                    ],
 
-                'max_retry'=>3,
+                'protection_status' =>
+                    'active',
 
-                'device_version'=>$device->app_version,
+                'disabled_reason' =>
+                    null,
 
-                'synced_at'=>null,
-
+                'last_sync_at' =>
+                    now(),
             ]);
 
 
+            /*
+            |--------------------------------------------------------------------------
+            | Build Fresh Protection Payload
+            |--------------------------------------------------------------------------
+            */
+
+            $payload =
+                ProtectionEngineService::payload(
+                    $device
+                );
+
+
+            $rules = collect(
+                $payload['rules']
+            )
+            ->sortBy('id')
+            ->values()
+            ->toArray();
+
+
+            $syncData = [
+
+                'protection' =>
+                    $payload['protection'],
+
+                'rules' =>
+                    $rules,
+            ];
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Generate Rules Hash
+            |--------------------------------------------------------------------------
+            */
+
+            $hash = hash(
+                'sha256',
+                json_encode(
+                    $syncData
+                )
+            );
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Get Next Sync Version
+            |--------------------------------------------------------------------------
+            */
+
+            $lastVersion =
+                ProtectionSyncLog::where(
+                    'device_id',
+                    $device->id
+                )
+                ->lockForUpdate()
+                ->max(
+                    'sync_version'
+                );
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Create Pending Sync
+            |--------------------------------------------------------------------------
+            */
+
+            ProtectionSyncLog::create([
+
+                'device_id' =>
+                    $device->id,
+
+                'sync_version' =>
+                    ($lastVersion ?? 0) + 1,
+
+                'rules_hash' =>
+                    $hash,
+
+                'apply_status' =>
+                    'pending',
+
+                'retry_count' =>
+                    0,
+
+                'max_retry' =>
+                    3,
+
+                'device_version' =>
+                    $device->app_version,
+
+                'synced_at' =>
+                    null,
+            ]);
 
         });
-
-
-
     }
-
-
 }

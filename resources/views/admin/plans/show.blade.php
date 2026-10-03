@@ -83,6 +83,7 @@
 
 <div class="row g-4">
 
+    {{-- Plan Information --}}
     <div class="col-lg-6">
 
         <div class="card h-100">
@@ -204,8 +205,7 @@
                         <td>
 
                             {{ $plan->created_at
-                                ? $plan
-                                    ->created_at
+                                ? $plan->created_at
                                     ->format(
                                         'd M Y, h:i:s A'
                                     )
@@ -226,8 +226,7 @@
                         <td>
 
                             {{ $plan->updated_at
-                                ? $plan
-                                    ->updated_at
+                                ? $plan->updated_at
                                     ->format(
                                         'd M Y, h:i:s A'
                                     )
@@ -247,6 +246,7 @@
     </div>
 
 
+    {{-- Description + Features --}}
     <div class="col-lg-6">
 
         <div class="card">
@@ -282,34 +282,122 @@
 
             <div class="card-body">
 
-                @if(
-                    is_array($plan->features)
-                    &&
-                    count($plan->features)
-                )
+                @php
 
-                    <ul class="mb-0">
+                    $features =
+                        is_array($plan->features)
+                            ? $plan->features
+                            : [];
 
-                        @foreach(
-                            $plan->features
-                            as $feature
+                    /*
+                     * Backward compatibility:
+                     * old key:
+                     * adult_block
+                     *
+                     * new key:
+                     * adult_content_block
+                     */
+                    if (
+                        isset($features['adult_block'])
+                        &&
+                        !isset(
+                            $features[
+                                'adult_content_block'
+                            ]
                         )
+                    ) {
 
-                            <li class="mb-2">
-                                {{ $feature }}
-                            </li>
+                        $features[
+                            'adult_content_block'
+                        ] =
+                            (bool)
+                            $features['adult_block'];
 
-                        @endforeach
+                    }
 
-                    </ul>
 
-                @else
+                    $featureLabels = [
 
-                    <span class="text-muted">
-                        No features configured.
-                    </span>
+                        'betting_block' =>
+                            'Betting Block',
 
-                @endif
+                        'adult_content_block' =>
+                            'Adult Content Block',
+
+                        'safe_search' =>
+                            'Safe Search',
+
+                        'dns_protection' =>
+                            'DNS Protection',
+
+                        'youtube_ad_block' =>
+                            'YouTube Ad Block',
+
+                        'facebook_ad_block' =>
+                            'Facebook Ad Block',
+
+                    ];
+
+                @endphp
+
+
+                <div class="row g-2">
+
+                    @foreach(
+                        $featureLabels
+                        as $key => $label
+                    )
+
+                        <div class="col-md-6">
+
+                            <div
+                                class="
+                                    d-flex
+                                    justify-content-between
+                                    align-items-center
+                                    border
+                                    rounded
+                                    px-3
+                                    py-2
+                                "
+                            >
+
+                                <span>
+                                    {{ $label }}
+                                </span>
+
+
+                                @if(
+                                    !empty(
+                                        $features[$key]
+                                    )
+                                )
+
+                                    <span
+                                        class="badge
+                                            text-bg-success"
+                                    >
+                                        Included
+                                    </span>
+
+                                @else
+
+                                    <span
+                                        class="badge
+                                            text-bg-secondary"
+                                    >
+                                        Not Included
+                                    </span>
+
+                                @endif
+
+                            </div>
+
+                        </div>
+
+                    @endforeach
+
+                </div>
 
             </div>
 
@@ -320,6 +408,7 @@
 </div>
 
 
+{{-- Usage Summary --}}
 <div class="card mt-4">
 
     <div class="card-header fw-semibold">
