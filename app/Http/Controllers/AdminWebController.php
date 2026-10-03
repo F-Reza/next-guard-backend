@@ -3635,10 +3635,131 @@ public function paymentWebhookShow(
 }
 
 
+public function paymentInvoices(
+    Request $request
+): View {
+
+    /** @var Admin|null $admin */
+    $admin = Auth::guard('admin_web')->user();
+
+    if (!$admin) {
+        abort(401);
+    }
+
+    $admin->load('permissions');
+
+    $this->ensurePaymentPermission($admin);
+
+
+    $query = SubscriptionInvoice::query()
+        ->with([
+            'user',
+            'subscription.plan',
+        ]);
+
+
+    if ($request->filled('search')) {
+
+        $search = trim(
+            $request->input('search')
+        );
+
+        $query->where(function ($q) use ($search) {
+
+            $q->where(
+                'invoice_no',
+                'like',
+                "%{$search}%"
+            )
+            ->orWhereHas(
+                'user',
+                function ($userQuery) use ($search) {
+
+                    $userQuery
+                        ->where(
+                            'name',
+                            'like',
+                            "%{$search}%"
+                        )
+                        ->orWhere(
+                            'email',
+                            'like',
+                            "%{$search}%"
+                        );
+                }
+            );
+        });
+    }
+
+
+    if ($request->filled('status')) {
+
+        $query->where(
+            'status',
+            $request->input('status')
+        );
+    }
+
+
+    $invoices = $query
+        ->latest('id')
+        ->paginate(20)
+        ->withQueryString();
+
+
+    return view(
+        'admin.payments.invoices',
+        compact(
+            'admin',
+            'invoices'
+        )
+    );
+}
 
 
 
+public function paymentInvoiceShow(
+    int $id
+): View {
 
+    /** @var Admin|null $admin */
+    $admin = Auth::guard('admin_web')->user();
+
+    if (!$admin) {
+        abort(401);
+    }
+
+    $admin->load('permissions');
+
+    $this->ensurePaymentPermission($admin);
+
+
+    $invoice = SubscriptionInvoice::with([
+        'user',
+        'subscription.plan',
+        'subscription.device',
+    ])
+    ->findOrFail($id);
+
+
+    $payment = Payment::query()
+        ->where(
+            'subscription_id',
+            $invoice->subscription_id
+        )
+        ->latest('id')
+        ->first();
+
+
+    return view(
+        'admin.payments.invoice-show',
+        compact(
+            'admin',
+            'invoice',
+            'payment'
+        )
+    );
+}
 
 
 

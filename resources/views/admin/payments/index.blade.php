@@ -20,14 +20,27 @@
     </div>
 
 
-    <a
-        href="{{ route(
-            'admin.payments.webhooks'
-        ) }}"
-        class="btn btn-outline-secondary"
-    >
-        Webhook History
-    </a>
+    <div class="d-flex gap-2">
+
+        <a
+            href="{{ route(
+                'admin.payments.invoices'
+            ) }}"
+            class="btn btn-outline-primary"
+        >
+            Invoices
+        </a>
+
+        <a
+            href="{{ route(
+                'admin.payments.webhooks'
+            ) }}"
+            class="btn btn-outline-secondary"
+        >
+            Webhook History
+        </a>
+
+    </div>
 
 </div>
 

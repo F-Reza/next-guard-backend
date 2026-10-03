@@ -309,6 +309,18 @@ Route::prefix('admin')
                 '/payments/webhooks/{id}',
                 [AdminWebController::class, 'paymentWebhookShow']
             )->name('payments.webhooks.show');
+            
+
+            Route::get(
+                '/payments/invoices',
+                [AdminWebController::class, 'paymentInvoices']
+            )->name('payments.invoices');
+
+
+            Route::get(
+                '/payments/invoices/{id}',
+                [AdminWebController::class, 'paymentInvoiceShow']
+            )->name('payments.invoices.show');
 
 
             Route::get(
