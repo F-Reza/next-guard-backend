@@ -174,6 +174,18 @@ Route::prefix('admin')
 
 
             Route::get(
+                '/subscriptions/grant',
+                [AdminWebController::class, 'subscriptionGrant']
+            )->name('subscriptions.grant');
+
+
+            Route::post(
+                '/subscriptions/grant',
+                [AdminWebController::class, 'subscriptionGrantStore']
+            )->name('subscriptions.grant.store');
+
+
+            Route::get(
                 '/subscriptions/{id}/change-plan',
                 [AdminWebController::class, 'subscriptionChangePlan']
             )->name('subscriptions.change-plan');
@@ -218,7 +230,11 @@ Route::prefix('admin')
             Route::get(
                 '/subscriptions/{id}',
                 [AdminWebController::class, 'subscriptionShow']
-            )->name('subscriptions.show');   
+            )->name('subscriptions.show');  
+
+
+
+
 
 
 

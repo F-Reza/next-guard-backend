@@ -1891,8 +1891,336 @@ class AdminWebController extends Controller
         
 
 
+    public function subscriptionGrant(): View
+    {
+        /** @var Admin|null $admin */
+        $admin = Auth::guard('admin_web')->user();
+
+        if (!$admin) {
+            abort(401);
+        }
+
+        $admin->load('permissions');
+
+        $this->ensureSubscriptionPermission($admin);
+
+        $users = User::query()
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+
+        $plans = SubscriptionPlan::query()
+            ->where('status', 'active')
+            ->orderBy('price')
+            ->get();
+
+        return view(
+            'admin.subscriptions.grant',
+            compact(
+                'admin',
+                'users',
+                'plans'
+            )
+        );
+    }
 
 
+
+    public function subscriptionGrantStore(
+        Request $request
+    ): RedirectResponse {
+
+        /** @var Admin|null $admin */
+        $admin = Auth::guard('admin_web')->user();
+
+        if (!$admin) {
+            abort(401);
+        }
+
+        $admin->load('permissions');
+
+        $this->ensureSubscriptionPermission($admin);
+
+
+        $validated = $request->validate([
+            'user_id' => [
+                'required',
+                'integer',
+                'exists:users,id',
+            ],
+
+            'plan_id' => [
+                'required',
+                'integer',
+                'exists:subscription_plans,id',
+            ],
+
+            'device_id' => [
+                'nullable',
+                'integer',
+                'exists:devices,id',
+            ],
+
+            'reason' => [
+                'required',
+                'string',
+                'max:500',
+            ],
+        ]);
+
+
+        $user = User::findOrFail(
+            $validated['user_id']
+        );
+
+        $plan = SubscriptionPlan::findOrFail(
+            $validated['plan_id']
+        );
+
+
+        if ($plan->status !== 'active') {
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'plan_id' =>
+                        'The selected plan is not active.',
+                ]);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Active Subscription Check
+        |--------------------------------------------------------------------------
+        */
+
+        $alreadyActive = $user
+            ->subscriptions()
+            ->where('status', 'active')
+            ->where(function ($query) {
+
+                $query
+                    ->whereNull('expires_at')
+                    ->orWhere(
+                        'expires_at',
+                        '>',
+                        now()
+                    );
+            })
+            ->exists();
+
+
+        if ($alreadyActive) {
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'user_id' =>
+                        'This user already has an active subscription.',
+                ]);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Optional Device Check
+        |--------------------------------------------------------------------------
+        */
+
+        $device = null;
+
+        if (!empty($validated['device_id'])) {
+
+            $device = $user->devices()
+                ->where(
+                    'id',
+                    $validated['device_id']
+                )
+                ->where(
+                    'status',
+                    'active'
+                )
+                ->first();
+
+
+            if (!$device) {
+
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'device_id' =>
+                            'Selected device does not belong to this user or is not active.',
+                    ]);
+            }
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Device Limit Check
+        |--------------------------------------------------------------------------
+        */
+
+        $activeDevices = $user
+            ->devices()
+            ->where(
+                'status',
+                'active'
+            )
+            ->count();
+
+
+        if ($activeDevices > $plan->device_limit) {
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'plan_id' =>
+                        'User active devices exceed the selected plan device limit.',
+                ]);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create Subscription
+        |--------------------------------------------------------------------------
+        */
+
+        $subscription = DB::transaction(
+            function () use (
+                $user,
+                $plan,
+                $device,
+                $validated
+            ) {
+
+                $subscription = Subscription::create([
+
+                    'user_id' =>
+                        $user->id,
+
+                    'subscription_plan_id' =>
+                        $plan->id,
+
+                    'device_id' =>
+                        $device?->id,
+
+                    'starts_at' =>
+                        now(),
+
+                    'expires_at' =>
+                        now()->addDays(
+                            $plan->duration_days
+                        ),
+
+                    'status' =>
+                        'active',
+
+                    'source' =>
+                        'admin',
+
+                    'auto_renew' =>
+                        false,
+
+                ]);
+
+
+                $subscription->events()->create([
+
+                    'event' =>
+                        'admin_granted',
+
+                    'old_status' =>
+                        null,
+
+                    'new_status' =>
+                        'active',
+
+                    'description' =>
+                        'Subscription granted by admin. Reason: '
+                        .$validated['reason'],
+
+                ]);
+
+
+                return $subscription;
+            }
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Activate Protection
+        |--------------------------------------------------------------------------
+        */
+
+        ProtectionActivationService::activate(
+            $subscription->fresh()
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Audit
+        |--------------------------------------------------------------------------
+        */
+
+        AdminActivityLogger::log(
+
+            'ADMIN_SUBSCRIPTION_GRANTED',
+
+            'Admin granted a subscription.',
+
+            $request,
+
+            $admin,
+
+            AdminActivityLogger::INFO,
+
+            [
+                'subscription_id' =>
+                    $subscription->id,
+
+                'user_id' =>
+                    $user->id,
+
+                'plan_id' =>
+                    $plan->id,
+
+                'device_id' =>
+                    $device?->id,
+
+                'reason' =>
+                    $validated['reason'],
+            ]
+
+        );
+
+
+        return redirect()
+            ->route(
+                'admin.subscriptions.show',
+                $subscription->id
+            )
+            ->with(
+                'success',
+                'Subscription granted successfully.'
+            );
+    }
+
+
+
+
+
+
+
+
+
+
+
+    
 
 
 

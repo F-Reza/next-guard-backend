@@ -5,15 +5,29 @@
 
 @section('content')
 
-<div class="mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4">
 
-    <h4 class="mb-1">
-        Subscription Management
-    </h4>
+    <div>
 
-    <div class="text-muted">
-        View and manage user subscriptions.
+        <h4 class="mb-1">
+            Subscription Management
+        </h4>
+
+        <div class="text-muted">
+            View and manage user subscriptions.
+        </div>
+
     </div>
+
+
+    <a
+        href="{{ route(
+            'admin.subscriptions.grant'
+        ) }}"
+        class="btn btn-primary"
+    >
+        Grant Subscription
+    </a>
 
 </div>
 
