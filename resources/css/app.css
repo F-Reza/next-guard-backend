@@ -39,6 +39,7 @@ body {
 .admin-brand-title {
     font-size: 20px;
     font-weight: 700;
+    color: #000;
 }
 
 .admin-brand-subtitle {
@@ -52,6 +53,7 @@ body {
 
 .admin-nav .nav-link {
     color: #d1d5db;
+    color: #060708;
     border-radius: 8px;
     padding: 11px 14px;
     margin-bottom: 4px;
@@ -121,3 +123,6 @@ body {
     border-radius: 18px;
     box-shadow: 0 15px 45px rgba(0,0,0,.08);
 }
+
+
+
